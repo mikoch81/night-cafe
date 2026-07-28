@@ -14,6 +14,8 @@ ExportedObj/
 *.csproj
 *.unityproj
 *.sln
+*.slnx
+.vscode/
 *.suo
 *.tmp
 *.user
@@ -47,3 +49,4 @@ crashlytics-build.properties
 # OS
 .DS_Store
 Thumbs.db
+.directory
