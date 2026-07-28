@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">
+  <feGaussianBlur stdDeviation="2.2" result="b"/>
+  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter><linearGradient id="alu" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#d8d4cc"/><stop offset="0.5" stop-color="#a9a49a"/><stop offset="1" stop-color="#7d7870"/>
+</linearGradient>
+<linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#8a5a33"/><stop offset="0.45" stop-color="#6f4325"/><stop offset="1" stop-color="#54301a"/>
+</linearGradient></defs>
+<rect x="20" y="30" width="1880" height="1020" rx="86" fill="url(#alu)"/>
+<rect x="36" y="46" width="1848" height="988" rx="74" fill="url(#wood)"/>
+<g stroke="#4a2a16" stroke-width="3" opacity="0.32" fill="none">
+  <path d="M70 160 q450 34 860 12 t920 18"/>
+  <path d="M64 300 q500 -26 900 4 t890 -14"/>
+  <path d="M70 860 q450 30 880 8 t900 16"/>
+  <path d="M64 980 q490 -22 900 6 t880 -10"/>
+</g>
+<rect x="428" y="118" width="1064" height="748" rx="46" fill="url(#alu)"/>
+<rect x="446" y="136" width="1028" height="712" rx="36" fill="#0c0906"/>
+<g fill="#4a2f1b">
+  <circle cx="1700" cy="960" r="7"/><circle cx="1734" cy="960" r="7"/><circle cx="1768" cy="960" r="7"/>
+  <circle cx="1717" cy="988" r="7"/><circle cx="1751" cy="988" r="7"/><circle cx="1785" cy="988" r="7"/>
+</g>
+<rect x="150" y="936" width="250" height="62" rx="14" fill="#2c1c10"/>
+</svg>

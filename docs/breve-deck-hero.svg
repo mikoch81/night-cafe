@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 980" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <!-- ==== gradients ==== -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141824"/>
+      <stop offset="1" stop-color="#0b0d14"/>
+    </linearGradient>
+    <linearGradient id="alu" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d8d4cc"/>
+      <stop offset="0.5" stop-color="#a9a49a"/>
+      <stop offset="1" stop-color="#7d7870"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8a5a33"/>
+      <stop offset="0.45" stop-color="#6f4325"/>
+      <stop offset="1" stop-color="#54301a"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d1712"/>
+      <stop offset="1" stop-color="#120d09"/>
+    </linearGradient>
+    <radialGradient id="screenGlow" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0" stop-color="#3a2a14" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#120d09" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="btnFace" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7edd9"/>
+      <stop offset="1" stop-color="#cdbfa4"/>
+    </linearGradient>
+    <filter id="amberGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="neon" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ==== background: night desk ==== -->
+  <rect width="1600" height="980" fill="url(#bg)"/>
+  <g opacity="0.5">
+    <circle cx="220" cy="130" r="2.5" fill="#ffd9a0"/><circle cx="340" cy="80" r="1.8" fill="#9fd8ff"/>
+    <circle cx="1380" cy="110" r="2.2" fill="#ffb3c8"/><circle cx="1480" cy="210" r="1.6" fill="#ffd9a0"/>
+    <circle cx="120" cy="300" r="1.5" fill="#9fd8ff"/><circle cx="1520" cy="420" r="1.8" fill="#ffd9a0"/>
+  </g>
+  <text x="800" y="70" text-anchor="middle" fill="#e8d9bd" font-size="34" letter-spacing="6" font-weight="600">BRÉVE DECK — MAKIETA URZĄDZENIA</text>
+  <text x="800" y="102" text-anchor="middle" fill="#8f8474" font-size="17">wirtualny handheld · Night Café · styl Neo-LCD</text>
+
+  <!-- ==== device body ==== -->
+  <g filter="url(#softShadow)">
+    <rect x="180" y="150" width="1240" height="700" rx="64" fill="url(#alu)"/>
+    <rect x="192" y="162" width="1216" height="676" rx="56" fill="url(#wood)"/>
+    <!-- wood grain -->
+    <g stroke="#4a2a16" stroke-width="2" opacity="0.35" fill="none">
+      <path d="M220 240 q300 26 560 8 t560 14"/>
+      <path d="M215 330 q340 -20 600 2 t555 -10"/>
+      <path d="M220 700 q300 24 580 6 t560 12"/>
+      <path d="M215 780 q330 -18 600 4 t550 -8"/>
+    </g>
+  </g>
+
+  <!-- ==== screen bezel + glass ==== -->
+  <rect x="470" y="220" width="660" height="470" rx="34" fill="url(#alu)"/>
+  <rect x="482" y="232" width="636" height="446" rx="26" fill="url(#glass)"/>
+  <rect x="482" y="232" width="636" height="446" rx="26" fill="url(#screenGlow)"/>
+
+  <!-- ==================== GAME SCREEN (Neo-LCD) ==================== -->
+  <g>
+    <!-- faint segment "ghosts" -->
+    <g opacity="0.06" fill="#ffbf5e">
+      <rect x="520" y="300" width="60" height="10" rx="5"/><rect x="1020" y="300" width="60" height="10" rx="5"/>
+      <rect x="520" y="420" width="60" height="10" rx="5"/><rect x="1020" y="420" width="60" height="10" rx="5"/>
+    </g>
+
+    <!-- HUD: score / mode / clock -->
+    <g font-family="Consolas, monospace" filter="url(#amberGlow)">
+      <text x="1042" y="285" fill="#ffc966" font-size="44" font-weight="700" text-anchor="end">247</text>
+      <text x="620" y="278" fill="#ffc966" font-size="20" font-weight="700">TRYB A</text>
+      <text x="620" y="300" fill="#7a5a2d" font-size="20" font-weight="700">TRYB B</text>
+      <text x="800" y="282" fill="#ffc966" font-size="22" text-anchor="middle">23:41</text>
+    </g>
+
+    <!-- penalty stains (2 of 3) -->
+    <g transform="translate(760,310)">
+      <g fill="#ffc966" filter="url(#amberGlow)">
+        <path d="M0 8 q6 -10 14 -4 q10 -8 16 2 q10 0 6 8 q2 8 -8 8 l-20 0 q-12 0 -8 -14z"/>
+        <path d="M44 8 q6 -10 14 -4 q10 -8 16 2 q10 0 6 8 q2 8 -8 8 l-20 0 q-12 0 -8 -14z"/>
+      </g>
+      <path d="M88 8 q6 -10 14 -4 q10 -8 16 2 q10 0 6 8 q2 8 -8 8 l-20 0 q-12 0 -8 -14z" fill="#3a2c18"/>
+      <text x="60" y="42" fill="#7a5a2d" font-size="13" text-anchor="middle" font-family="Consolas, monospace">PLAMY</text>
+    </g>
+
+    <!-- 4 chutes (espresso machine rails) -->
+    <g stroke="#ffb84d" stroke-width="7" stroke-linecap="round" opacity="0.9" filter="url(#amberGlow)">
+      <path d="M510 340 L640 372 L700 400" fill="none"/>
+      <path d="M510 470 L640 502 L700 530" fill="none"/>
+      <path d="M1090 340 L960 372 L900 400" fill="none"/>
+      <path d="M1090 470 L960 502 L900 530" fill="none"/>
+    </g>
+    <!-- machine heads at chute starts -->
+    <g fill="#ffc966" filter="url(#amberGlow)">
+      <rect x="496" y="312" width="34" height="30" rx="6"/><rect x="496" y="442" width="34" height="30" rx="6"/>
+      <rect x="1070" y="312" width="34" height="30" rx="6"/><rect x="1070" y="442" width="34" height="30" rx="6"/>
+    </g>
+
+    <!-- cups on rails -->
+    <g fill="#ffd27a" filter="url(#amberGlow)">
+      <g transform="translate(560,344) rotate(14)"><rect width="26" height="20" rx="4"/><path d="M26 4 h8 a6 6 0 0 1 0 12 h-8" fill="none" stroke="#ffd27a" stroke-width="4"/></g>
+      <g transform="translate(632,486) rotate(14)"><rect width="26" height="20" rx="4"/><path d="M26 4 h8 a6 6 0 0 1 0 12 h-8" fill="none" stroke="#ffd27a" stroke-width="4"/></g>
+      <g transform="translate(986,352) rotate(-14)"><rect width="26" height="20" rx="4"/><path d="M0 4 h-8 a6 6 0 0 0 0 12 h8" fill="none" stroke="#ffd27a" stroke-width="4"/></g>
+    </g>
+
+    <!-- barista Miro (position: bottom-right) -->
+    <g transform="translate(830,470)" filter="url(#amberGlow)">
+      <circle cx="40" cy="26" r="17" fill="#ffc966"/>
+      <path d="M24 22 q16 -14 32 0 l-4 -12 q-12 -8 -24 0 z" fill="#ffc966"/>
+      <rect x="26" y="46" width="28" height="44" rx="10" fill="#ffc966"/>
+      <rect x="30" y="58" width="20" height="12" rx="3" fill="#1d1712"/>
+      <rect x="52" y="52" width="42" height="8" rx="4" fill="#ffc966" transform="rotate(18 52 56)"/>
+      <ellipse cx="96" cy="74" rx="22" ry="6" fill="#ffc966"/>
+      <rect x="20" y="90" width="12" height="26" rx="5" fill="#ffc966"/>
+      <rect x="48" y="90" width="12" height="26" rx="5" fill="#ffc966"/>
+    </g>
+    <!-- empty position marker (bottom-left) -->
+    <g opacity="0.12" fill="#ffbf5e" transform="translate(680,470)">
+      <circle cx="40" cy="26" r="17"/><rect x="26" y="46" width="28" height="44" rx="10"/>
+    </g>
+
+    <!-- bar counter -->
+    <rect x="640" y="600" width="320" height="10" rx="5" fill="#ffb84d" opacity="0.85" filter="url(#amberGlow)"/>
+
+    <!-- cat Sablé with mop (bottom-left corner) -->
+    <g transform="translate(520,570)" fill="#ffc966" opacity="0.95" filter="url(#amberGlow)">
+      <ellipse cx="34" cy="34" rx="24" ry="15"/>
+      <circle cx="62" cy="24" r="11"/>
+      <path d="M55 16 l-4 -10 6 3z M69 16 l4 -10 -6 3z"/>
+      <path d="M10 34 q-12 -4 -8 -16" stroke="#ffc966" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <rect x="76" y="6" width="5" height="40" rx="2.5"/>
+      <ellipse cx="78" cy="50" rx="12" ry="6"/>
+    </g>
+  </g>
+  <!-- ================== /GAME SCREEN ================== -->
+
+  <!-- ==== left buttons ==== -->
+  <g>
+    <circle cx="330" cy="380" r="56" fill="url(#alu)"/>
+    <circle cx="330" cy="380" r="46" fill="url(#btnFace)"/>
+    <text x="330" y="388" text-anchor="middle" font-size="22" fill="#54301a" font-weight="700">▲</text>
+    <circle cx="330" cy="560" r="56" fill="url(#alu)"/>
+    <circle cx="330" cy="560" r="46" fill="url(#btnFace)"/>
+    <text x="330" y="568" text-anchor="middle" font-size="22" fill="#54301a" font-weight="700">▼</text>
+    <text x="330" y="470" text-anchor="middle" font-size="15" fill="#e8d9bd" letter-spacing="2">LEWA</text>
+  </g>
+  <!-- ==== right buttons ==== -->
+  <g>
+    <circle cx="1270" cy="380" r="56" fill="url(#alu)"/>
+    <circle cx="1270" cy="380" r="46" fill="url(#btnFace)"/>
+    <text x="1270" y="388" text-anchor="middle" font-size="22" fill="#54301a" font-weight="700">▲</text>
+    <circle cx="1270" cy="560" r="56" fill="url(#alu)"/>
+    <circle cx="1270" cy="560" r="46" fill="url(#btnFace)"/>
+    <text x="1270" y="568" text-anchor="middle" font-size="22" fill="#54301a" font-weight="700">▼</text>
+    <text x="1270" y="470" text-anchor="middle" font-size="15" fill="#e8d9bd" letter-spacing="2">PRAWA</text>
+  </g>
+
+  <!-- ==== A/B lever (espresso style) ==== -->
+  <g transform="translate(700,742)">
+    <rect x="0" y="10" width="200" height="26" rx="13" fill="#3a281a"/>
+    <circle cx="58" cy="23" r="26" fill="url(#alu)"/>
+    <circle cx="58" cy="23" r="18" fill="#f0e4cd"/>
+    <text x="-14" y="30" text-anchor="end" font-size="18" fill="#f0e4cd" font-weight="700">A</text>
+    <text x="216" y="30" font-size="18" fill="#8f8474" font-weight="700">B</text>
+    <text x="100" y="66" text-anchor="middle" font-size="14" fill="#c9b8a0" letter-spacing="2">WAJCHA TRYBU</text>
+  </g>
+
+  <!-- ==== speaker grille ==== -->
+  <g fill="#4a2f1b">
+    <circle cx="1180" cy="762" r="5"/><circle cx="1204" cy="762" r="5"/><circle cx="1228" cy="762" r="5"/>
+    <circle cx="1192" cy="782" r="5"/><circle cx="1216" cy="782" r="5"/><circle cx="1240" cy="782" r="5"/>
+  </g>
+
+  <!-- ==== logo plate ==== -->
+  <g transform="translate(400,742)">
+    <rect width="196" height="46" rx="10" fill="#2c1c10"/>
+    <text x="98" y="30" text-anchor="middle" font-size="22" fill="#ffc966" font-weight="700" letter-spacing="3" filter="url(#neon)">BRÉVE</text>
+  </g>
+
+  <!-- annotations -->
+  <g font-size="15" fill="#8f8474">
+    <text x="180" y="905">4 przyciski = 4 pozycje baristy (na telefonie: 4 strefy dotyku + haptyka)</text>
+    <text x="1420" y="905" text-anchor="end">ekran: bursztynowe segmenty na ciemnym szkle, płynne 60 fps</text>
+  </g>
+</svg>

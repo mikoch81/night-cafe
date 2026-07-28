@@ -1,0 +1,21 @@
+Night Cafe - assety Neo-LCD (PNG @4x, zrodla SVG w Source/)
+Paleta: aktywny #ffc966 / #ffd27a, nieaktywny #3a2c18, szklo #1d1712-#120d09
+Tryb B: order_panel.png ma bialy kubek - tintowac kolorem zamowienia w Unity
+
+sprites/barista_up.png  440x400
+sprites/barista_down.png  440x400
+sprites/barista_catch.png  440x400
+sprites/barista_miss.png  440x400
+sprites/cup.png  208x136
+sprites/cup_broken.png  208x160
+sprites/cat_a.png  400x224
+sprites/cat_b.png  400x224
+sprites/stain.png  240x136
+sprites/machine_head.png  184x168
+sprites/order_panel.png  520x208
+screen/screen_bg.png  1272x892
+device/device_shell.png  1920x1080
+device/button_normal.png  560x560
+device/button_pressed.png  560x560
+device/lever_track.png  1040x176
+device/lever_knob.png  304x304

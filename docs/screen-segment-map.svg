@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d1712"/>
+      <stop offset="1" stop-color="#120d09"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#10131c"/>
+  <text x="800" y="58" text-anchor="middle" fill="#e8d9bd" font-size="30" letter-spacing="4" font-weight="600">NIGHT CAFÉ — MAPA SEGMENTÓW EKRANU (spec assetów do Unity)</text>
+  <text x="800" y="88" text-anchor="middle" fill="#8f8474" font-size="16">każdy element = osobny sprite w atlasie · paleta: #ffc966 aktywny · #3a2c18 nieaktywny · tło szkła #1d1712</text>
+
+  <!-- ============ panel 1: pełny ekran z siatką pozycji ============ -->
+  <rect x="60" y="120" width="760" height="540" rx="20" fill="url(#glass)" stroke="#3b3b46"/>
+  <text x="80" y="152" fill="#c9b8a0" font-size="18" font-weight="600">1. Układ ekranu — siatka torów i pozycji</text>
+
+  <!-- lane paths with step positions -->
+  <g stroke="#ffb84d" stroke-width="5" stroke-linecap="round" opacity="0.85" filter="url(#glow)" fill="none">
+    <path d="M110 240 L300 290 L390 340"/>
+    <path d="M110 420 L300 470 L390 520"/>
+    <path d="M770 240 L580 290 L490 340"/>
+    <path d="M770 420 L580 470 L490 520"/>
+  </g>
+  <!-- cup step positions L1..L5 (5 kroków na tor) -->
+  <g fill="#ffd27a">
+    <circle cx="140" cy="248" r="7"/><circle cx="205" cy="265" r="7"/><circle cx="270" cy="282" r="7"/><circle cx="330" cy="308" r="7"/><circle cx="382" cy="336" r="7"/>
+  </g>
+  <g fill="#5a452a">
+    <circle cx="140" cy="428" r="7"/><circle cx="205" cy="445" r="7"/><circle cx="270" cy="462" r="7"/><circle cx="330" cy="488" r="7"/><circle cx="382" cy="516" r="7"/>
+    <circle cx="740" cy="248" r="7"/><circle cx="675" cy="265" r="7"/><circle cx="610" cy="282" r="7"/><circle cx="550" cy="308" r="7"/><circle cx="498" cy="336" r="7"/>
+    <circle cx="740" cy="428" r="7"/><circle cx="675" cy="445" r="7"/><circle cx="610" cy="462" r="7"/><circle cx="550" cy="488" r="7"/><circle cx="498" cy="516" r="7"/>
+  </g>
+  <g font-size="13" fill="#8f8474">
+    <text x="140" y="230">K1</text><text x="205" y="247">K2</text><text x="270" y="264">K3</text><text x="330" y="292">K4</text><text x="378" y="322">K5</text>
+  </g>
+  <!-- 4 barista position slots -->
+  <g fill="none" stroke="#6f5a36" stroke-dasharray="6 5" stroke-width="2">
+    <rect x="360" y="300" width="70" height="110" rx="12"/>
+    <rect x="360" y="480" width="70" height="110" rx="12"/>
+    <rect x="450" y="300" width="70" height="110" rx="12"/>
+    <rect x="450" y="480" width="70" height="110" rx="12"/>
+  </g>
+  <g font-size="13" fill="#8f8474">
+    <text x="366" y="294">P-LG</text><text x="366" y="474">P-LD</text><text x="456" y="294">P-PG</text><text x="456" y="474">P-PD</text>
+  </g>
+  <!-- HUD zones -->
+  <rect x="600" y="150" width="200" height="44" rx="8" fill="none" stroke="#6f5a36" stroke-dasharray="6 5"/>
+  <text x="700" y="177" text-anchor="middle" fill="#8f8474" font-size="13">SCORE (3 cyfry 7-seg+)</text>
+  <rect x="90" y="150" width="150" height="44" rx="8" fill="none" stroke="#6f5a36" stroke-dasharray="6 5"/>
+  <text x="165" y="177" text-anchor="middle" fill="#8f8474" font-size="13">TRYB A/B</text>
+  <rect x="330" y="150" width="180" height="44" rx="8" fill="none" stroke="#6f5a36" stroke-dasharray="6 5"/>
+  <text x="420" y="177" text-anchor="middle" fill="#8f8474" font-size="13">PLAMY ×3 (kary)</text>
+  <!-- counter + cat zones -->
+  <rect x="300" y="600" width="280" height="36" rx="8" fill="none" stroke="#6f5a36" stroke-dasharray="6 5"/>
+  <text x="440" y="623" text-anchor="middle" fill="#8f8474" font-size="13">BAR (strefa punktowania)</text>
+  <rect x="90" y="560" width="150" height="80" rx="8" fill="none" stroke="#6f5a36" stroke-dasharray="6 5"/>
+  <text x="165" y="655" text-anchor="middle" fill="#8f8474" font-size="13">KOT SABLÉ</text>
+
+  <!-- ============ panel 2: sprite'y baristy ============ -->
+  <rect x="860" y="120" width="680" height="260" rx="20" fill="url(#glass)" stroke="#3b3b46"/>
+  <text x="880" y="152" fill="#c9b8a0" font-size="18" font-weight="600">2. Barista Miro — 4 pozycje (lustrzane L/P) + klatka złapania</text>
+  <g filter="url(#glow)">
+    <!-- pose: tray up-left -->
+    <g transform="translate(910,190)" fill="#ffc966">
+      <circle cx="30" cy="18" r="13"/>
+      <rect x="19" y="34" width="22" height="34" rx="8"/>
+      <rect x="38" y="26" width="34" height="7" rx="3.5" transform="rotate(-24 38 30)"/>
+      <ellipse cx="72" cy="16" rx="17" ry="5"/>
+      <rect x="15" y="68" width="9" height="20" rx="4"/><rect x="36" y="68" width="9" height="20" rx="4"/>
+    </g>
+    <text x="945" y="300" text-anchor="middle" fill="#8f8474" font-size="13">taca GÓRA</text>
+    <!-- pose: tray down-left -->
+    <g transform="translate(1070,190)" fill="#ffc966">
+      <circle cx="30" cy="18" r="13"/>
+      <rect x="19" y="34" width="22" height="34" rx="8"/>
+      <rect x="38" y="44" width="34" height="7" rx="3.5" transform="rotate(24 38 48)"/>
+      <ellipse cx="74" cy="62" rx="17" ry="5"/>
+      <rect x="15" y="68" width="9" height="20" rx="4"/><rect x="36" y="68" width="9" height="20" rx="4"/>
+    </g>
+    <text x="1105" y="300" text-anchor="middle" fill="#8f8474" font-size="13">taca DÓŁ</text>
+    <!-- pose: catch flash (cup on tray) -->
+    <g transform="translate(1230,190)" fill="#ffc966">
+      <circle cx="30" cy="18" r="13"/>
+      <rect x="19" y="34" width="22" height="34" rx="8"/>
+      <rect x="38" y="35" width="34" height="7" rx="3.5"/>
+      <ellipse cx="76" cy="36" rx="17" ry="5"/>
+      <g transform="translate(66,14)"><rect width="18" height="14" rx="3"/><path d="M18 3 h5 a4 4 0 0 1 0 9 h-5" fill="none" stroke="#ffc966" stroke-width="3"/></g>
+      <path d="M92 8 l8 -6 M96 20 l10 -2 M90 30 l8 6" stroke="#ffd27a" stroke-width="3" stroke-linecap="round"/>
+      <rect x="15" y="68" width="9" height="20" rx="4"/><rect x="36" y="68" width="9" height="20" rx="4"/>
+    </g>
+    <text x="1270" y="300" text-anchor="middle" fill="#8f8474" font-size="13">ZŁAPANIE (flash)</text>
+    <!-- pose: miss / wince -->
+    <g transform="translate(1395,190)" fill="#3a2c18">
+      <circle cx="30" cy="18" r="13"/>
+      <rect x="19" y="34" width="22" height="34" rx="8"/>
+      <rect x="38" y="40" width="30" height="7" rx="3.5" transform="rotate(40 38 44)"/>
+      <rect x="15" y="68" width="9" height="20" rx="4"/><rect x="36" y="68" width="9" height="20" rx="4"/>
+      <text x="30" y="0" fill="#3a2c18" font-size="18" text-anchor="middle">!</text>
+    </g>
+    <text x="1425" y="300" text-anchor="middle" fill="#8f8474" font-size="13">PUDŁO (dim)</text>
+  </g>
+  <text x="880" y="352" fill="#6f6355" font-size="13">na telefonie pozycje L = odbicie lustrzane pozycji P → wystarczą 4 unikalne sprite'y</text>
+
+  <!-- ============ panel 3: kubki i kolory (tryb B) ============ -->
+  <rect x="860" y="400" width="680" height="260" rx="20" fill="url(#glass)" stroke="#3b3b46"/>
+  <text x="880" y="432" fill="#c9b8a0" font-size="18" font-weight="600">3. Kubki — klatki toru + kolory zamówień (Tryb B)</text>
+  <g filter="url(#glow)">
+    <g transform="translate(910,470)">
+      <g fill="#ffd27a"><rect width="30" height="23" rx="4"/><path d="M30 5 h9 a7 7 0 0 1 0 13 h-9" fill="none" stroke="#ffd27a" stroke-width="4"/></g>
+      <text x="15" y="55" text-anchor="middle" fill="#8f8474" font-size="13">bazowy</text>
+    </g>
+    <g transform="translate(1010,470) rotate(14)">
+      <g fill="#ffd27a"><rect width="30" height="23" rx="4"/><path d="M30 5 h9 a7 7 0 0 1 0 13 h-9" fill="none" stroke="#ffd27a" stroke-width="4"/></g>
+    </g>
+    <text x="1025" y="525" text-anchor="middle" fill="#8f8474" font-size="13">na torze (±14°)</text>
+    <!-- broken cup -->
+    <g transform="translate(1110,472)" fill="#ffd27a">
+      <path d="M2 12 l10 -12 4 8 8 -8 4 12 -6 8 -16 2z"/>
+      <path d="M4 26 q10 6 26 2" stroke="#ffd27a" stroke-width="3" fill="none"/>
+    </g>
+    <text x="1125" y="525" text-anchor="middle" fill="#8f8474" font-size="13">stłuczony</text>
+    <!-- mode B colors -->
+    <g transform="translate(1230,470)">
+      <g fill="#ffc966"><rect width="26" height="20" rx="4"/></g>
+      <g fill="#ff9d6e" transform="translate(60,0)"><rect width="26" height="20" rx="4"/></g>
+      <g fill="#ffe9a8" transform="translate(120,0)"><rect width="26" height="20" rx="4"/></g>
+      <g fill="#d98cff" transform="translate(180,0)"><rect width="26" height="20" rx="4"/></g>
+    </g>
+    <text x="1333" y="525" text-anchor="middle" fill="#8f8474" font-size="13">espresso · karmel · mleczny · deka (Tryb B)</text>
+  </g>
+  <text x="880" y="580" fill="#6f6355" font-size="13">Tryb B: nad barem świeci się zamówienie (kolor) — złapanie złego koloru = kara jak pudło</text>
+  <text x="880" y="604" fill="#6f6355" font-size="13">ruch kubka: tween między punktami K1→K5 toru, czas kroku maleje z tempem (0.9s → 0.35s)</text>
+
+  <!-- ============ panel 4: kot + HUD detale ============ -->
+  <rect x="60" y="690" width="1480" height="240" rx="20" fill="url(#glass)" stroke="#3b3b46"/>
+  <text x="80" y="722" fill="#c9b8a0" font-size="18" font-weight="600">4. Kot Sablé, plamy, licznik</text>
+  <g filter="url(#glow)">
+    <!-- cat frame 1 -->
+    <g transform="translate(100,760)" fill="#ffc966">
+      <ellipse cx="30" cy="30" rx="22" ry="14"/><circle cx="56" cy="20" r="10"/>
+      <path d="M50 13 l-4 -9 6 3z M62 13 l4 -9 -6 3z"/>
+      <path d="M8 30 q-11 -4 -7 -15" stroke="#ffc966" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="70" y="4" width="4" height="36" rx="2"/><ellipse cx="72" cy="44" rx="11" ry="5"/>
+    </g>
+    <text x="145" y="835" text-anchor="middle" fill="#8f8474" font-size="13">kot: klatka A (mop lewo)</text>
+    <!-- cat frame 2 -->
+    <g transform="translate(290,760)" fill="#ffc966">
+      <ellipse cx="30" cy="30" rx="22" ry="14"/><circle cx="56" cy="20" r="10"/>
+      <path d="M50 13 l-4 -9 6 3z M62 13 l4 -9 -6 3z"/>
+      <path d="M8 30 q-11 4 -7 15" stroke="#ffc966" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="80" y="8" width="4" height="34" rx="2" transform="rotate(16 82 8)"/><ellipse cx="92" cy="46" rx="11" ry="5"/>
+    </g>
+    <text x="335" y="835" text-anchor="middle" fill="#8f8474" font-size="13">kot: klatka B (mop prawo)</text>
+    <!-- stains -->
+    <g transform="translate(500,772)">
+      <path d="M0 10 q7 -12 17 -5 q12 -9 19 2 q12 0 7 10 q3 9 -10 9 l-24 0 q-14 0 -9 -16z" fill="#ffc966"/>
+      <path d="M60 10 q7 -12 17 -5 q12 -9 19 2 q12 0 7 10 q3 9 -10 9 l-24 0 q-14 0 -9 -16z" fill="#3a2c18"/>
+    </g>
+    <text x="555" y="835" text-anchor="middle" fill="#8f8474" font-size="13">plama: aktywna / pusta</text>
+    <!-- digits -->
+    <g font-family="Consolas, monospace" fill="#ffc966">
+      <text x="700" y="800" font-size="54" font-weight="700">888</text>
+      <text x="700" y="835" font-size="13" fill="#8f8474" font-family="Segoe UI, Arial">licznik: 3 cyfry + ghost</text>
+    </g>
+    <!-- order light (mode B) -->
+    <g transform="translate(1000,760)">
+      <rect width="120" height="46" rx="10" fill="none" stroke="#ffb84d" stroke-width="3"/>
+      <rect x="12" y="10" width="34" height="26" rx="5" fill="#ff9d6e"/>
+      <text x="78" y="30" text-anchor="middle" fill="#ffc966" font-size="20" font-family="Consolas, monospace">×2</text>
+    </g>
+    <text x="1060" y="835" text-anchor="middle" fill="#8f8474" font-size="13">panel zamówień (Tryb B)</text>
+    <!-- clock -->
+    <g font-family="Consolas, monospace" fill="#ffc966">
+      <text x="1230" y="795" font-size="34">23:41</text>
+      <text x="1230" y="835" font-size="13" fill="#8f8474" font-family="Segoe UI, Arial">zegar nocny + minutnik parzenia</text>
+    </g>
+  </g>
+  <text x="80" y="905" fill="#6f6355" font-size="14">Wszystkie sprite'y: 1 kolor segmentu + glow w shaderze (Unity: URP 2D Light lub bloom) → atlas 2048×2048 wystarczy na całość</text>
+</svg>

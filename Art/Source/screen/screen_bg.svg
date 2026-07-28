@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1272 892"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">
+  <feGaussianBlur stdDeviation="2.2" result="b"/>
+  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter><linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#1d1712"/><stop offset="1" stop-color="#120d09"/>
+</linearGradient>
+<radialGradient id="vig" cx="0.5" cy="0.45" r="0.8">
+  <stop offset="0" stop-color="#3a2a14" stop-opacity="0.55"/>
+  <stop offset="1" stop-color="#120d09" stop-opacity="0"/>
+</radialGradient></defs>
+<rect width="1272" height="892" rx="52" fill="url(#glass)"/>
+<rect width="1272" height="892" rx="52" fill="url(#vig)"/>
+<g stroke="#ffc966" stroke-width="12" stroke-linecap="round" opacity="0.55" filter="url(#g)"><path d="M56 236 L316 300 L436 356" fill="none"/><path d="M56 496 L316 560 L436 616" fill="none"/><path d="M1216 236 L956 300 L836 356" fill="none"/><path d="M1216 496 L956 560 L836 616" fill="none"/></g>
+<rect x="316" y="806" width="640" height="16" rx="8" fill="#ffc966" opacity="0.5" filter="url(#g)"/>
+<g opacity="0.05" fill="#ffc966">
+  <rect x="480" y="560" width="80" height="150" rx="18"/>
+  <rect x="712" y="560" width="80" height="150" rx="18"/>
+  <rect x="480" y="300" width="80" height="150" rx="18"/>
+  <rect x="712" y="300" width="80" height="150" rx="18"/>
+</g></svg>

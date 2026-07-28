@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 34"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">
+  <feGaussianBlur stdDeviation="2.2" result="b"/>
+  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter></defs><path filter="url(#g)" fill="#ffc966"
+  d="M2 18 q8 -14 19 -6 q13 -10 21 2 q13 0 8 11 q3 9 -11 9 l-26 0 q-15 0 -11 -16z"/></svg>
