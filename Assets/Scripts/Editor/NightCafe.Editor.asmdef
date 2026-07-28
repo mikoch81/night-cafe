@@ -1,0 +1,20 @@
+{
+    "name": "NightCafe.Editor",
+    "rootNamespace": "NightCafe.EditorTools",
+    "references": [
+        "NightCafe.Runtime",
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
