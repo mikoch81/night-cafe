@@ -19,6 +19,12 @@ namespace NightCafe.InputLayer
         /// <summary>Any press at all - used to start or restart a round.</summary>
         public event Action AnyPressed;
 
+        /// <summary>
+        /// Raw tap position in screen pixels, raised before <see cref="AnyPressed"/>.
+        /// Title-screen hit testing uses it; (-1, -1) for keyboard presses.
+        /// </summary>
+        public event Action<Vector2> Tapped;
+
         void OnEnable()
         {
             EnhancedTouchSupport.Enable();
@@ -54,7 +60,10 @@ namespace NightCafe.InputLayer
                 Press(LanePosition.RightDown);
 
             if (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame)
+            {
+                Tapped?.Invoke(new Vector2(-1f, -1f));
                 AnyPressed?.Invoke();
+            }
         }
 
         void ReadTouch()
@@ -64,7 +73,7 @@ namespace NightCafe.InputLayer
                 if (touch.phase != UnityEngine.InputSystem.TouchPhase.Began)
                     continue;
 
-                Press(QuadrantOf(touch.screenPosition));
+                Press(QuadrantOf(touch.screenPosition), touch.screenPosition);
             }
         }
 
@@ -79,9 +88,10 @@ namespace NightCafe.InputLayer
             return up ? LanePosition.RightUp : LanePosition.RightDown;
         }
 
-        void Press(LanePosition position)
+        void Press(LanePosition position, Vector2? screenPosition = null)
         {
             PositionPressed?.Invoke(position);
+            Tapped?.Invoke(screenPosition ?? new Vector2(-1f, -1f));
             AnyPressed?.Invoke();
         }
     }

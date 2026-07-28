@@ -39,14 +39,21 @@ namespace NightCafe.Config
         public Vector2 leftDownEnd = new(-1.95f, -1.69f);
 
         [Space]
-        public Vector2 leftUpSlot = new(-1.16f, 0.74f);
-        public Vector2 leftDownSlot = new(-1.16f, -1.89f);
+        [Tooltip("Bottom edge of the ghost slot painted into screen_bg - the barista stands on it.")]
+        public Vector2 leftUpSlot = new(-1.16f, -0.04f);
+
+        public Vector2 leftDownSlot = new(-1.16f, -2.64f);
+
+        [Tooltip("The bar line baked into screen_bg; stains sit on it and the cat mops along it.")]
+        public float barLineY = -3.67f;
 
         [Header("Sprite scale (art is authored @4x, tuned down to read on the LCD screen)")]
         public float cupScale = 0.5f;
-        public float baristaScale = 0.5f;
+        public float baristaScale = 0.42f;
         public float machineHeadScale = 0.5f;
         public float brokenCupScale = 0.5f;
+        public float stainScale = 0.35f;
+        public float catScale = 0.35f;
 
         public IReadOnlyList<Vector2> GetSteps(LanePosition lane) => lanes[(int)lane].steps;
 

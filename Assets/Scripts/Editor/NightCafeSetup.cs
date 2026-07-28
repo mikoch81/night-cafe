@@ -1,36 +1,37 @@
 using System.IO;
 using NightCafe.Config;
-using NightCafe.Core;
 using NightCafe.Gameplay;
-using NightCafe.InputLayer;
-using NightCafe.UI;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace NightCafe.EditorTools
 {
     /// <summary>
-    /// Builds the Milestone 1 assets and Game scene from code so the setup is reproducible
+    /// Builds the project assets and the Game scene from code so the setup is reproducible
     /// and reviewable, rather than hand-edited scene YAML.
+    /// Split across Setup.*.cs partials; this file holds the entry points and shared helpers.
     /// </summary>
-    public static class NightCafeSetup
+    public static partial class NightCafeSetup
     {
         const string SettingsDir = "Assets/Settings";
         const string PrefabDir = "Assets/Prefabs";
         const string SceneDir = "Assets/Scenes";
+        const string AudioDir = "Assets/Audio";
         const string ModeConfigPath = SettingsDir + "/ModeConfig_A.asset";
         const string LaneConfigPath = SettingsDir + "/LaneConfig.asset";
+        const string DeviceConfigPath = SettingsDir + "/DeviceConfig.asset";
+        const string AudioConfigPath = SettingsDir + "/AudioConfig.asset";
+        const string VolumeProfilePath = SettingsDir + "/NightCafeVolume.asset";
         const string CupPrefabPath = PrefabDir + "/Cup.prefab";
         const string GameScenePath = SceneDir + "/Game.unity";
 
-        static readonly Color ScreenBackground = new(0.071f, 0.051f, 0.035f); // #120d09
+        static readonly Color WoodBackground = new(0.329f, 0.188f, 0.102f);   // #54301a
         static readonly Color ActiveAmber = new(1f, 0.788f, 0.4f);            // #ffc966
+        static readonly Color BrightAmber = new(1f, 0.824f, 0.478f);          // #ffd27a
         static readonly Color InactiveAmber = new(0.227f, 0.173f, 0.094f);    // #3a2c18
+        static readonly Color GlassBlack = new(0.071f, 0.051f, 0.035f);       // #120d09
 
         /// <summary>
         /// Imports the TextMeshPro essential resources and exits once the import finishes.
@@ -64,23 +65,34 @@ namespace NightCafe.EditorTools
             }
         }
 
-        [MenuItem("NightCafe/Build Milestone 1 Setup")]
+        [MenuItem("NightCafe/Build Scene Setup")]
         public static void BuildAll()
         {
+            EnsureSortingLayers(); // before any renderer exists
             ConfigureSpriteImporters();
+            ConfigureAudioImporters();
+
+            TMP_FontAsset monoFont = EnsureMonoFont();
             ModeConfig modeConfig = CreateModeConfig();
             LaneConfig laneConfig = CreateLaneConfig();
+            DeviceConfig deviceConfig = CreateDeviceConfig();
+            AudioConfig audioConfig = CreateAudioConfig();
+            CreateVolumeProfile();
             CreateCupPrefab(laneConfig);
-            BuildGameScene(modeConfig, laneConfig);
+
+            BuildGameScene(modeConfig, laneConfig, deviceConfig, audioConfig, monoFont);
             ApplyProjectSettings();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[NightCafe] Milestone 1 setup complete.");
+            Debug.Log("[NightCafe] Scene setup complete.");
         }
 
         /// <summary>
-        /// Neo-LCD art wants crisp pixels: point filtering, no compression, centred pivots at 100 PPU.
+        /// Neo-LCD art wants crisp pixels: point filtering, no compression, 100 PPU.
+        /// Pivots come from <see cref="SpriteAnchors"/> because the art sits on padded canvases;
+        /// note that importer.spritePivot alone is a no-op - the pivot only takes effect through
+        /// TextureImporterSettings + SetTextureSettings.
         /// </summary>
         static void ConfigureSpriteImporters()
         {
@@ -100,40 +112,20 @@ namespace NightCafe.EditorTools
 
                 TextureImporterSettings settings = new();
                 importer.ReadTextureSettings(settings);
-                settings.spriteAlignment = (int)SpriteAlignment.Center;
-                importer.SetTextureSettings(settings);
 
+                if (SpriteAnchors.TryGet(Path.GetFileNameWithoutExtension(path), out Vector2 pivot))
+                {
+                    settings.spriteAlignment = (int)SpriteAlignment.Custom;
+                    settings.spritePivot = pivot;
+                }
+                else
+                {
+                    settings.spriteAlignment = (int)SpriteAlignment.Center;
+                }
+
+                importer.SetTextureSettings(settings);
                 importer.SaveAndReimport();
             }
-        }
-
-        static ModeConfig CreateModeConfig()
-        {
-            EnsureFolder(SettingsDir);
-            var config = AssetDatabase.LoadAssetAtPath<ModeConfig>(ModeConfigPath);
-            if (config == null)
-            {
-                config = ScriptableObject.CreateInstance<ModeConfig>();
-                AssetDatabase.CreateAsset(config, ModeConfigPath);
-            }
-
-            EditorUtility.SetDirty(config);
-            return config;
-        }
-
-        static LaneConfig CreateLaneConfig()
-        {
-            EnsureFolder(SettingsDir);
-            var config = AssetDatabase.LoadAssetAtPath<LaneConfig>(LaneConfigPath);
-            if (config == null)
-            {
-                config = ScriptableObject.CreateInstance<LaneConfig>();
-                AssetDatabase.CreateAsset(config, LaneConfigPath);
-            }
-
-            config.AutoGenerateSteps();
-            EditorUtility.SetDirty(config);
-            return config;
         }
 
         static void CreateCupPrefab(LaneConfig laneConfig)
@@ -143,231 +135,13 @@ namespace NightCafe.EditorTools
             var root = new GameObject("Cup");
             var renderer = root.AddComponent<SpriteRenderer>();
             renderer.sprite = LoadSprite("Assets/Art/sprites/cup.png");
-            renderer.color = ActiveAmber;
-            renderer.sortingOrder = 10;
+            renderer.color = BrightAmber;
+            SetSorting(renderer, Core.SortingLayers.Segments, 20);
             root.AddComponent<CupController>();
             root.transform.localScale = Vector3.one * laneConfig.cupScale;
 
             PrefabUtility.SaveAsPrefabAsset(root, CupPrefabPath);
             Object.DestroyImmediate(root);
-        }
-
-        static void BuildGameScene(ModeConfig modeConfig, LaneConfig laneConfig)
-        {
-            EnsureFolder(SceneDir);
-            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
-            // Load the prefab after the scene switch: handles taken before it are invalidated,
-            // which silently serialises as a null reference.
-            var cupPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CupPrefabPath)
-                .GetComponent<CupController>();
-
-            // --- Camera -------------------------------------------------------
-            var cameraGo = new GameObject("Main Camera");
-            cameraGo.tag = "MainCamera";
-            var camera = cameraGo.AddComponent<Camera>();
-            camera.orthographic = true;
-            camera.orthographicSize = 4.46f; // half of screen_bg height (8.92 world units)
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = ScreenBackground;
-            camera.transform.position = new Vector3(0f, 0f, -10f);
-            cameraGo.AddComponent<AudioListener>();
-
-            // --- Static screen art --------------------------------------------
-            var screenRoot = new GameObject("Screen");
-            var background = new GameObject("ScreenBG");
-            background.transform.SetParent(screenRoot.transform);
-            var backgroundRenderer = background.AddComponent<SpriteRenderer>();
-            backgroundRenderer.sprite = LoadSprite("Assets/Art/screen/screen_bg.png");
-            backgroundRenderer.sortingOrder = 0;
-
-            Sprite machineHead = LoadSprite("Assets/Art/sprites/machine_head.png");
-            foreach (LanePosition lane in System.Enum.GetValues(typeof(LanePosition)))
-            {
-                var head = new GameObject($"MachineHead_{lane}");
-                head.transform.SetParent(screenRoot.transform);
-                head.transform.localPosition = laneConfig.GetStart(lane);
-                head.transform.localScale = new Vector3(
-                    laneConfig.machineHeadScale * (lane.IsLeft() ? 1f : -1f),
-                    laneConfig.machineHeadScale,
-                    1f);
-
-                var headRenderer = head.AddComponent<SpriteRenderer>();
-                headRenderer.sprite = machineHead;
-                headRenderer.color = InactiveAmber;
-                headRenderer.sortingOrder = 5;
-            }
-
-            // --- Barista ------------------------------------------------------
-            var baristaGo = new GameObject("Barista");
-            var baristaRenderer = baristaGo.AddComponent<SpriteRenderer>();
-            baristaRenderer.sprite = LoadSprite("Assets/Art/sprites/barista_up.png");
-            baristaRenderer.color = ActiveAmber;
-            baristaRenderer.sortingOrder = 20;
-            baristaGo.transform.localScale = Vector3.one * laneConfig.baristaScale;
-            var barista = baristaGo.AddComponent<PlayerPositionController>();
-
-            SetSerialized(barista, so =>
-            {
-                so.FindProperty("spriteRenderer").objectReferenceValue = baristaRenderer;
-                so.FindProperty("trayUp").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_up.png");
-                so.FindProperty("trayDown").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_down.png");
-                so.FindProperty("catchPose").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_catch.png");
-                so.FindProperty("missPose").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_miss.png");
-            });
-
-            // --- Cups + FX ----------------------------------------------------
-            var cupRoot = new GameObject("CupPoolRoot");
-
-            var fxRoot = new GameObject("FX");
-            Sprite brokenCup = LoadSprite("Assets/Art/sprites/cup_broken.png");
-            var brokenFx = new TimedSpriteFx[3];
-            for (int i = 0; i < brokenFx.Length; i++)
-            {
-                var fxGo = new GameObject($"BrokenCup_{i}");
-                fxGo.transform.SetParent(fxRoot.transform);
-                fxGo.transform.localScale = Vector3.one * laneConfig.brokenCupScale;
-
-                var fxRenderer = fxGo.AddComponent<SpriteRenderer>();
-                fxRenderer.sprite = brokenCup;
-                fxRenderer.color = ActiveAmber;
-                fxRenderer.sortingOrder = 15;
-                fxRenderer.enabled = false;
-
-                var fx = fxGo.AddComponent<TimedSpriteFx>();
-                SetSerialized(fx, so => so.FindProperty("spriteRenderer").objectReferenceValue = fxRenderer);
-                brokenFx[i] = fx;
-            }
-
-            // --- HUD ----------------------------------------------------------
-            HudView hud = BuildHud(out _);
-
-            // --- Context ------------------------------------------------------
-            var context = new GameObject("GameContext");
-            var spawner = context.AddComponent<LaneSpawner>();
-            var laneInput = context.AddComponent<LaneInput>();
-            var loop = context.AddComponent<GameLoopController>();
-
-            SetSerialized(spawner, so =>
-            {
-                so.FindProperty("cupPrefab").objectReferenceValue = cupPrefab;
-                so.FindProperty("cupRoot").objectReferenceValue = cupRoot.transform;
-                so.FindProperty("poolWarmCount").intValue = 4;
-            });
-
-            SetSerialized(loop, so =>
-            {
-                so.FindProperty("modeConfig").objectReferenceValue = modeConfig;
-                so.FindProperty("laneConfig").objectReferenceValue = laneConfig;
-                so.FindProperty("spawner").objectReferenceValue = spawner;
-                so.FindProperty("laneInput").objectReferenceValue = laneInput;
-                so.FindProperty("barista").objectReferenceValue = barista;
-                so.FindProperty("hud").objectReferenceValue = hud;
-
-                SerializedProperty fxArray = so.FindProperty("brokenCupFx");
-                fxArray.arraySize = brokenFx.Length;
-                for (int i = 0; i < brokenFx.Length; i++)
-                    fxArray.GetArrayElementAtIndex(i).objectReferenceValue = brokenFx[i];
-            });
-
-            EditorSceneManager.SaveScene(scene, GameScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(GameScenePath, true) };
-
-            string sampleScene = SceneDir + "/SampleScene.unity";
-            if (File.Exists(sampleScene))
-                AssetDatabase.DeleteAsset(sampleScene);
-        }
-
-        static HudView BuildHud(out Canvas canvas)
-        {
-            var canvasGo = new GameObject("HUD", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvas = canvasGo.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-            var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            TMP_Text score = CreateText(canvasGo.transform, "ScoreText", "000", 96f,
-                new Vector2(0.5f, 1f), new Vector2(0f, -90f), new Vector2(400f, 130f));
-
-            var stainRoot = new GameObject("StainIcons", typeof(RectTransform));
-            stainRoot.transform.SetParent(canvasGo.transform, false);
-            var stainRect = (RectTransform)stainRoot.transform;
-            Anchor(stainRect, new Vector2(0.5f, 1f), new Vector2(-360f, -95f), new Vector2(240f, 80f));
-
-            Sprite stainSprite = LoadSprite("Assets/Art/sprites/stain.png");
-            var stains = new Image[3];
-            for (int i = 0; i < stains.Length; i++)
-            {
-                var iconGo = new GameObject($"Stain_{i}", typeof(RectTransform), typeof(Image));
-                iconGo.transform.SetParent(stainRoot.transform, false);
-                Anchor((RectTransform)iconGo.transform, new Vector2(0.5f, 0.5f),
-                    new Vector2((i - 1) * 80f, 0f), new Vector2(70f, 45f));
-
-                stains[i] = iconGo.GetComponent<Image>();
-                stains[i].sprite = stainSprite;
-                stains[i].color = InactiveAmber;
-            }
-
-            var titlePanel = new GameObject("TitlePanel", typeof(RectTransform));
-            titlePanel.transform.SetParent(canvasGo.transform, false);
-            Anchor((RectTransform)titlePanel.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1200f, 300f));
-            CreateText(titlePanel.transform, "TitleText", "NIGHT CAFÉ\nTAP TO START", 64f,
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1200f, 300f));
-
-            var gameOverPanel = new GameObject("GameOverPanel", typeof(RectTransform));
-            gameOverPanel.transform.SetParent(canvasGo.transform, false);
-            Anchor((RectTransform)gameOverPanel.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1200f, 400f));
-            TMP_Text gameOverText = CreateText(gameOverPanel.transform, "GameOverText",
-                "END OF SHIFT\n000\nTAP TO RESTART", 56f,
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1200f, 400f));
-            gameOverPanel.SetActive(false);
-
-            TMP_Text fps = CreateText(canvasGo.transform, "FpsText", "-- fps", 32f,
-                new Vector2(1f, 0f), new Vector2(-140f, 50f), new Vector2(240f, 60f));
-
-            var hud = canvasGo.AddComponent<HudView>();
-            SetSerialized(hud, so =>
-            {
-                so.FindProperty("scoreText").objectReferenceValue = score;
-                so.FindProperty("titlePanel").objectReferenceValue = titlePanel;
-                so.FindProperty("gameOverPanel").objectReferenceValue = gameOverPanel;
-                so.FindProperty("gameOverText").objectReferenceValue = gameOverText;
-                so.FindProperty("fpsText").objectReferenceValue = fps;
-
-                SerializedProperty icons = so.FindProperty("stainIcons");
-                icons.arraySize = stains.Length;
-                for (int i = 0; i < stains.Length; i++)
-                    icons.GetArrayElementAtIndex(i).objectReferenceValue = stains[i];
-            });
-
-            return hud;
-        }
-
-        static TMP_Text CreateText(Transform parent, string name, string content, float fontSize,
-            Vector2 anchor, Vector2 position, Vector2 size)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            Anchor((RectTransform)go.transform, anchor, position, size);
-
-            var text = go.AddComponent<TextMeshProUGUI>();
-            text.text = content;
-            text.fontSize = fontSize;
-            text.color = ActiveAmber;
-            text.alignment = TextAlignmentOptions.Center;
-            return text;
-        }
-
-        static void Anchor(RectTransform rect, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
-        {
-            rect.anchorMin = anchor;
-            rect.anchorMax = anchor;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = anchoredPosition;
-            rect.sizeDelta = size;
         }
 
         static void ApplyProjectSettings()
@@ -414,6 +188,15 @@ namespace NightCafe.EditorTools
             string parent = Path.GetDirectoryName(path)!.Replace('\\', '/');
             string leaf = Path.GetFileName(path);
             AssetDatabase.CreateFolder(parent, leaf);
+        }
+
+        static GameObject Child(string name, Transform parent, Vector2 localPosition = default, float scale = 1f)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPosition;
+            go.transform.localScale = Vector3.one * scale;
+            return go;
         }
     }
 }

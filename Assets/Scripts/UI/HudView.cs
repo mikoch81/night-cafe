@@ -1,19 +1,17 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace NightCafe.UI
 {
     /// <summary>
-    /// Score counter, stain icons and the Title / Game Over overlays (GDD 5.1 layer HUD_TMP).
+    /// The counter and the title / game over overlays (GDD 5.1 layer HUD_TMP).
+    /// These are world-space TextMeshPro objects nested inside the LCD, not a screen overlay:
+    /// an overlay canvas renders outside the sorting-layer system and would sit on the wood.
+    /// The FPS readout is the exception - it is debug output and stays on a screen canvas.
     /// </summary>
     public sealed class HudView : MonoBehaviour
     {
-        static readonly Color ActiveColor = new(1f, 0.788f, 0.4f);      // #ffc966
-        static readonly Color InactiveColor = new(0.227f, 0.173f, 0.094f); // #3a2c18
-
         [SerializeField] TMP_Text scoreText;
-        [SerializeField] Image[] stainIcons;
         [SerializeField] GameObject titlePanel;
         [SerializeField] GameObject gameOverPanel;
         [SerializeField] TMP_Text gameOverText;
@@ -32,18 +30,6 @@ namespace NightCafe.UI
         {
             if (scoreText != null)
                 scoreText.text = displayScore.ToString("000");
-        }
-
-        public void SetStains(int stains)
-        {
-            if (stainIcons == null)
-                return;
-
-            for (int i = 0; i < stainIcons.Length; i++)
-            {
-                if (stainIcons[i] != null)
-                    stainIcons[i].color = i < stains ? ActiveColor : InactiveColor;
-            }
         }
 
         public void ShowTitle()

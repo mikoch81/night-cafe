@@ -58,6 +58,12 @@ namespace NightCafe.Gameplay
             MoveTo(LanePosition.LeftUp);
         }
 
+        /// <summary>Hidden on the title screen so the clock and title text stay readable.</summary>
+        public void SetVisible(bool visible)
+        {
+            spriteRenderer.enabled = visible;
+        }
+
         void Update()
         {
             if (_poseTimer <= 0f)

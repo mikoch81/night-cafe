@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68ead356c81bef234a4c735cd4e72d0b, type: 3}
-  m_Name: LaneConfig
+  m_Name: 
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.LaneConfig
   lanes:
   - steps:
@@ -19,37 +19,40 @@ MonoBehaviour:
     - {x: -3.8414652, y: 1.6714791}
     - {x: -2.8648274, y: 1.3753003}
     - {x: -1.95, y: 0.91}
-    baristaSlot: {x: -1.16, y: 0.74}
+    baristaSlot: {x: -1.16, y: -0.04}
   - steps:
     - {x: -5.84, y: -0.45}
     - {x: -4.846725, y: -0.70113}
     - {x: -3.8534496, y: -0.95225996}
     - {x: -2.88089, y: -1.2620909}
     - {x: -1.95, y: -1.69}
-    baristaSlot: {x: -1.16, y: -1.89}
+    baristaSlot: {x: -1.16, y: -2.64}
   - steps:
     - {x: 5.84, y: 2.14}
     - {x: 4.8407326, y: 1.9057395}
     - {x: 3.8414652, y: 1.6714791}
     - {x: 2.8648274, y: 1.3753003}
     - {x: 1.95, y: 0.91}
-    baristaSlot: {x: 1.16, y: 0.74}
+    baristaSlot: {x: 1.16, y: -0.04}
   - steps:
     - {x: 5.84, y: -0.45}
     - {x: 4.846725, y: -0.70113}
     - {x: 3.8534496, y: -0.95225996}
     - {x: 2.88089, y: -1.2620909}
     - {x: 1.95, y: -1.69}
-    baristaSlot: {x: 1.16, y: -1.89}
+    baristaSlot: {x: 1.16, y: -2.64}
   leftUpStart: {x: -5.84, y: 2.14}
   leftUpBend: {x: -3.11, y: 1.5}
   leftUpEnd: {x: -1.95, y: 0.91}
   leftDownStart: {x: -5.84, y: -0.45}
   leftDownBend: {x: -3.19, y: -1.12}
   leftDownEnd: {x: -1.95, y: -1.69}
-  leftUpSlot: {x: -1.16, y: 0.74}
-  leftDownSlot: {x: -1.16, y: -1.89}
+  leftUpSlot: {x: -1.16, y: -0.04}
+  leftDownSlot: {x: -1.16, y: -2.64}
+  barLineY: -3.67
   cupScale: 0.5
-  baristaScale: 0.5
+  baristaScale: 0.42
   machineHeadScale: 0.5
   brokenCupScale: 0.5
+  stainScale: 0.35
+  catScale: 0.35

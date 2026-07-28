@@ -28,6 +28,9 @@ namespace NightCafe.Gameplay
 
         public bool SpawningEnabled { get; set; }
 
+        /// <summary>Parent of the pooled cups; broken-cup FX must sit under the same transform.</summary>
+        public Transform CupRoot => cupRoot;
+
         public event Action<CupController> CupReachedCatchPoint;
 
         public IReadOnlyList<CupController> ActiveCups => _active;
