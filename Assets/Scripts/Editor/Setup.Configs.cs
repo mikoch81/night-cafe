@@ -128,11 +128,23 @@ namespace NightCafe.EditorTools
         /// Liberation Mono is already on this machine under the SIL Open Font License, so it is
         /// copied in rather than downloaded.
         /// </summary>
+        /// <summary>
+        /// Every character the HUD can show. The atlas is baked static from this set: a dynamic
+        /// atlas rewrites the asset whenever play mode meets a new glyph and again when a build
+        /// clears it, which is 2 MB of YAML churn per session.
+        /// </summary>
+        const string HudCharset =
+            " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" +
+            "ÉéÓóŁłŚśŻżŹźĄąĘęĆćŃń·♪░▒▓";
+
         static TMP_FontAsset EnsureMonoFont()
         {
             var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(MonoFontAssetPath);
             if (existing != null)
+            {
+                BakeStaticAtlas(existing);
                 return existing;
+            }
 
             EnsureFolder(FontDir);
 
@@ -185,7 +197,25 @@ namespace NightCafe.EditorTools
 
             AssetDatabase.SaveAssets();
             Debug.Log("[NightCafe] Created mono TMP font asset.");
+            BakeStaticAtlas(fontAsset);
             return fontAsset;
+        }
+
+        static void BakeStaticAtlas(TMP_FontAsset fontAsset)
+        {
+            if (fontAsset.atlasPopulationMode == AtlasPopulationMode.Static)
+                return;
+
+            if (!fontAsset.TryAddCharacters(HudCharset, out string missing))
+                Debug.LogWarning($"[NightCafe] Font is missing HUD glyphs: {missing}");
+
+            fontAsset.atlasPopulationMode = AtlasPopulationMode.Static;
+            EditorUtility.SetDirty(fontAsset);
+            if (fontAsset.atlasTexture != null)
+                EditorUtility.SetDirty(fontAsset.atlasTexture);
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[NightCafe] Baked a static TMP atlas.");
         }
 
         /// <summary>
