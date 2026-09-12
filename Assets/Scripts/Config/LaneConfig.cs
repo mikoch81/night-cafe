@@ -51,12 +51,19 @@ namespace NightCafe.Config
         public Vector2 orderPanelPosition = new(4.1f, -2.85f);
         public float orderPanelScale = 0.5f;
 
+        [Tooltip("Where the 999 neon cat lights up: between the upper rail ends, under the counter")]
+        public Vector2 neonCatPosition = new(0f, 2.0f);
+        public float neonCatScale = 0.4f;
+
         [Header("Segment ghosts (GDD 5.2)")]
         [Tooltip("Blended in linear colour space, so this reads far brighter than the number suggests: 0.012 looks like the faint 5 % ghost the GDD describes.")]
         [Range(0f, 1f)] public float ghostAlpha = 0.012f;
 
         [Header("Sprite scale (art is authored @4x, tuned down to read on the LCD screen)")]
         public float cupScale = 0.5f;
+
+        [Tooltip("Cups lean downhill on the rail (screen-segment-map: 'na torze ±14°'); sign follows the lane direction")]
+        public float cupTiltDegrees = 14f;
         public float baristaScale = 0.42f;
         public float machineHeadScale = 0.5f;
         public float brokenCupScale = 0.5f;

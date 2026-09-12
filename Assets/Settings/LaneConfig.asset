@@ -52,8 +52,11 @@ MonoBehaviour:
   barLineY: -3.67
   orderPanelPosition: {x: 4.1, y: -2.85}
   orderPanelScale: 0.5
+  neonCatPosition: {x: 0, y: 2}
+  neonCatScale: 0.4
   ghostAlpha: 0.012
   cupScale: 0.5
+  cupTiltDegrees: 14
   baristaScale: 0.42
   machineHeadScale: 0.5
   brokenCupScale: 0.5

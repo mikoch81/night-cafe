@@ -29,4 +29,6 @@ MonoBehaviour:
   attractMaxDuration: 45
   pilotReactionSeconds: 0.22
   pilotFumbleChance: 0.08
+  brewTimerMaxMinutes: 5
+  clockHitSize: {x: 6, y: 1.6}
   shellScale: 1

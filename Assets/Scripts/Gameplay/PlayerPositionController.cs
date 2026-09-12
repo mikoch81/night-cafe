@@ -15,9 +15,12 @@ namespace NightCafe.Gameplay
         [SerializeField] Sprite trayDown;
         [SerializeField] Sprite catchPose;
         [SerializeField] Sprite missPose;
+        [SerializeField] Sprite wipePose;
 
         LaneConfig _laneConfig;
         float _poseTimer;
+        float _wipeTimer;
+        float _wipePeriod;
 
         public LanePosition Current { get; private set; } = LanePosition.LeftUp;
 
@@ -29,6 +32,7 @@ namespace NightCafe.Gameplay
 
         public void MoveTo(LanePosition position)
         {
+            _wipeTimer = 0f;
             Current = position;
             transform.localPosition = _laneConfig.GetBaristaSlot(position);
 
@@ -42,19 +46,34 @@ namespace NightCafe.Gameplay
 
         public void ShowCatchPose(float duration)
         {
+            _wipeTimer = 0f;
             spriteRenderer.sprite = catchPose;
             _poseTimer = duration;
         }
 
         public void ShowMissPose(float duration)
         {
+            _wipeTimer = 0f;
             spriteRenderer.sprite = missPose;
             _poseTimer = duration;
+        }
+
+        /// <summary>
+        /// Breather (GDD 2.6): wipes his hands on the apron, alternating the wipe and down
+        /// poses, for as long as the spawns pause. A catch or miss pose interrupts it.
+        /// </summary>
+        public void ShowBreather(float duration, float period)
+        {
+            _wipeTimer = duration;
+            _wipePeriod = Mathf.Max(0.05f, period);
+            _poseTimer = 0f;
+            spriteRenderer.sprite = wipePose != null ? wipePose : trayDown;
         }
 
         public void ResetToDefault()
         {
             _poseTimer = 0f;
+            _wipeTimer = 0f;
             MoveTo(LanePosition.LeftUp);
         }
 
@@ -66,6 +85,20 @@ namespace NightCafe.Gameplay
 
         void Update()
         {
+            if (_wipeTimer > 0f)
+            {
+                _wipeTimer -= Time.deltaTime;
+                if (_wipeTimer <= 0f)
+                {
+                    ShowIdlePose();
+                    return;
+                }
+
+                bool wiping = Mathf.FloorToInt(_wipeTimer / _wipePeriod) % 2 == 0;
+                spriteRenderer.sprite = wiping && wipePose != null ? wipePose : trayDown;
+                return;
+            }
+
             if (_poseTimer <= 0f)
                 return;
 

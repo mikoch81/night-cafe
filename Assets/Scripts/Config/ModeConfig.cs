@@ -47,6 +47,14 @@ namespace NightCafe.Config
         public float brokenCupDuration = 0.40f;
         public float catCrossingDuration = 1.6f;
 
+        [Header("Breather (GDD 2.6) and rollover (GDD 2.7) presentation")]
+        [Tooltip("The barista alternates wipe/down poses at this period while spawns pause")]
+        public float breatherWipePeriod = 0.4f;
+        [Tooltip("How many times the bar neon blinks during the breather")]
+        public int breatherNeonBlinks = 3;
+        [Tooltip("Seconds for the city neons to arrange themselves into the cat after 999")]
+        public float rolloverAnimationSeconds = 2f;
+
         [Header("Skin unlock (GDD 6) - Mode A: Ash at 250, Mode B: Onyx at 500; Neon is the rollover")]
         public string unlockSkinId = "ash";
         public int unlockSkinScore = 250;

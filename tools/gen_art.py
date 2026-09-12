@@ -148,6 +148,8 @@ BARISTA_POSES = {
     "down": dict(arm=2, saucer=True, cup=False, far=8, miss=False),
     "catch": dict(arm=-12, saucer=True, cup=True, far=8, miss=False),
     "miss": dict(arm=42, saucer=False, cup=False, far=-14, miss=True),
+    # Breather (GDD 2.6): the barista wipes his hands on the apron; alternated with "down".
+    "wipe": dict(arm=58, saucer=False, cup=False, far=8, miss=False, cloth=True),
 }
 
 
@@ -194,6 +196,9 @@ def barista(pose, style, palette):
             if style.details:
                 b.append(stroke_path(f"M{cx - 4:.1f} {cy - 15:.1f} q1.5 -2.5 0 -5 M{cx + 1:.1f} {cy - 15:.1f} q1.5 -2.5 0 -5",
                                      1.3, bright, 'opacity="0.75"'))        # steam
+    if p.get("cloth"):
+        b.append(path("M60 58 q5 -4 9 0 q3 5 -1 9 q-5 3 -9 -1 q-3 -4 1 -8 z"))  # cloth in the near hand
+        d.append(seam([(58, 60), (62, 56)], style, palette))                 # hand / cloth
     b.append(rrect(32, 72, 9, 15, 3))                                       # leg
     b.append(rrect(45, 72, 9, 15, 3))                                       # leg
     b.append(rrect(31, 86, 12, 4, 2))                                       # shoe
@@ -416,6 +421,31 @@ def order_panel(style, palette):
     return svg(130, 52, "".join(b), "".join(d), style, palette)
 
 
+# ---------------------------------------------------------------- neon cat (rollover 999)
+# Canvas 160x80, centred pivot. Six cumulative frames: the city neons "arrange themselves"
+# into a cat over two seconds (GDD 2.7), one stroke group per frame.
+
+NEON_STROKES = [
+    "M22 62 Q10 44 24 30 Q34 20 52 24",                       # back
+    "M52 24 L58 10 L72 22 L96 20 L110 8 L116 26",             # ears and head top
+    "M116 26 Q124 40 112 48 Q98 54 86 48",                    # face and chin
+    "M86 48 Q84 60 92 66 L22 66 Q16 64 22 62",                # chest and floor line
+    "M22 62 Q4 58 6 44 Q8 34 18 36",                          # tail
+    "M68 32 l4 0 M92 32 l4 0 M80 40 l0 3 M74 46 q6 4 12 0",   # eyes, nose, mouth
+]
+
+
+def neon_cat(frame, style, palette):
+    bright = palette["brightAmber"]
+    b = []
+    for i in range(frame):
+        b.append(stroke_path(NEON_STROKES[i], 3.2, bright))
+    if frame > 0 and style.details:
+        # the newest stroke still "flickers on": a thinner echo just outside it
+        b.append(stroke_path(NEON_STROKES[frame - 1], 6, bright, 'opacity="0.35"'))
+    return svg(160, 80, "".join(b), "", style, palette)
+
+
 # Final style: variant A (segmented LCD) plus the few storytelling details from C that survive
 # the phone scale - chosen by Michał on 2026-09-13 (docs/art-direction.md).
 # gap 2.2 (not the sheet's 1.5): the barista is ~100 px tall on a phone, a groove must survive that.
@@ -426,6 +456,7 @@ SPRITES = {
     "barista_down": (lambda st, pal: barista("down", st, pal), 110, 100),
     "barista_catch": (lambda st, pal: barista("catch", st, pal), 110, 100),
     "barista_miss": (lambda st, pal: barista("miss", st, pal), 110, 100),
+    "barista_wipe": (lambda st, pal: barista("wipe", st, pal), 110, 100),
     "cat_a": (lambda st, pal: cat("a", st, pal), 100, 56),
     "cat_b": (lambda st, pal: cat("b", st, pal), 100, 56),
     "cup": (cup, 52, 34),
@@ -434,6 +465,8 @@ SPRITES = {
     "machine_head": (machine_head, 46, 42),
     "order_panel": (order_panel, 130, 52),
 }
+for _i in range(1, 7):
+    SPRITES[f"neon_cat_{_i}"] = ((lambda n: lambda st, pal: neon_cat(n, st, pal))(_i), 160, 80)
 
 
 STYLES = [

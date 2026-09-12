@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 160 80">
+<defs>
+  <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="2.4"/>
+  </filter>
+  <g id="seg" fill="#ffc966" stroke="none">
+    <path d="M22 62 Q10 44 24 30 Q34 20 52 24" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M52 24 L58 10 L72 22 L96 20 L110 8 L116 26" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M116 26 Q124 40 112 48 Q98 54 86 48" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M86 48 Q84 60 92 66 L22 66 Q16 64 22 62" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M22 62 Q4 58 6 44 Q8 34 18 36" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M68 32 l4 0 M92 32 l4 0 M80 40 l0 3 M74 46 q6 4 12 0" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M68 32 l4 0 M92 32 l4 0 M80 40 l0 3 M74 46 q6 4 12 0" fill="none" stroke="#ffd27a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+
+  </g>
+  <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="160" height="80">
+    <g fill="#fff" stroke="none">
+    <path d="M22 62 Q10 44 24 30 Q34 20 52 24" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M52 24 L58 10 L72 22 L96 20 L110 8 L116 26" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M116 26 Q124 40 112 48 Q98 54 86 48" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M86 48 Q84 60 92 66 L22 66 Q16 64 22 62" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M22 62 Q4 58 6 44 Q8 34 18 36" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M68 32 l4 0 M92 32 l4 0 M80 40 l0 3 M74 46 q6 4 12 0" fill="none" stroke="#ffd27a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M68 32 l4 0 M92 32 l4 0 M80 40 l0 3 M74 46 q6 4 12 0" fill="none" stroke="#ffd27a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+
+    </g>
+  </mask>
+</defs>
+<use xlink:href="#seg" filter="url(#glow)" opacity="0.85"/>
+<use xlink:href="#seg"/>
+<g mask="url(#ink)">
+
+</g>
+</svg>

@@ -39,6 +39,9 @@ MonoBehaviour:
   missPoseDuration: 0.3
   brokenCupDuration: 0.4
   catCrossingDuration: 1.6
+  breatherWipePeriod: 0.4
+  breatherNeonBlinks: 3
+  rolloverAnimationSeconds: 2
   unlockSkinId: onyx
   unlockSkinScore: 500
   ordersEnabled: 1

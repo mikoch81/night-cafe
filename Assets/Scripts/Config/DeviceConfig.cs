@@ -52,6 +52,12 @@ namespace NightCafe.Config
         [Tooltip("Share of cups the pilot deliberately lets drop, so the demo ends on its own.")]
         [Range(0f, 1f)] public float pilotFumbleChance = 0.08f;
 
+        [Header("Brew timer (GDD 6) - tap the title clock to cycle 1..max minutes")]
+        public int brewTimerMaxMinutes = 5;
+
+        [Tooltip("Tap area of the clock in LCD units, like the title toggles")]
+        public Vector2 clockHitSize = new(6f, 1.6f);
+
         [Header("Shell")]
         public float shellScale = 1f;
 

@@ -13,12 +13,24 @@ namespace NightCafe.Gameplay
         [SerializeField] float peakAlpha = 0.85f;
 
         float _timer;
+        int _blinksLeft;
+        float _blinkInterval;
+        float _nextBlinkAt;
 
         public void Flash()
         {
             _timer = duration;
             spriteRenderer.enabled = true;
             Apply(peakAlpha);
+        }
+
+        /// <summary>Repeated pulses - the neon behind the window during the breather (GDD 2.6).</summary>
+        public void Blink(int count, float interval)
+        {
+            Flash();
+            _blinksLeft = Mathf.Max(0, count - 1);
+            _blinkInterval = interval;
+            _nextBlinkAt = Time.time + interval;
         }
 
         /// <summary>Holds a constant alpha until cleared - the game over dim.</summary>
@@ -32,11 +44,19 @@ namespace NightCafe.Gameplay
         public void Clear()
         {
             _timer = 0f;
+            _blinksLeft = 0;
             spriteRenderer.enabled = false;
         }
 
         void Update()
         {
+            if (_blinksLeft > 0 && Time.time >= _nextBlinkAt)
+            {
+                _blinksLeft--;
+                _nextBlinkAt += _blinkInterval;
+                Flash();
+            }
+
             if (_timer <= 0f)
                 return;
 

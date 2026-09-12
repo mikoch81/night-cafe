@@ -37,7 +37,7 @@ namespace NightCafe.Gameplay
 
         public event Action<CupController> ReachedCatchPoint;
 
-        public void Launch(int lane, IReadOnlyList<Vector2> steps, Func<float> stepTimeProvider)
+        public void Launch(int lane, IReadOnlyList<Vector2> steps, Func<float> stepTimeProvider, float tiltDegrees = 0f)
         {
             Lane = lane;
             _steps = steps;
@@ -49,6 +49,9 @@ namespace NightCafe.Gameplay
             _running = true;
 
             transform.localPosition = _steps[0];
+            // Lean into the slide: a cup travelling left tips its top to the left, and vice versa.
+            float direction = _steps[_steps.Count - 1].x < _steps[0].x ? 1f : -1f;
+            transform.localRotation = Quaternion.Euler(0f, 0f, direction * tiltDegrees);
             gameObject.SetActive(true);
         }
 

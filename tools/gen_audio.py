@@ -199,6 +199,17 @@ def sfx_gameover():
     return fade_edges(normalise(buf))
 
 
+def sfx_brew_alarm():
+    """GDD 6: the brew timer's alarm blip - three catch-like blips a fifth up, spaced 90 ms."""
+    buf = []
+    for _ in range(3):
+        n = int(SR * 0.055)
+        env = env_ad(n, 0.001, 0.014)
+        buf.extend(blsquare(1575, i / SR) * env[i] * 0.5 for i in range(n))
+        buf.extend(silence(0.090))
+    return fade_edges(normalise(buf))
+
+
 def music_loop():
     """
     GDD 5.3: a 60-90 s lo-fi bed. 18 bars at 72 BPM lands on exactly 60.000 s, and the
@@ -263,6 +274,7 @@ def main():
     write_wav("sfx_miss.wav", sfx_miss())
     write_wav("sfx_cat.wav", sfx_cat())
     write_wav("sfx_gameover.wav", sfx_gameover())
+    write_wav("sfx_brew_alarm.wav", sfx_brew_alarm())
     write_wav("music_lofi_loop.wav", music_loop())
 
 

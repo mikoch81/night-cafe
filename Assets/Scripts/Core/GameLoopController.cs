@@ -39,6 +39,8 @@ namespace NightCafe.Core
         [SerializeField] GameObject ghostRoot;
         [SerializeField] FlashFx neonFlash;
         [SerializeField] FlashFx screenDim;
+        [SerializeField] SpriteSequenceFx neonCat;
+        [SerializeField] ClockWidget clock;
         [SerializeField] TitleToggleView titleToggles;
         [SerializeField] AudioService audioService;
         [SerializeField] Camera worldCamera;
@@ -54,6 +56,7 @@ namespace NightCafe.Core
         SettingsService _settings;
         ProfileService _profile;
         HapticsService _haptics;
+        BrewTimer _brew;
         CatCueService _catCue;
         AttractPilot _pilot;
 
@@ -85,6 +88,9 @@ namespace NightCafe.Core
             _settings = new SettingsService(new PlayerPrefsSettingsStore());
             _profile = new ProfileService(FileProfileStore.Default());
             _haptics = new HapticsService(HapticsService.CreateBackend(), _settings);
+            _brew = new BrewTimer(deviceConfig.brewTimerMaxMinutes);
+            if (clock != null)
+                clock.Initialise(_brew, () => Time.unscaledTimeAsDouble, deviceConfig.clockHitSize);
             _catCue = new CatCueService(audioConfig.meowChance, new UnityRandom());
             _pilot = new AttractPilot(new UnityRandom(), deviceConfig.pilotReactionSeconds,
                 deviceConfig.pilotFumbleChance, LaneConfig.StepsPerLane - 1);
@@ -233,6 +239,14 @@ namespace NightCafe.Core
         {
             float dt = Time.deltaTime;
 
+            // The brew timer is a kitchen gadget, not a game system: it rings in any state.
+            if (_brew != null && _brew.Tick(Time.unscaledTimeAsDouble))
+            {
+                audioService.Play(GameSfx.BrewAlarm);
+                _haptics.Pattern(HapticPatterns.Pulses(
+                    audioConfig.gameOverHapticPulses, audioConfig.gameOverHapticMs, audioConfig.gameOverHapticGapMs));
+            }
+
             RoundTransition transition = _flow.Tick(Time.time);
             if (transition != RoundTransition.None)
             {
@@ -315,6 +329,9 @@ namespace NightCafe.Core
             if (titleToggles.TryHandleTap(press.ScreenPosition))
                 return true;
 
+            if (clock != null && clock.TryHandleTap(worldCamera.ScreenToWorldPoint(press.ScreenPosition)))
+                return true;
+
             if (deviceShell.LeverHit(worldCamera.ScreenToWorldPoint(press.ScreenPosition)))
             {
                 FlipMode();
@@ -390,6 +407,8 @@ namespace NightCafe.Core
             stainStrip.ResetAll();
             cat.Stop();
             neonFlash.Clear();
+            if (neonCat != null)
+                neonCat.Stop();
             screenDim.Clear();
             hud.SetScore(_score.DisplayScore);
             RenderOrderPanel();
@@ -534,10 +553,11 @@ namespace NightCafe.Core
 
         void OnRolloverOccurred()
         {
-            // GDD 2.7's neon-cat animation is a later milestone; the bar still marks the moment.
             _rolledOver = true;
             audioService.Play(GameSfx.ComboBonus);
             neonFlash.Flash();
+            if (neonCat != null)
+                neonCat.Play(_config.rolloverAnimationSeconds); // GDD 2.7: the city neons form the cat
         }
 
         void OnMercyTriggered()
@@ -552,7 +572,8 @@ namespace NightCafe.Core
                 return;
 
             spawner.SpawningEnabled = false;
-            neonFlash.Flash();
+            neonFlash.Blink(_config.breatherNeonBlinks, _config.breatherDuration / Mathf.Max(1, _config.breatherNeonBlinks));
+            barista.ShowBreather(_config.breatherDuration, _config.breatherWipePeriod);
         }
 
         void OnSettingsChanged()

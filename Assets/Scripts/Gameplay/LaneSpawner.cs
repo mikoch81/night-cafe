@@ -100,7 +100,7 @@ namespace NightCafe.Gameplay
             CupController cup = _pool.Rent();
             cup.ReachedCatchPoint += OnCupReachedCatchPoint;
             cup.transform.localScale = Vector3.one * _laneConfig.cupScale;
-            cup.Launch(lane, _laneConfig.GetSteps(lane), () => _tempo.StepTime);
+            cup.Launch(lane, _laneConfig.GetSteps(lane), () => _tempo.StepTime, _laneConfig.cupTiltDegrees);
             _active.Add(cup);
             CupSpawned?.Invoke(cup);
         }

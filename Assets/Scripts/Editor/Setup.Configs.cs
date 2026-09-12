@@ -97,6 +97,7 @@ namespace NightCafe.EditorTools
             config.missClink = LoadClip("sfx_miss");
             config.catMeow = LoadClip("sfx_cat");
             config.gameOver = LoadClip("sfx_gameover");
+            config.brewAlarm = LoadClip("sfx_brew_alarm");
             config.lofiLoop = LoadClip("music_lofi_loop");
 
             EditorUtility.SetDirty(config);

@@ -44,9 +44,10 @@ namespace NightCafe.EditorTools
             CatCrossingView cat = BuildCat(screenRoot, laneConfig, modeConfigs[0]);
             StainStripView stains = BuildStains(screenRoot, laneConfig, modeConfigs[0].maxStains);
             (FlashFx neon, FlashFx dim) = BuildScreenFx(screenRoot);
+            SpriteSequenceFx neonCat = BuildNeonCat(screenRoot, laneConfig);
             OrderPanelView orderPanel = BuildOrderPanel(screenRoot, laneConfig, monoFont);
             GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
-            (HudView hud, TitleToggleView toggles) = BuildHud(screenRoot, monoFont);
+            (HudView hud, TitleToggleView toggles, ClockWidget clock) = BuildHud(screenRoot, monoFont);
 
             var context = new GameObject("GameContext");
             var spawner = context.AddComponent<LaneSpawner>();
@@ -75,6 +76,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("laneInput").objectReferenceValue = laneInput;
                 so.FindProperty("barista").objectReferenceValue = barista;
                 so.FindProperty("hud").objectReferenceValue = hud;
+                so.FindProperty("clock").objectReferenceValue = clock;
                 so.FindProperty("deviceShell").objectReferenceValue = deviceShell;
                 so.FindProperty("stainStrip").objectReferenceValue = stains;
                 so.FindProperty("cat").objectReferenceValue = cat;
@@ -82,6 +84,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("ghostRoot").objectReferenceValue = ghosts;
                 so.FindProperty("neonFlash").objectReferenceValue = neon;
                 so.FindProperty("screenDim").objectReferenceValue = dim;
+                so.FindProperty("neonCat").objectReferenceValue = neonCat;
                 so.FindProperty("titleToggles").objectReferenceValue = toggles;
                 so.FindProperty("audioService").objectReferenceValue = audioService;
                 so.FindProperty("worldCamera").objectReferenceValue = camera;
@@ -249,6 +252,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("trayDown").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_down.png");
                 so.FindProperty("catchPose").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_catch.png");
                 so.FindProperty("missPose").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_miss.png");
+                so.FindProperty("wipePose").objectReferenceValue = LoadSprite("Assets/Art/sprites/barista_wipe.png");
             });
 
             return barista;
@@ -344,6 +348,28 @@ namespace NightCafe.EditorTools
             SetSerialized(dim, so => so.FindProperty("spriteRenderer").objectReferenceValue = dimRenderer);
 
             return (neon, dim);
+        }
+
+        /// <summary>Rollover 999 (GDD 2.7): six neon_cat frames on the ScreenFX layer.</summary>
+        static SpriteSequenceFx BuildNeonCat(Transform screenRoot, LaneConfig laneConfig)
+        {
+            var go = Child("NeonCat", screenRoot.Find("ScreenFx"), laneConfig.neonCatPosition, laneConfig.neonCatScale);
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = LoadSprite("Assets/Art/sprites/neon_cat_6.png");
+            renderer.color = BrightAmber;
+            renderer.enabled = false;
+            SetSorting(renderer, Core.SortingLayers.ScreenFx, 2);
+
+            var fx = go.AddComponent<SpriteSequenceFx>();
+            SetSerialized(fx, so =>
+            {
+                so.FindProperty("spriteRenderer").objectReferenceValue = renderer;
+                SerializedProperty frames = so.FindProperty("frames");
+                frames.arraySize = 6;
+                for (int i = 0; i < 6; i++)
+                    frames.GetArrayElementAtIndex(i).objectReferenceValue = LoadSprite($"Assets/Art/sprites/neon_cat_{i + 1}.png");
+            });
+            return fx;
         }
 
         const string GlassMaterialPath = SettingsDir + "/LcdGlass.mat";

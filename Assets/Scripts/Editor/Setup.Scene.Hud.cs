@@ -12,7 +12,7 @@ namespace NightCafe.EditorTools
         /// sorts with the glass (GDD 5.1 HUD_TMP). Only the debug FPS readout stays on an
         /// overlay canvas, where it belongs on top of everything.
         /// </summary>
-        static (HudView hud, TitleToggleView toggles) BuildHud(Transform screenRoot, TMP_FontAsset monoFont)
+        static (HudView hud, TitleToggleView toggles, ClockWidget clock) BuildHud(Transform screenRoot, TMP_FontAsset monoFont)
         {
             Transform root = Child("ScreenHud", screenRoot).transform;
             TMP_FontAsset digitFont = Segment7Font != null ? Segment7Font : monoFont;
@@ -36,8 +36,16 @@ namespace NightCafe.EditorTools
             WorldText("TitleText", titlePanel.transform, new Vector2(0f, -0.30f),
                 "NIGHT CAFÉ\nTAP TO START", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 2.6f));
 
+            TMP_Text brewTag = WorldText("BrewTag", titlePanel.transform, new Vector2(3.55f, 1.62f),
+                "BREW", 3.2f, monoFont, ActiveAmber, 0, new Vector2(2f, 0.6f));
+            brewTag.gameObject.SetActive(false);
+
             var clockWidget = titlePanel.AddComponent<ClockWidget>();
-            SetSerialized(clockWidget, so => so.FindProperty("label").objectReferenceValue = clock);
+            SetSerialized(clockWidget, so =>
+            {
+                so.FindProperty("label").objectReferenceValue = clock;
+                so.FindProperty("brewTag").objectReferenceValue = brewTag;
+            });
 
             GameObject togglesGo = Child("Toggles", titlePanel.transform, new Vector2(0f, -2.30f));
             TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-4.05f, 0f),
@@ -89,7 +97,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("fpsText").objectReferenceValue = fps;
             });
 
-            return (hud, toggles);
+            return (hud, toggles, clockWidget);
         }
 
         static TMP_Text BuildDebugCanvas(TMP_FontAsset monoFont)
