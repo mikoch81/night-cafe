@@ -53,6 +53,11 @@ namespace NightCafe.Tests
                 Assert.IsTrue(android.overridden, $"{path}: no Android override");
                 Assert.AreEqual(TextureImporterFormat.ASTC_6x6, android.format, $"{path}: expected ASTC 6x6");
                 Assert.AreEqual(FilterMode.Bilinear, importer.filterMode, $"{path}: expected bilinear");
+                Assert.IsFalse(importer.mipmapEnabled, $"{path}: mipmaps on an NPOT texture defeat the ASTC override");
+
+                // The override is only real if the imported texture (Android is the active target) is compressed.
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                Assert.AreEqual(TextureFormat.ASTC_6x6, texture.format, $"{path}: imported as {texture.format}");
             }
         }
     }

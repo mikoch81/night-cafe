@@ -96,9 +96,11 @@ namespace NightCafe.EditorTools
         /// <summary>
         /// The art is SVG-rendered at 4x and never shown at an integer scale (the LCD lands at
         /// roughly 1.6x on a 1080p phone), so bilinear filtering reads as the intended soft glow
-        /// where point filtering shimmered on the diagonal rails. The shell is the only texture
-        /// large enough to need mipmaps. Android gets ASTC: a flat two-colour palette survives
-        /// 6x6 blocks visually intact, and it turns ~17 MB of RGBA32 into ~2 MB.
+        /// where point filtering shimmered on the diagonal rails. No mipmaps anywhere: nothing is
+        /// ever minified (even the 1920 px shell is magnified on a 1080p phone), and mipmaps on
+        /// these non-power-of-two canvases make Unity silently fall back to RGBA32 on Android.
+        /// Android gets ASTC: a flat two-colour palette survives 6x6 blocks visually intact, and
+        /// it turns ~17 MB of RGBA32 into ~2 MB.
         /// Pivots come from <see cref="SpriteAnchors"/> because the art sits on padded canvases;
         /// note that importer.spritePivot alone is a no-op - the pivot only takes effect through
         /// TextureImporterSettings + SetTextureSettings.
@@ -111,13 +113,11 @@ namespace NightCafe.EditorTools
                 if (AssetImporter.GetAtPath(path) is not TextureImporter importer)
                     continue;
 
-                bool isShell = path.Contains("/device/");
-
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
                 importer.spritePixelsPerUnit = 100f;
                 importer.filterMode = FilterMode.Bilinear;
-                importer.mipmapEnabled = isShell;
+                importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
                 importer.textureCompression = TextureImporterCompression.Uncompressed; // editor/default
 
