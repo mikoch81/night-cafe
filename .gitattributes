@@ -29,3 +29,6 @@
 # Git LFS
 Assets/Art/**/*.png filter=lfs diff=lfs merge=lfs -text
 Assets/Audio/**/*.wav filter=lfs diff=lfs merge=lfs -text
+art/textures/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+docs/art-direction/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/references/**/*.png filter=lfs diff=lfs merge=lfs -text

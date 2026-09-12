@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 110 100">
+<defs>
+  <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="2.6"/>
+  </filter>
+  <g id="seg" fill="#ffc966" stroke="none">
+    <path d="M25 18 Q41 -3 57 16 L57 19 L25 19 Z" />
+    <rect x="48" y="15" width="21" height="5" rx="2.5" />
+    <rect x="27" y="19" width="28" height="20" rx="11" />
+    <rect x="26" y="38" width="34" height="36" rx="7" />
+    <rect x="18" y="41" width="9" height="24" rx="4.5" transform="rotate(10 22.5 41)"/>
+    <rect x="57" y="39" width="34" height="9" rx="4.5" transform="rotate(-32 57 43.5)"/>
+    <ellipse cx="92" cy="19" rx="14" ry="4" />
+    <rect x="30" y="72" width="11" height="15" rx="3.5" />
+    <rect x="45" y="72" width="11" height="15" rx="3.5" />
+    <rect x="28" y="85" width="14" height="5" rx="2.5" />
+    <rect x="44" y="85" width="15" height="5" rx="2.5" />
+
+  </g>
+  <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="110" height="100">
+    <g fill="#fff" stroke="none">
+    <path d="M25 18 Q41 -3 57 16 L57 19 L25 19 Z" />
+    <rect x="48" y="15" width="21" height="5" rx="2.5" />
+    <rect x="27" y="19" width="28" height="20" rx="11" />
+    <rect x="26" y="38" width="34" height="36" rx="7" />
+    <rect x="18" y="41" width="9" height="24" rx="4.5" transform="rotate(10 22.5 41)"/>
+    <rect x="57" y="39" width="34" height="9" rx="4.5" transform="rotate(-32 57 43.5)"/>
+    <ellipse cx="92" cy="19" rx="14" ry="4" />
+    <rect x="30" y="72" width="11" height="15" rx="3.5" />
+    <rect x="45" y="72" width="11" height="15" rx="3.5" />
+    <rect x="28" y="85" width="14" height="5" rx="2.5" />
+    <rect x="44" y="85" width="15" height="5" rx="2.5" />
+
+    </g>
+  </mask>
+</defs>
+<use xlink:href="#seg" filter="url(#glow)" opacity="0.85"/>
+<use xlink:href="#seg"/>
+<g mask="url(#ink)">
+    <circle cx="49" cy="28" r="2.2"  fill="#120d09"/>
+
+    <path d="M31 50 L55 50 L53 71 Q43 73 33 71 Z" fill="none" stroke="#120d09" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+
+</g>
+</svg>
