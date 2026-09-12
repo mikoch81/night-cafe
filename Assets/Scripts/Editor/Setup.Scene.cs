@@ -325,6 +325,14 @@ namespace NightCafe.EditorTools
             var neon = neonGo.AddComponent<FlashFx>();
             SetSerialized(neon, so => so.FindProperty("spriteRenderer").objectReferenceValue = neonRenderer);
 
+            // Glass sits above the flashes and below the game-over dim.
+            var glassGo = Child("Glass", root);
+            glassGo.transform.localScale = new Vector3(12.72f, 8.92f, 1f);
+            var glassRenderer = glassGo.AddComponent<SpriteRenderer>();
+            glassRenderer.sprite = WhitePixelSprite();
+            glassRenderer.sharedMaterial = CreateGlassMaterial();
+            SetSorting(glassRenderer, Core.SortingLayers.ScreenFx, 5);
+
             var dimGo = Child("Dim", root);
             dimGo.transform.localScale = new Vector3(12.72f, 8.92f, 1f);
             var dimRenderer = dimGo.AddComponent<SpriteRenderer>();
@@ -336,6 +344,38 @@ namespace NightCafe.EditorTools
             SetSerialized(dim, so => so.FindProperty("spriteRenderer").objectReferenceValue = dimRenderer);
 
             return (neon, dim);
+        }
+
+        const string GlassMaterialPath = SettingsDir + "/LcdGlass.mat";
+
+        /// <summary>
+        /// The glass material is an asset so the scene can reference it; its numbers come from
+        /// PaletteConfig and are pushed in on every run like every other config value.
+        /// </summary>
+        static Material CreateGlassMaterial()
+        {
+            Shader shader = Shader.Find("NightCafe/LcdGlass");
+            if (shader == null)
+            {
+                Debug.LogError("[NightCafe] Shader NightCafe/LcdGlass not found.");
+                return null;
+            }
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(GlassMaterialPath);
+            if (material == null)
+            {
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, GlassMaterialPath);
+            }
+
+            material.shader = shader;
+            material.SetColor("_VignetteColor", GlassBlack);
+            material.SetFloat("_VignetteStrength", Palette.glassVignette);
+            material.SetFloat("_VignettePower", Palette.glassVignetteFalloff);
+            material.SetColor("_GlareColor", new Color(1f, 0.92f, 0.75f));
+            material.SetFloat("_GlareStrength", Palette.glassGlare);
+            EditorUtility.SetDirty(material);
+            return material;
         }
 
         /// <summary>

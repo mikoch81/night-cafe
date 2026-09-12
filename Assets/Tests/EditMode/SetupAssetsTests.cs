@@ -41,6 +41,16 @@ namespace NightCafe.Tests
         }
 
         [Test]
+        public void GlassMaterialUsesTheLcdGlassShader()
+        {
+            var material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Settings/LcdGlass.mat");
+            Assert.IsNotNull(material, "run NightCafe/Build Scene Setup first");
+            Assert.AreEqual("NightCafe/LcdGlass", material.shader.name);
+            Assert.IsFalse(ShaderUtil.ShaderHasError(material.shader), "LcdGlass.shader does not compile");
+            Assert.Greater(material.GetFloat("_VignetteStrength"), 0f, "the vignette is switched off");
+        }
+
+        [Test]
         public void ArtTexturesAreCompressedForAndroid()
         {
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))

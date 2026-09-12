@@ -24,5 +24,15 @@ namespace NightCafe.Config
 
         [Tooltip("#54301a - wood behind the shell, also the camera clear colour")]
         public Color woodBackground = new(0.329f, 0.188f, 0.102f);
+
+        [Header("Glass over the LCD (NightCafe/LcdGlass)")]
+        [Tooltip("Inner shadow where the bezel meets the display; 0 = flat glass")]
+        [Range(0f, 1f)] public float glassVignette = 0.55f;
+
+        [Tooltip("How fast the shadow falls off towards the centre")]
+        [Range(0.5f, 8f)] public float glassVignetteFalloff = 3f;
+
+        [Tooltip("One soft reflection blob near the top-left; keep it barely there")]
+        [Range(0f, 0.3f)] public float glassGlare = 0.05f;
     }
 }

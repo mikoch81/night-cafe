@@ -36,6 +36,7 @@ namespace NightCafe.EditorTools
         static Color BrightAmber;
         static Color InactiveAmber;
         static Color GlassBlack;
+        static PaletteConfig Palette;
 
         /// <summary>
         /// Imports the TextMeshPro essential resources and exits once the import finishes.
@@ -170,6 +171,7 @@ namespace NightCafe.EditorTools
         static void LoadPalette()
         {
             var palette = ResetToDefaults<PaletteConfig>(PaletteConfigPath);
+            Palette = palette;
             WoodBackground = palette.woodBackground;
             ActiveAmber = palette.activeAmber;
             BrightAmber = palette.brightAmber;

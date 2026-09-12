@@ -17,3 +17,6 @@ MonoBehaviour:
   inactiveAmber: {r: 0.227, g: 0.173, b: 0.094, a: 1}
   glassBlack: {r: 0.071, g: 0.051, b: 0.035, a: 1}
   woodBackground: {r: 0.329, g: 0.188, b: 0.102, a: 1}
+  glassVignette: 0.55
+  glassVignetteFalloff: 3
+  glassGlare: 0.05
