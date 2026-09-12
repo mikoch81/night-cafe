@@ -65,16 +65,13 @@ namespace NightCafe.Core
         PenaltyService _penalty;
         OrderService _orders;
 
-        float _breatherEndsAt;
-        float _idleSince;
-        float _gameOverAt;
-        float _demoEndsAt;
+        RoundStateMachine _flow;
         bool _rolledOver;
 
-        public GameState State { get; private set; } = GameState.Title;
+        public GameState State => _flow.State;
 
         /// <summary>True while the attract pilot is playing on the title screen (GDD 6).</summary>
-        public bool IsDemo { get; private set; }
+        public bool IsDemo => _flow.IsDemo;
 
         public GameMode Mode => _mode;
 
@@ -91,6 +88,9 @@ namespace NightCafe.Core
             _catCue = new CatCueService(audioConfig.meowChance, new UnityRandom());
             _pilot = new AttractPilot(new UnityRandom(), deviceConfig.pilotReactionSeconds,
                 deviceConfig.pilotFumbleChance, LaneConfig.StepsPerLane - 1);
+            _flow = new RoundStateMachine(new RoundTimings(
+                deviceConfig.attractDelay, deviceConfig.attractMaxDuration,
+                deviceConfig.gameOverIdleSeconds, deviceConfig.gameOverRestartLockout));
 
             _settings.Changed += OnSettingsChanged;
             _profile.Changed += OnProfileChanged;
@@ -233,48 +233,47 @@ namespace NightCafe.Core
         {
             float dt = Time.deltaTime;
 
-            switch (State)
+            RoundTransition transition = _flow.Tick(Time.time);
+            if (transition != RoundTransition.None)
             {
-                case GameState.Title:
-                    if (Time.time - _idleSince >= deviceConfig.attractDelay)
-                        EnterDemo();
-                    return;
-
-                case GameState.GameOver:
-                    // Tap restarts; leaving it alone returns to the title, the only place the lever works.
-                    if (Time.time - _gameOverAt >= deviceConfig.gameOverIdleSeconds)
-                        EnterTitle();
-                    return;
-
-                case GameState.Breather:
-                    _orders.Tick(dt);
-                    if (Time.time >= _breatherEndsAt)
-                    {
-                        State = GameState.Playing;
-                        spawner.ResumeAfterBreather();
-                    }
-                    break;
-
-                case GameState.Playing:
-                    _orders.Tick(dt);
-                    break;
-
-                default:
-                    return;
+                Apply(transition);
+                return;
             }
 
-            if (IsDemo)
-                UpdateDemo(dt);
+            if (State is GameState.Playing or GameState.Breather)
+            {
+                _orders.Tick(dt);
+                if (IsDemo)
+                    UpdateDemo(dt);
+            }
+        }
+
+        /// <summary>Carries out what the flow decided; the flow is told once the state is really in place.</summary>
+        void Apply(RoundTransition transition)
+        {
+            switch (transition)
+            {
+                case RoundTransition.EnterTitle:
+                    EnterTitle();
+                    break;
+                case RoundTransition.EnterDemo:
+                    EnterDemo();
+                    break;
+                case RoundTransition.StartRound:
+                    StartRound();
+                    break;
+                case RoundTransition.EnterGameOver:
+                    EnterGameOver();
+                    break;
+                case RoundTransition.ResumePlaying:
+                    _flow.ResumedPlaying();
+                    spawner.ResumeAfterBreather();
+                    break;
+            }
         }
 
         void UpdateDemo(float dt)
         {
-            if (Time.time >= _demoEndsAt)
-            {
-                EnterTitle();
-                return;
-            }
-
             _pilotCups.Clear();
             IReadOnlyList<CupController> cups = spawner.ActiveCups;
             for (int i = 0; i < cups.Count; i++)
@@ -300,33 +299,11 @@ namespace NightCafe.Core
             if (press.Lane.HasValue)
                 deviceShell.Press(press.Lane.Value);
 
-            if (IsDemo)
-            {
-                StartRound(press);
-                return;
-            }
+            bool consumed = _flow.TitleUiActive && TitleScreenConsumed(press);
+            Apply(_flow.Press(Time.time, consumed));
 
-            switch (State)
-            {
-                case GameState.Title:
-                    _idleSince = Time.time;
-                    if (!TitleScreenConsumed(press))
-                        StartRound(press);
-                    return;
-
-                case GameState.GameOver:
-                    // The score, the record line and any unlock deserve to be seen: a tap that
-                    // was already in flight when the third stain landed must not skip them.
-                    if (Time.time - _gameOverAt >= deviceConfig.gameOverRestartLockout)
-                        StartRound(press);
-                    return;
-
-                case GameState.Playing:
-                case GameState.Breather:
-                    if (press.Lane.HasValue)
-                        barista.MoveTo(press.Lane.Value);
-                    return;
-            }
+            if (_flow.AcceptsLaneMoves && press.Lane.HasValue)
+                barista.MoveTo(press.Lane.Value);
         }
 
         /// <summary>Toggles and the lever take the tap before it can start a round.</summary>
@@ -352,8 +329,7 @@ namespace NightCafe.Core
         void EnterTitle()
         {
             LeaveDemo();
-            State = GameState.Title;
-            _idleSince = Time.time;
+            _flow.EnteredTitle(Time.time);
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
             ResetRoundState();
@@ -366,11 +342,10 @@ namespace NightCafe.Core
         /// <summary>The pilot plays a real round with the effects and haptics muted; any press takes over.</summary>
         void EnterDemo()
         {
-            IsDemo = true;
             audioService.SfxMuted = true;
             _haptics.Muted = true;
             _pilot.Reset();
-            _demoEndsAt = Time.time + deviceConfig.attractMaxDuration;
+            _flow.EnteredDemo(Time.time);
 
             BeginRound();
             hud.ShowDemo();
@@ -378,29 +353,28 @@ namespace NightCafe.Core
 
         void LeaveDemo()
         {
-            IsDemo = false;
             audioService.SfxMuted = false;
             _haptics.Muted = false;
         }
 
-        void StartRound(in Press press)
+        /// <summary>
+        /// The press that starts the shift is also the first move (OnPressed applies it once
+        /// the flow accepts lane moves): tapping the bottom-right quadrant to begin and finding
+        /// the barista top-left would cost the first cup.
+        /// </summary>
+        void StartRound()
         {
             LeaveDemo();
+            _flow.RoundStarted();
             BeginRound();
             hud.ShowPlaying();
-
-            // The press that starts the shift is also the first move: tapping the bottom-right
-            // quadrant to begin and finding the barista top-left would cost the first cup.
-            if (press.Lane.HasValue)
-                barista.MoveTo(press.Lane.Value);
         }
 
         void BeginRound()
         {
             ResetRoundState();
             barista.SetVisible(true);
-            State = GameState.Playing;
-            RenderOrderPanel(); // ResetRoundState hid it while the state was still Title / GameOver
+            RenderOrderPanel(); // the flow is already Playing here; ResetRoundState could not show it before
             spawner.BeginRound();
         }
 
@@ -426,17 +400,12 @@ namespace NightCafe.Core
 
         void OnGameOverTriggered()
         {
-            // A demo that runs out of stains just hands the title screen back.
-            if (IsDemo)
-                EnterTitle();
-            else
-                EnterGameOver();
+            Apply(_flow.PenaltyGameOver());
         }
 
         void EnterGameOver()
         {
-            State = GameState.GameOver;
-            _gameOverAt = Time.time;
+            _flow.EnteredGameOver(Time.time);
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
             barista.SetVisible(false); // the result text sits where the barista stands
@@ -495,20 +464,19 @@ namespace NightCafe.Core
 
             spawner.ReturnCup(cup);
 
-            switch (outcome)
+            if (outcome == CatchOutcome.Caught)
             {
-                case CatchOutcome.Caught:
-                    _score.RegisterCatch();
-                    _tempo.RegisterCatch();
-                    _orders.RegisterCorrectCatch();
-                    barista.ShowCatchPose(_config.catchPoseDuration);
-                    audioService.Play(GameSfx.Catch);
-                    _haptics.OneShot(audioConfig.catchHapticMs);
-                    return;
-
-                case CatchOutcome.Ignored:
-                    return;
+                _score.RegisterCatch();
+                _tempo.RegisterCatch();
+                _orders.RegisterCorrectCatch();
+                barista.ShowCatchPose(_config.catchPoseDuration);
+                audioService.Play(GameSfx.Catch);
+                _haptics.OneShot(audioConfig.catchHapticMs);
+                return;
             }
+
+            if (!CatchRules.IsPenalised(outcome))
+                return; // an unwanted colour was correctly let through
 
             // Missed or WrongCatch: the cup ends up on the floor either way.
             _score.RegisterMiss();
@@ -580,12 +548,10 @@ namespace NightCafe.Core
 
         void OnBreatherTriggered()
         {
-            if (State != GameState.Playing)
+            if (!_flow.TryStartBreather(Time.time, _config.breatherDuration))
                 return;
 
-            State = GameState.Breather;
             spawner.SpawningEnabled = false;
-            _breatherEndsAt = Time.time + _config.breatherDuration;
             neonFlash.Flash();
         }
 
