@@ -39,11 +39,21 @@ namespace NightCafe.Services
             }
         }
 
+        /// <summary>
+        /// Writes beside the file and swaps it in, so a process kill mid-write (Android does
+        /// that to backgrounded apps) leaves the previous profile intact instead of a truncated one.
+        /// </summary>
         public void Save(string json)
         {
+            string temp = _path + ".tmp";
             try
             {
-                File.WriteAllText(_path, json);
+                File.WriteAllText(temp, json);
+
+                if (File.Exists(_path))
+                    File.Replace(temp, _path, null);
+                else
+                    File.Move(temp, _path);
             }
             catch (Exception e)
             {
@@ -70,6 +80,11 @@ namespace NightCafe.Services
     [Serializable]
     public sealed class ProfileData
     {
+        public const int CurrentSchema = 1;
+
+        /// <summary>Bumped when the shape changes, so a later build can migrate instead of guessing.</summary>
+        public int schemaVersion = CurrentSchema;
+
         public int[] bestScores = new int[GameModeExtensions.Count];
         public List<string> unlockedSkins = new();
         public string selectedSkin = "";

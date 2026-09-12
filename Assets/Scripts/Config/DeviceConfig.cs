@@ -40,6 +40,9 @@ namespace NightCafe.Config
         [Tooltip("Seconds an untouched game over screen stays before handing back to the title, where the lever and settings live.")]
         public float gameOverIdleSeconds = 6f;
 
+        [Tooltip("Presses in the first moments of game over are ignored, so a tap already in flight cannot skip the result.")]
+        public float gameOverRestartLockout = 0.8f;
+
         [Tooltip("Longest a demo runs before handing back to the title, even if the pilot is still alive.")]
         public float attractMaxDuration = 45f;
 

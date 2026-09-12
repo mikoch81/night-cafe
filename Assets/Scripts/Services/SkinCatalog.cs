@@ -32,9 +32,6 @@ namespace NightCafe.Services
         public const string OnyxId = "onyx";
         public const string NeonId = "neon";
 
-        public const int AshScoreModeA = 250;
-        public const int OnyxScoreModeB = 500;
-
         static readonly Skin[] Skins =
         {
             new(DefaultId, "WALNUT", Color.white),
@@ -66,18 +63,17 @@ namespace NightCafe.Services
         }
 
         /// <summary>
-        /// Skins a finished round earns. Checked on the uncapped total: a 1 050 run in Mode A
-        /// still passes 250, and a rollover is a rollover whichever mode it happened in.
+        /// Skins a finished round earns. The mode's own unlock (id + score threshold) comes from
+        /// its ModeConfig; the rollover skin is a rule, not a number, so it lives here. Checked on
+        /// the uncapped total: a 1 050 run still passes 250.
         /// </summary>
-        public static void UnlockedBy(GameMode mode, int totalScore, bool rolledOver, List<string> result)
+        public static void UnlockedBy(string modeSkinId, int modeSkinScore, int totalScore, bool rolledOver,
+            List<string> result)
         {
             result.Clear();
 
-            if (mode == GameMode.A && totalScore >= AshScoreModeA)
-                result.Add(AshId);
-
-            if (mode == GameMode.B && totalScore >= OnyxScoreModeB)
-                result.Add(OnyxId);
+            if (!string.IsNullOrEmpty(modeSkinId) && modeSkinScore > 0 && totalScore >= modeSkinScore)
+                result.Add(modeSkinId);
 
             if (rolledOver)
                 result.Add(NeonId);

@@ -14,9 +14,14 @@ namespace NightCafe.EditorTools
         const string MonoFontPath = FontDir + "/LiberationMono-Bold.ttf";
         const string MonoFontAssetPath = FontDir + "/LiberationMono-Bold SDF.asset";
 
+        /// <summary>
+        /// Mode A is exactly the field initialisers in ModeConfig, which are the GDD numbers, so
+        /// the asset is reset to them on every run: a hand edit in the Inspector must not become
+        /// a silent, permanent deviation from the GDD. ModeConfigAssetsTests lock this down.
+        /// </summary>
         static ModeConfig CreateModeConfig()
         {
-            var config = LoadOrCreate<ModeConfig>(ModeConfigPath);
+            var config = ResetToDefaults<ModeConfig>(ModeConfigPath);
             config.ordersEnabled = false;
             EditorUtility.SetDirty(config);
             return config;
@@ -29,11 +34,13 @@ namespace NightCafe.EditorTools
         /// </summary>
         static ModeConfig CreateModeConfigB()
         {
-            var config = LoadOrCreate<ModeConfig>(ModeConfigBPath);
+            var config = ResetToDefaults<ModeConfig>(ModeConfigBPath);
             config.ordersEnabled = true;
             config.pointsPerCatch = 2;
             config.startTempoLevel = 2;
             config.catchesPerTempoLevel = 10;
+            config.unlockSkinId = Services.SkinCatalog.OnyxId;
+            config.unlockSkinScore = 500;
             EditorUtility.SetDirty(config);
             return config;
         }
@@ -232,8 +239,17 @@ namespace NightCafe.EditorTools
                 AssetDatabase.CreateAsset(profile, VolumeProfilePath);
             }
 
+            profile.components.RemoveAll(component => component == null); // M2's unsaved Bloom left a null slot
+
             if (!profile.TryGet(out Bloom bloom))
                 bloom = profile.Add<Bloom>(true);
+
+            // VolumeProfile.Add only registers the component in memory; without this it
+            // serialises as a null entry and the profile is empty after the next reload.
+            // Checked on every run, because an Editor that ran the old setup still holds the
+            // in-memory Bloom that never made it to disk.
+            if (AssetDatabase.GetAssetPath(bloom) != VolumeProfilePath)
+                AssetDatabase.AddObjectToAsset(bloom, profile);
 
             bloom.active = true;
             bloom.intensity.overrideState = true;

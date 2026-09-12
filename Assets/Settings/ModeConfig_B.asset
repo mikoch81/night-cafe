@@ -38,6 +38,9 @@ MonoBehaviour:
   catchPoseDuration: 0.12
   missPoseDuration: 0.3
   brokenCupDuration: 0.4
+  catCrossingDuration: 1.6
+  unlockSkinId: onyx
+  unlockSkinScore: 500
   ordersEnabled: 1
   orderColors:
   - {r: 1, g: 0.788, b: 0.4, a: 1}

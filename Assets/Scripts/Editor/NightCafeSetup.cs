@@ -28,11 +28,14 @@ namespace NightCafe.EditorTools
         const string CupPrefabPath = PrefabDir + "/Cup.prefab";
         const string GameScenePath = SceneDir + "/Game.unity";
 
-        static readonly Color WoodBackground = new(0.329f, 0.188f, 0.102f);   // #54301a
-        static readonly Color ActiveAmber = new(1f, 0.788f, 0.4f);            // #ffc966
-        static readonly Color BrightAmber = new(1f, 0.824f, 0.478f);          // #ffd27a
-        static readonly Color InactiveAmber = new(0.227f, 0.173f, 0.094f);    // #3a2c18
-        static readonly Color GlassBlack = new(0.071f, 0.051f, 0.035f);       // #120d09
+        const string PaletteConfigPath = SettingsDir + "/PaletteConfig.asset";
+
+        // Filled from PaletteConfig at the start of BuildAll; the asset is the single source.
+        static Color WoodBackground;
+        static Color ActiveAmber;
+        static Color BrightAmber;
+        static Color InactiveAmber;
+        static Color GlassBlack;
 
         /// <summary>
         /// Imports the TextMeshPro essential resources and exits once the import finishes.
@@ -70,6 +73,7 @@ namespace NightCafe.EditorTools
         public static void BuildAll()
         {
             EnsureSortingLayers(); // before any renderer exists
+            LoadPalette();
             ConfigureSpriteImporters();
             ConfigureAudioImporters();
 
@@ -90,7 +94,11 @@ namespace NightCafe.EditorTools
         }
 
         /// <summary>
-        /// Neo-LCD art wants crisp pixels: point filtering, no compression, 100 PPU.
+        /// The art is SVG-rendered at 4x and never shown at an integer scale (the LCD lands at
+        /// roughly 1.6x on a 1080p phone), so bilinear filtering reads as the intended soft glow
+        /// where point filtering shimmered on the diagonal rails. The shell is the only texture
+        /// large enough to need mipmaps. Android gets ASTC: a flat two-colour palette survives
+        /// 6x6 blocks visually intact, and it turns ~17 MB of RGBA32 into ~2 MB.
         /// Pivots come from <see cref="SpriteAnchors"/> because the art sits on padded canvases;
         /// note that importer.spritePivot alone is a no-op - the pivot only takes effect through
         /// TextureImporterSettings + SetTextureSettings.
@@ -103,16 +111,19 @@ namespace NightCafe.EditorTools
                 if (AssetImporter.GetAtPath(path) is not TextureImporter importer)
                     continue;
 
+                bool isShell = path.Contains("/device/");
+
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
                 importer.spritePixelsPerUnit = 100f;
-                importer.filterMode = FilterMode.Point;
-                importer.mipmapEnabled = false;
+                importer.filterMode = FilterMode.Bilinear;
+                importer.mipmapEnabled = isShell;
                 importer.alphaIsTransparency = true;
-                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.textureCompression = TextureImporterCompression.Uncompressed; // editor/default
 
                 TextureImporterSettings settings = new();
                 importer.ReadTextureSettings(settings);
+                settings.spriteMeshType = SpriteMeshType.FullRect; // atlas-friendly, no tight-mesh seams on glow
 
                 if (SpriteAnchors.TryGet(Path.GetFileNameWithoutExtension(path), out Vector2 pivot))
                 {
@@ -125,6 +136,14 @@ namespace NightCafe.EditorTools
                 }
 
                 importer.SetTextureSettings(settings);
+
+                var android = importer.GetPlatformTextureSettings("Android");
+                android.overridden = true;
+                android.format = TextureImporterFormat.ASTC_6x6;
+                android.compressionQuality = 100;
+                android.maxTextureSize = 2048;
+                importer.SetPlatformTextureSettings(android);
+
                 importer.SaveAndReimport();
             }
         }
@@ -146,11 +165,26 @@ namespace NightCafe.EditorTools
             Object.DestroyImmediate(root);
         }
 
+        static void LoadPalette()
+        {
+            var palette = ResetToDefaults<PaletteConfig>(PaletteConfigPath);
+            WoodBackground = palette.woodBackground;
+            ActiveAmber = palette.activeAmber;
+            BrightAmber = palette.brightAmber;
+            InactiveAmber = palette.inactiveAmber;
+            GlassBlack = palette.glassBlack;
+        }
+
         static void ApplyProjectSettings()
         {
             PlayerSettings.productName = "Night Café";
             PlayerSettings.companyName = "mikoch81";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.mikoch81.nightcafe");
+
+            // GameActivity (the Unity 6 default) recreated the activity 60 ms after a cold start
+            // on a Pixel 10 and crashed in UnityFoldingFeaturesWrapper.init() about one launch
+            // in three. The classic Activity entry point does not have that path.
+            PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity;
 
             // Landscape only (GDD): keep auto-rotation but drop both portrait orientations.
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;

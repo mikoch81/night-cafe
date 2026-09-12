@@ -25,6 +25,7 @@ MonoBehaviour:
   leverHitSize: {x: 3.6, y: 1.3}
   attractDelay: 8
   gameOverIdleSeconds: 6
+  gameOverRestartLockout: 0.8
   attractMaxDuration: 45
   pilotReactionSeconds: 0.22
   pilotFumbleChance: 0.08

@@ -69,7 +69,6 @@ namespace NightCafe.Core
         float _idleSince;
         float _gameOverAt;
         float _demoEndsAt;
-        bool _tapConsumed;
         bool _rolledOver;
 
         public GameState State { get; private set; } = GameState.Title;
@@ -104,9 +103,7 @@ namespace NightCafe.Core
             titleToggles.Initialise(_settings, _profile, worldCamera);
             cat.CrossingStarted += OnCatCrossingStarted;
 
-            laneInput.PositionPressed += OnPositionPressed;
-            laneInput.Tapped += OnTapped;
-            laneInput.AnyPressed += OnAnyPressed;
+            laneInput.Pressed += OnPressed;
 
             ConfigureMode(_profile.SelectedMode);
             ApplySkin();
@@ -163,11 +160,7 @@ namespace NightCafe.Core
                 cat.CrossingStarted -= OnCatCrossingStarted;
 
             if (laneInput != null)
-            {
-                laneInput.PositionPressed -= OnPositionPressed;
-                laneInput.Tapped -= OnTapped;
-                laneInput.AnyPressed -= OnAnyPressed;
-            }
+                laneInput.Pressed -= OnPressed;
         }
 
         // ------------------------------------------------------------------ modes
@@ -298,48 +291,60 @@ namespace NightCafe.Core
 
         // ------------------------------------------------------------------ input
 
-        void OnPositionPressed(LanePosition position)
+        /// <summary>
+        /// The single entry point for a press. Where it goes depends only on the state, so there
+        /// is no "was this tap already consumed" bookkeeping across events to get out of sync.
+        /// </summary>
+        void OnPressed(Press press)
         {
-            deviceShell.Press(position);
+            if (press.Lane.HasValue)
+                deviceShell.Press(press.Lane.Value);
 
-            if ((State is GameState.Playing or GameState.Breather) && !IsDemo)
-                barista.MoveTo(position);
-        }
-
-        /// <summary>Title-screen hit testing: toggles and the lever consume the tap before it can start a round.</summary>
-        void OnTapped(Vector2 screenPosition)
-        {
-            if (State != GameState.Title)
-                return;
-
-            _idleSince = Time.time;
-
-            if (screenPosition.x < 0f)
-                return;
-
-            if (titleToggles.TryHandleTap(screenPosition))
+            if (IsDemo)
             {
-                _tapConsumed = true;
+                StartRound(press);
                 return;
             }
 
-            if (deviceShell.LeverHit(worldCamera.ScreenToWorldPoint(screenPosition)))
+            switch (State)
+            {
+                case GameState.Title:
+                    _idleSince = Time.time;
+                    if (!TitleScreenConsumed(press))
+                        StartRound(press);
+                    return;
+
+                case GameState.GameOver:
+                    // The score, the record line and any unlock deserve to be seen: a tap that
+                    // was already in flight when the third stain landed must not skip them.
+                    if (Time.time - _gameOverAt >= deviceConfig.gameOverRestartLockout)
+                        StartRound(press);
+                    return;
+
+                case GameState.Playing:
+                case GameState.Breather:
+                    if (press.Lane.HasValue)
+                        barista.MoveTo(press.Lane.Value);
+                    return;
+            }
+        }
+
+        /// <summary>Toggles and the lever take the tap before it can start a round.</summary>
+        bool TitleScreenConsumed(in Press press)
+        {
+            if (!press.HasScreenPosition)
+                return false;
+
+            if (titleToggles.TryHandleTap(press.ScreenPosition))
+                return true;
+
+            if (deviceShell.LeverHit(worldCamera.ScreenToWorldPoint(press.ScreenPosition)))
             {
                 FlipMode();
-                _tapConsumed = true;
-            }
-        }
-
-        void OnAnyPressed()
-        {
-            if (_tapConsumed)
-            {
-                _tapConsumed = false;
-                return;
+                return true;
             }
 
-            if (State is GameState.Title or GameState.GameOver || IsDemo)
-                StartRound();
+            return false;
         }
 
         // ------------------------------------------------------------------ states
@@ -378,11 +383,16 @@ namespace NightCafe.Core
             _haptics.Muted = false;
         }
 
-        void StartRound()
+        void StartRound(in Press press)
         {
             LeaveDemo();
             BeginRound();
             hud.ShowPlaying();
+
+            // The press that starts the shift is also the first move: tapping the bottom-right
+            // quadrant to begin and finding the barista top-left would cost the first cup.
+            if (press.Lane.HasValue)
+                barista.MoveTo(press.Lane.Value);
         }
 
         void BeginRound()
@@ -449,7 +459,7 @@ namespace NightCafe.Core
         /// <summary>Returns the name of a skin earned this round, or null.</summary>
         string UnlockSkins(int totalScore)
         {
-            SkinCatalog.UnlockedBy(_mode, totalScore, _rolledOver, _unlocks);
+            SkinCatalog.UnlockedBy(_config.unlockSkinId, _config.unlockSkinScore, totalScore, _rolledOver, _unlocks);
 
             string first = null;
             foreach (string id in _unlocks)

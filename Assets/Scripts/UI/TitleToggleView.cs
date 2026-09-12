@@ -104,8 +104,20 @@ namespace NightCafe.UI
                 return false;
 
             Vector3 centre = label.transform.position;
-            var bounds = new Bounds(centre, new Vector3(hitSize.x, hitSize.y, 10f));
+            Bounds bounds = HitBounds(centre, label.transform.lossyScale, hitSize);
             return bounds.Contains(new Vector3(worldPoint.x, worldPoint.y, centre.z));
         }
+
+        /// <summary>
+        /// hitSize is authored in the labels' local (LCD) units, the same units the scene
+        /// generator lays them out in. The labels sit under ScreenRoot, scaled to fit the
+        /// cutout, so the box has to shrink with them - a world-unit box wider than the
+        /// world-unit spacing made neighbouring toggles overlap and routed taps to the wrong one.
+        /// </summary>
+        public static Bounds HitBounds(Vector3 centre, Vector3 lossyScale, Vector2 hitSize) =>
+            new(centre, new Vector3(
+                hitSize.x * Mathf.Abs(lossyScale.x),
+                hitSize.y * Mathf.Abs(lossyScale.y),
+                10f));
     }
 }

@@ -277,36 +277,36 @@ namespace NightCafe.Tests
         readonly List<string> _result = new();
 
         [Test]
-        public void AshNeedsTwoFiftyInModeA()
+        public void ModeSkinUnlocksAtItsThreshold()
         {
-            SkinCatalog.UnlockedBy(GameMode.A, 249, false, _result);
+            SkinCatalog.UnlockedBy(SkinCatalog.AshId, 250, 249, false, _result);
             CollectionAssert.IsEmpty(_result);
 
-            SkinCatalog.UnlockedBy(GameMode.A, 250, false, _result);
+            SkinCatalog.UnlockedBy(SkinCatalog.AshId, 250, 250, false, _result);
             CollectionAssert.AreEqual(new[] { SkinCatalog.AshId }, _result);
 
-            SkinCatalog.UnlockedBy(GameMode.B, 250, false, _result);
-            CollectionAssert.IsEmpty(_result, "Mode B does not count for ash");
+            SkinCatalog.UnlockedBy(SkinCatalog.OnyxId, 500, 1050, false, _result);
+            CollectionAssert.AreEqual(new[] { SkinCatalog.OnyxId }, _result, "uncapped total, not the wrapped counter");
         }
 
         [Test]
-        public void OnyxNeedsFiveHundredInModeB()
+        public void ModesWithoutASkinUnlockNothing()
         {
-            SkinCatalog.UnlockedBy(GameMode.B, 500, false, _result);
-            CollectionAssert.AreEqual(new[] { SkinCatalog.OnyxId }, _result);
+            SkinCatalog.UnlockedBy("", 250, 999, false, _result);
+            CollectionAssert.IsEmpty(_result);
 
-            SkinCatalog.UnlockedBy(GameMode.A, 500, false, _result);
-            CollectionAssert.AreEqual(new[] { SkinCatalog.AshId }, _result, "500 in A is still just ash");
+            SkinCatalog.UnlockedBy(SkinCatalog.AshId, 0, 999, false, _result);
+            CollectionAssert.IsEmpty(_result, "a zero threshold means no unlock, not a free one");
         }
 
         [Test]
-        public void NeonNeedsARolloverInEitherMode()
+        public void NeonNeedsARolloverWhateverTheMode()
         {
-            SkinCatalog.UnlockedBy(GameMode.A, 1000, true, _result);
+            SkinCatalog.UnlockedBy(SkinCatalog.AshId, 250, 1000, true, _result);
             CollectionAssert.AreEqual(new[] { SkinCatalog.AshId, SkinCatalog.NeonId }, _result);
 
-            SkinCatalog.UnlockedBy(GameMode.B, 1000, true, _result);
-            CollectionAssert.AreEqual(new[] { SkinCatalog.OnyxId, SkinCatalog.NeonId }, _result);
+            SkinCatalog.UnlockedBy(SkinCatalog.OnyxId, 500, 20, true, _result);
+            CollectionAssert.AreEqual(new[] { SkinCatalog.NeonId }, _result);
         }
 
         [Test]

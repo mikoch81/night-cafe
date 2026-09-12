@@ -8,22 +8,35 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace NightCafe.InputLayer
 {
     /// <summary>
-    /// Turns keyboard keys and screen-quadrant taps into lane presses (GDD 4).
-    /// Keyboard: W / S for the left lanes, Up / Down arrows for the right lanes - the two-buttons-per-hand
-    /// layout of the physical handheld. Touch: the four quadrants of the screen.
+    /// One press, as the game sees it: which lane it maps to (none for the space bar) and,
+    /// for pointer input, where on the screen it landed so the title screen can hit-test it.
+    /// </summary>
+    public readonly struct Press
+    {
+        public readonly LanePosition? Lane;
+        public readonly Vector2 ScreenPosition;
+        public readonly bool HasScreenPosition;
+
+        public Press(LanePosition? lane, Vector2? screenPosition)
+        {
+            Lane = lane;
+            HasScreenPosition = screenPosition.HasValue;
+            ScreenPosition = screenPosition ?? new Vector2(-1f, -1f);
+        }
+    }
+
+    /// <summary>
+    /// Turns keyboard keys and screen-quadrant taps into presses (GDD 4).
+    /// Keyboard: W / S for the left lanes, Up / Down arrows for the right lanes - the
+    /// two-buttons-per-hand layout of the physical handheld; Space / Enter is a bare press.
+    /// Touch: the four quadrants of the screen. Mouse: same quadrants, so the title screen
+    /// can be exercised in the Editor without the device simulator.
+    /// Exactly one press is raised per frame; with several fingers the one that began last wins,
+    /// which is deterministic and closer to a handheld than "whatever the OS enumerated last".
     /// </summary>
     public sealed class LaneInput : MonoBehaviour
     {
-        public event Action<LanePosition> PositionPressed;
-
-        /// <summary>Any press at all - used to start or restart a round.</summary>
-        public event Action AnyPressed;
-
-        /// <summary>
-        /// Raw tap position in screen pixels, raised before <see cref="AnyPressed"/>.
-        /// Title-screen hit testing uses it; (-1, -1) for keyboard presses.
-        /// </summary>
-        public event Action<Vector2> Tapped;
+        public event Action<Press> Pressed;
 
         void OnEnable()
         {
@@ -37,8 +50,44 @@ namespace NightCafe.InputLayer
 
         void Update()
         {
+            if (ReadTouch())
+                return;
+
+            if (ReadMouse())
+                return;
+
             ReadKeyboard();
-            ReadTouch();
+        }
+
+        bool ReadTouch()
+        {
+            Touch? newest = null;
+            foreach (Touch touch in Touch.activeTouches)
+            {
+                if (touch.phase != UnityEngine.InputSystem.TouchPhase.Began)
+                    continue;
+
+                if (newest == null || touch.startTime > newest.Value.startTime)
+                    newest = touch;
+            }
+
+            if (newest == null)
+                return false;
+
+            Vector2 position = newest.Value.screenPosition;
+            Raise(new Press(QuadrantOf(position), position));
+            return true;
+        }
+
+        bool ReadMouse()
+        {
+            Mouse mouse = Mouse.current;
+            if (mouse == null || !mouse.leftButton.wasPressedThisFrame)
+                return false;
+
+            Vector2 position = mouse.position.ReadValue();
+            Raise(new Press(QuadrantOf(position), position));
+            return true;
         }
 
         void ReadKeyboard()
@@ -48,36 +97,18 @@ namespace NightCafe.InputLayer
                 return;
 
             if (keyboard.wKey.wasPressedThisFrame)
-                Press(LanePosition.LeftUp);
-
-            if (keyboard.sKey.wasPressedThisFrame)
-                Press(LanePosition.LeftDown);
-
-            if (keyboard.upArrowKey.wasPressedThisFrame)
-                Press(LanePosition.RightUp);
-
-            if (keyboard.downArrowKey.wasPressedThisFrame)
-                Press(LanePosition.RightDown);
-
-            if (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame)
-            {
-                Tapped?.Invoke(new Vector2(-1f, -1f));
-                AnyPressed?.Invoke();
-            }
+                Raise(new Press(LanePosition.LeftUp, null));
+            else if (keyboard.sKey.wasPressedThisFrame)
+                Raise(new Press(LanePosition.LeftDown, null));
+            else if (keyboard.upArrowKey.wasPressedThisFrame)
+                Raise(new Press(LanePosition.RightUp, null));
+            else if (keyboard.downArrowKey.wasPressedThisFrame)
+                Raise(new Press(LanePosition.RightDown, null));
+            else if (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame)
+                Raise(new Press(null, null));
         }
 
-        void ReadTouch()
-        {
-            foreach (Touch touch in Touch.activeTouches)
-            {
-                if (touch.phase != UnityEngine.InputSystem.TouchPhase.Began)
-                    continue;
-
-                Press(QuadrantOf(touch.screenPosition), touch.screenPosition);
-            }
-        }
-
-        static LanePosition QuadrantOf(Vector2 screenPosition)
+        public static LanePosition QuadrantOf(Vector2 screenPosition)
         {
             bool left = screenPosition.x < Screen.width * 0.5f;
             bool up = screenPosition.y >= Screen.height * 0.5f;
@@ -88,11 +119,9 @@ namespace NightCafe.InputLayer
             return up ? LanePosition.RightUp : LanePosition.RightDown;
         }
 
-        void Press(LanePosition position, Vector2? screenPosition = null)
+        void Raise(in Press press)
         {
-            PositionPressed?.Invoke(position);
-            Tapped?.Invoke(screenPosition ?? new Vector2(-1f, -1f));
-            AnyPressed?.Invoke();
+            Pressed?.Invoke(press);
         }
     }
 }

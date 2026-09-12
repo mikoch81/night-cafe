@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NightCafe.Services;
 using UnityEngine;
 
@@ -24,7 +25,16 @@ namespace NightCafe.Audio
     public sealed class AndroidHaptics : IHaptics
     {
         readonly AndroidJavaObject _vibrator;
+        readonly AndroidJavaClass _effectClass;
+        readonly int _defaultAmplitude;
         readonly int _sdkInt;
+
+        /// <summary>
+        /// A catch fires a 15 ms pulse up to ~2.5 times a second at T9, so the one-shot effects
+        /// are built once and reused: constructing a VibrationEffect through JNI per catch was
+        /// a class lookup plus two allocations inside the frame that has to hold 60 fps.
+        /// </summary>
+        readonly Dictionary<int, AndroidJavaObject> _oneShots = new();
 
         public AndroidHaptics()
         {
@@ -44,6 +54,12 @@ namespace NightCafe.Audio
             {
                 _vibrator = activity.Call<AndroidJavaObject>("getSystemService", "vibrator");
             }
+
+            if (_sdkInt >= 26)
+            {
+                _effectClass = new AndroidJavaClass("android.os.VibrationEffect");
+                _defaultAmplitude = _effectClass.GetStatic<int>("DEFAULT_AMPLITUDE");
+            }
         }
 
         public bool IsAvailable => _vibrator != null && _vibrator.Call<bool>("hasVibrator");
@@ -53,36 +69,37 @@ namespace NightCafe.Audio
             if (_vibrator == null || milliseconds <= 0)
                 return;
 
-            if (_sdkInt >= 26)
-            {
-                using var effectClass = new AndroidJavaClass("android.os.VibrationEffect");
-                int defaultAmplitude = effectClass.GetStatic<int>("DEFAULT_AMPLITUDE");
-                using AndroidJavaObject effect = effectClass.CallStatic<AndroidJavaObject>(
-                    "createOneShot", (long)milliseconds, defaultAmplitude);
-                _vibrator.Call("vibrate", effect);
-            }
-            else
+            if (_effectClass == null)
             {
                 _vibrator.Call("vibrate", (long)milliseconds);
+                return;
             }
+
+            if (!_oneShots.TryGetValue(milliseconds, out AndroidJavaObject effect))
+            {
+                effect = _effectClass.CallStatic<AndroidJavaObject>(
+                    "createOneShot", (long)milliseconds, _defaultAmplitude);
+                _oneShots[milliseconds] = effect;
+            }
+
+            _vibrator.Call("vibrate", effect);
         }
 
+        /// <summary>Patterns are rare (game over only), so they are still built on demand.</summary>
         public void Pattern(long[] pattern)
         {
             if (_vibrator == null || pattern == null || pattern.Length == 0)
                 return;
 
-            if (_sdkInt >= 26)
-            {
-                using var effectClass = new AndroidJavaClass("android.os.VibrationEffect");
-                using AndroidJavaObject effect = effectClass.CallStatic<AndroidJavaObject>(
-                    "createWaveform", pattern, -1);
-                _vibrator.Call("vibrate", effect);
-            }
-            else
+            if (_effectClass == null)
             {
                 _vibrator.Call("vibrate", pattern, -1);
+                return;
             }
+
+            using AndroidJavaObject effect = _effectClass.CallStatic<AndroidJavaObject>(
+                "createWaveform", pattern, -1);
+            _vibrator.Call("vibrate", effect);
         }
     }
 

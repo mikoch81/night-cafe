@@ -45,6 +45,11 @@ namespace NightCafe.Config
         public float catchPoseDuration = 0.12f;
         public float missPoseDuration = 0.30f;
         public float brokenCupDuration = 0.40f;
+        public float catCrossingDuration = 1.6f;
+
+        [Header("Skin unlock (GDD 6) - Mode A: Ash at 250, Mode B: Onyx at 500; Neon is the rollover")]
+        public string unlockSkinId = "ash";
+        public int unlockSkinScore = 250;
 
         [Header("Orders (GDD 3, Mode B only)")]
         [Tooltip("Off for Mode A: every cup is wanted and cups keep the default tint.")]

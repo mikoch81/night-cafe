@@ -41,8 +41,8 @@ namespace NightCafe.EditorTools
             Transform cupRoot = Child("CupPoolRoot", screenRoot).transform;
             TimedSpriteFx[] brokenFx = BuildBrokenCupFx(screenRoot, laneConfig);
             PlayerPositionController barista = BuildBarista(screenRoot, laneConfig);
-            CatCrossingView cat = BuildCat(screenRoot, laneConfig);
-            StainStripView stains = BuildStains(screenRoot, laneConfig);
+            CatCrossingView cat = BuildCat(screenRoot, laneConfig, modeConfigs[0]);
+            StainStripView stains = BuildStains(screenRoot, laneConfig, modeConfigs[0].maxStains);
             (FlashFx neon, FlashFx dim) = BuildScreenFx(screenRoot);
             OrderPanelView orderPanel = BuildOrderPanel(screenRoot, laneConfig, monoFont);
             GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
@@ -123,7 +123,9 @@ namespace NightCafe.EditorTools
             var volume = volumeGo.AddComponent<Volume>();
             volume.isGlobal = true;
             volume.priority = 0f;
-            volume.profile = profile;
+            // sharedProfile is the serialised reference; Volume.profile is a runtime clone that
+            // never reaches the saved scene, which is how M2 shipped without any bloom at all.
+            volume.sharedProfile = profile;
 
             return camera;
         }
@@ -252,7 +254,7 @@ namespace NightCafe.EditorTools
             return barista;
         }
 
-        static CatCrossingView BuildCat(Transform screenRoot, LaneConfig laneConfig)
+        static CatCrossingView BuildCat(Transform screenRoot, LaneConfig laneConfig, ModeConfig modeConfig)
         {
             var go = Child("Cat", screenRoot, new Vector2(-6.6f, laneConfig.barLineY), laneConfig.catScale);
             var renderer = go.AddComponent<SpriteRenderer>();
@@ -267,6 +269,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("spriteRenderer").objectReferenceValue = renderer;
                 so.FindProperty("frameA").objectReferenceValue = LoadSprite("Assets/Art/sprites/cat_a.png");
                 so.FindProperty("frameB").objectReferenceValue = LoadSprite("Assets/Art/sprites/cat_b.png");
+                so.FindProperty("duration").floatValue = modeConfig.catCrossingDuration;
                 so.FindProperty("y").floatValue = laneConfig.barLineY;
                 so.FindProperty("startX").floatValue = -6.8f;
                 so.FindProperty("endX").floatValue = 6.8f;
@@ -275,12 +278,12 @@ namespace NightCafe.EditorTools
             return cat;
         }
 
-        static StainStripView BuildStains(Transform screenRoot, LaneConfig laneConfig)
+        static StainStripView BuildStains(Transform screenRoot, LaneConfig laneConfig, int maxStains)
         {
             Transform root = Child("Stains", screenRoot).transform;
             Sprite stainSprite = LoadSprite("Assets/Art/sprites/stain.png");
 
-            var renderers = new SpriteRenderer[3];
+            var renderers = new SpriteRenderer[maxStains];
             for (int i = 0; i < renderers.Length; i++)
             {
                 var go = Child($"Stain_{i}", root,

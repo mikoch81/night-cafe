@@ -87,7 +87,12 @@ namespace NightCafe.Gameplay
                 return; // Stay due; retry next frame once a slot frees up.
 
             Spawn(lane);
-            _nextSpawnAt = Time.time + _director.RollNextInterval(_tempo.StepTime);
+
+            // Accumulate from the scheduled time, not from now, so frame overshoot does not
+            // stretch every interval. A spawn that was held back by the screen limit for longer
+            // than a frame is a real delay though, and re-bases on the present.
+            float basis = Mathf.Max(_nextSpawnAt, Time.time - Time.deltaTime);
+            _nextSpawnAt = basis + _director.RollNextInterval(_tempo.StepTime);
         }
 
         void Spawn(int lane)

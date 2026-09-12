@@ -86,7 +86,10 @@ namespace NightCafe.Gameplay
             if (t < 1f)
                 return;
 
-            _elapsed = 0f;
+            // Carry the overshoot into the next step. Zeroing it made every step last a whole
+            // number of frames, i.e. up to one frame too long - ~4 % slow at T9 on 60 fps and
+            // twice that on a throttled phone, which quietly detuned GDD 2.2.
+            _elapsed -= _stepDuration;
             StepIndex++;
 
             if (StepIndex >= _steps.Count - 1)
