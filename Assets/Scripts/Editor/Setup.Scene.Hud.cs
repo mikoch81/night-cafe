@@ -19,8 +19,11 @@ namespace NightCafe.EditorTools
             TMP_Text score = WorldText("ScoreText", root, new Vector2(0f, 3.55f), "000", 14f, monoFont,
                 ActiveAmber, 0, new Vector2(8f, 1.8f));
 
-            WorldText("ModeText", root, new Vector2(4.60f, 3.55f), "A", 8f, monoFont,
-                InactiveAmber, 0, new Vector2(2f, 1.2f));
+            TMP_Text mode = WorldText("ModeText", root, new Vector2(4.60f, 3.55f), "A", 8f, monoFont,
+                ActiveAmber, 0, new Vector2(2f, 1.2f));
+
+            TMP_Text best = WorldText("BestText", root, new Vector2(-4.30f, 3.55f), "BEST 000", 5f, monoFont,
+                ActiveAmber, 0, new Vector2(3.6f, 1.2f));
 
             // --- Title ---------------------------------------------------------
             GameObject titlePanel = Child("TitlePanel", root);
@@ -34,24 +37,36 @@ namespace NightCafe.EditorTools
             SetSerialized(clockWidget, so => so.FindProperty("label").objectReferenceValue = clock);
 
             GameObject togglesGo = Child("Toggles", titlePanel.transform, new Vector2(0f, -2.30f));
-            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-1.6f, 0f),
+            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-4.05f, 0f),
                 "♪ ON", 6f, monoFont, ActiveAmber, 0, new Vector2(2.6f, 1f));
-            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(1.6f, 0f),
+            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(-1.35f, 0f),
                 "~ ON", 6f, monoFont, ActiveAmber, 0, new Vector2(2.6f, 1f));
+            TMP_Text ghostsLabel = WorldText("GhostsToggle", togglesGo.transform, new Vector2(1.35f, 0f),
+                "░ OFF", 6f, monoFont, InactiveAmber, 0, new Vector2(2.6f, 1f));
+            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(4.05f, 0f),
+                "WALNUT", 6f, monoFont, ActiveAmber, 0, new Vector2(2.6f, 1f));
 
             var toggles = togglesGo.AddComponent<TitleToggleView>();
             SetSerialized(toggles, so =>
             {
                 so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
                 so.FindProperty("hapticsLabel").objectReferenceValue = hapticsLabel;
+                so.FindProperty("ghostsLabel").objectReferenceValue = ghostsLabel;
+                so.FindProperty("skinLabel").objectReferenceValue = skinLabel;
                 so.FindProperty("onColor").colorValue = ActiveAmber;
                 so.FindProperty("offColor").colorValue = InactiveAmber;
             });
 
+            // --- Attract demo ---------------------------------------------------
+            GameObject demoPanel = Child("DemoPanel", root);
+            TMP_Text demoText = WorldText("DemoText", demoPanel.transform, new Vector2(0f, 2.55f),
+                "DEMO - TAP TO START", 5f, monoFont, ActiveAmber, 0, new Vector2(9f, 0.8f));
+            demoPanel.SetActive(false);
+
             // --- Game over -----------------------------------------------------
             GameObject gameOverPanel = Child("GameOverPanel", root);
             TMP_Text gameOverText = WorldText("GameOverText", gameOverPanel.transform, Vector2.zero,
-                "END OF SHIFT\n000\nTAP TO RESTART", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 3.6f));
+                "END OF SHIFT\n000\nBEST 000\nTAP TO RESTART", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 4.4f));
             gameOverPanel.SetActive(false);
 
             // --- Debug overlay --------------------------------------------------
@@ -61,7 +76,11 @@ namespace NightCafe.EditorTools
             SetSerialized(hud, so =>
             {
                 so.FindProperty("scoreText").objectReferenceValue = score;
+                so.FindProperty("bestText").objectReferenceValue = best;
+                so.FindProperty("modeText").objectReferenceValue = mode;
                 so.FindProperty("titlePanel").objectReferenceValue = titlePanel;
+                so.FindProperty("demoPanel").objectReferenceValue = demoPanel;
+                so.FindProperty("demoText").objectReferenceValue = demoText;
                 so.FindProperty("gameOverPanel").objectReferenceValue = gameOverPanel;
                 so.FindProperty("gameOverText").objectReferenceValue = gameOverText;
                 so.FindProperty("fpsText").objectReferenceValue = fps;

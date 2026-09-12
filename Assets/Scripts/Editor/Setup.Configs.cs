@@ -14,7 +14,29 @@ namespace NightCafe.EditorTools
         const string MonoFontPath = FontDir + "/LiberationMono-Bold.ttf";
         const string MonoFontAssetPath = FontDir + "/LiberationMono-Bold SDF.asset";
 
-        static ModeConfig CreateModeConfig() => LoadOrCreate<ModeConfig>(ModeConfigPath);
+        static ModeConfig CreateModeConfig()
+        {
+            var config = LoadOrCreate<ModeConfig>(ModeConfigPath);
+            config.ordersEnabled = false;
+            EditorUtility.SetDirty(config);
+            return config;
+        }
+
+        /// <summary>
+        /// Mode B (GDD 3) shares every Mode A number except the ones the GDD calls out:
+        /// orders on, +2 per catch, start at T2, T+1 every 10 catches. Those are re-applied on
+        /// every setup run so the asset cannot drift from the GDD; anything else tuned by hand stays.
+        /// </summary>
+        static ModeConfig CreateModeConfigB()
+        {
+            var config = LoadOrCreate<ModeConfig>(ModeConfigBPath);
+            config.ordersEnabled = true;
+            config.pointsPerCatch = 2;
+            config.startTempoLevel = 2;
+            config.catchesPerTempoLevel = 10;
+            EditorUtility.SetDirty(config);
+            return config;
+        }
 
         static DeviceConfig CreateDeviceConfig() => ResetToDefaults<DeviceConfig>(DeviceConfigPath);
 
@@ -41,6 +63,7 @@ namespace NightCafe.EditorTools
             var fresh = ScriptableObject.CreateInstance<T>();
             EditorUtility.CopySerialized(fresh, existing);
             Object.DestroyImmediate(fresh);
+            existing.name = Path.GetFileNameWithoutExtension(path); // CopySerialized blanks it, and Unity warns on save
 
             EditorUtility.SetDirty(existing);
             return existing;

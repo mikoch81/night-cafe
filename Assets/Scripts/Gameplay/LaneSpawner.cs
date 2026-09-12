@@ -33,6 +33,9 @@ namespace NightCafe.Gameplay
 
         public event Action<CupController> CupReachedCatchPoint;
 
+        /// <summary>Raised right after a cup starts down its rail, before its first frame - paint it here.</summary>
+        public event Action<CupController> CupSpawned;
+
         public IReadOnlyList<CupController> ActiveCups => _active;
 
         public void Initialise(ModeConfig config, LaneConfig laneConfig, TempoService tempo, IRandom rng)
@@ -94,6 +97,7 @@ namespace NightCafe.Gameplay
             cup.transform.localScale = Vector3.one * _laneConfig.cupScale;
             cup.Launch(lane, _laneConfig.GetSteps(lane), () => _tempo.StepTime);
             _active.Add(cup);
+            CupSpawned?.Invoke(cup);
         }
 
         void OnCupReachedCatchPoint(CupController cup)

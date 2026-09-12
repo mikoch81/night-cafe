@@ -20,6 +20,7 @@ namespace NightCafe.EditorTools
         const string SceneDir = "Assets/Scenes";
         const string AudioDir = "Assets/Audio";
         const string ModeConfigPath = SettingsDir + "/ModeConfig_A.asset";
+        const string ModeConfigBPath = SettingsDir + "/ModeConfig_B.asset";
         const string LaneConfigPath = SettingsDir + "/LaneConfig.asset";
         const string DeviceConfigPath = SettingsDir + "/DeviceConfig.asset";
         const string AudioConfigPath = SettingsDir + "/AudioConfig.asset";
@@ -73,14 +74,14 @@ namespace NightCafe.EditorTools
             ConfigureAudioImporters();
 
             TMP_FontAsset monoFont = EnsureMonoFont();
-            ModeConfig modeConfig = CreateModeConfig();
+            ModeConfig[] modeConfigs = { CreateModeConfig(), CreateModeConfigB() };
             LaneConfig laneConfig = CreateLaneConfig();
             DeviceConfig deviceConfig = CreateDeviceConfig();
             AudioConfig audioConfig = CreateAudioConfig();
             CreateVolumeProfile();
             CreateCupPrefab(laneConfig);
 
-            BuildGameScene(modeConfig, laneConfig, deviceConfig, audioConfig, monoFont);
+            BuildGameScene(modeConfigs, laneConfig, deviceConfig, audioConfig, monoFont);
             ApplyProjectSettings();
 
             AssetDatabase.SaveAssets();
@@ -137,7 +138,8 @@ namespace NightCafe.EditorTools
             renderer.sprite = LoadSprite("Assets/Art/sprites/cup.png");
             renderer.color = BrightAmber;
             SetSorting(renderer, Core.SortingLayers.Segments, 20);
-            root.AddComponent<CupController>();
+            var cup = root.AddComponent<CupController>();
+            SetSerialized(cup, so => so.FindProperty("spriteRenderer").objectReferenceValue = renderer);
             root.transform.localScale = Vector3.one * laneConfig.cupScale;
 
             PrefabUtility.SaveAsPrefabAsset(root, CupPrefabPath);

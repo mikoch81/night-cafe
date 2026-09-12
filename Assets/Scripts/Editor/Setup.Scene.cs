@@ -18,7 +18,7 @@ namespace NightCafe.EditorTools
 {
     public static partial class NightCafeSetup
     {
-        static void BuildGameScene(ModeConfig modeConfig, LaneConfig laneConfig,
+        static void BuildGameScene(ModeConfig[] modeConfigs, LaneConfig laneConfig,
             DeviceConfig deviceConfig, AudioConfig audioConfig, TMP_FontAsset monoFont)
         {
             EnsureFolder(SceneDir);
@@ -31,7 +31,7 @@ namespace NightCafe.EditorTools
             var volumeProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumeProfilePath);
 
             Camera camera = BuildCamera(volumeProfile);
-            DeviceShellView deviceShell = BuildDevice(deviceConfig);
+            DeviceShellView deviceShell = BuildDevice(deviceConfig, camera);
 
             Transform screenRoot = Child("ScreenRoot", null,
                 new Vector2(0f, deviceConfig.screenOffsetY), deviceConfig.screenScale).transform;
@@ -44,6 +44,8 @@ namespace NightCafe.EditorTools
             CatCrossingView cat = BuildCat(screenRoot, laneConfig);
             StainStripView stains = BuildStains(screenRoot, laneConfig);
             (FlashFx neon, FlashFx dim) = BuildScreenFx(screenRoot);
+            OrderPanelView orderPanel = BuildOrderPanel(screenRoot, laneConfig, monoFont);
+            GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
             (HudView hud, TitleToggleView toggles) = BuildHud(screenRoot, monoFont);
 
             var context = new GameObject("GameContext");
@@ -61,8 +63,13 @@ namespace NightCafe.EditorTools
 
             SetSerialized(loop, so =>
             {
-                so.FindProperty("modeConfig").objectReferenceValue = modeConfig;
+                SerializedProperty modes = so.FindProperty("modeConfigs");
+                modes.arraySize = modeConfigs.Length;
+                for (int i = 0; i < modeConfigs.Length; i++)
+                    modes.GetArrayElementAtIndex(i).objectReferenceValue = modeConfigs[i];
+
                 so.FindProperty("laneConfig").objectReferenceValue = laneConfig;
+                so.FindProperty("deviceConfig").objectReferenceValue = deviceConfig;
                 so.FindProperty("audioConfig").objectReferenceValue = audioConfig;
                 so.FindProperty("spawner").objectReferenceValue = spawner;
                 so.FindProperty("laneInput").objectReferenceValue = laneInput;
@@ -71,6 +78,8 @@ namespace NightCafe.EditorTools
                 so.FindProperty("deviceShell").objectReferenceValue = deviceShell;
                 so.FindProperty("stainStrip").objectReferenceValue = stains;
                 so.FindProperty("cat").objectReferenceValue = cat;
+                so.FindProperty("orderPanel").objectReferenceValue = orderPanel;
+                so.FindProperty("ghostRoot").objectReferenceValue = ghosts;
                 so.FindProperty("neonFlash").objectReferenceValue = neon;
                 so.FindProperty("screenDim").objectReferenceValue = dim;
                 so.FindProperty("titleToggles").objectReferenceValue = toggles;
@@ -119,7 +128,7 @@ namespace NightCafe.EditorTools
             return camera;
         }
 
-        static DeviceShellView BuildDevice(DeviceConfig config)
+        static DeviceShellView BuildDevice(DeviceConfig config, Camera camera)
         {
             Transform device = Child("Device", null).transform;
 
@@ -158,6 +167,13 @@ namespace NightCafe.EditorTools
                 so.FindProperty("normal").objectReferenceValue = normal;
                 so.FindProperty("pressed").objectReferenceValue = pressed;
                 so.FindProperty("litDuration").floatValue = config.buttonLitDuration;
+                so.FindProperty("leverTrack").objectReferenceValue = track.transform;
+                so.FindProperty("leverKnob").objectReferenceValue = knob.transform;
+                so.FindProperty("leverKnobX").floatValue = config.leverKnob.x;
+                so.FindProperty("leverHitSize").vector2Value = config.leverHitSize;
+                so.FindProperty("shell").objectReferenceValue = shellRenderer;
+                so.FindProperty("worldCamera").objectReferenceValue = camera;
+                so.FindProperty("woodBackground").colorValue = WoodBackground;
 
                 SerializedProperty array = so.FindProperty("buttons");
                 array.arraySize = renderers.Length;
@@ -317,6 +333,92 @@ namespace NightCafe.EditorTools
             SetSerialized(dim, so => so.FindProperty("spriteRenderer").objectReferenceValue = dimRenderer);
 
             return (neon, dim);
+        }
+
+        /// <summary>
+        /// Mode B order light (GDD 3), above the bar on the right - the stains take the left.
+        /// The white cup in order_panel.png is at px 56..199 x 48..159 of the 520x208 canvas;
+        /// the swatch quad sits over it, slightly inset so the white keeps a thin rim.
+        /// </summary>
+        static OrderPanelView BuildOrderPanel(Transform screenRoot, LaneConfig laneConfig, TMP_FontAsset monoFont)
+        {
+            var panel = Child("OrderPanel", screenRoot, laneConfig.orderPanelPosition, laneConfig.orderPanelScale);
+            var frame = panel.AddComponent<SpriteRenderer>();
+            frame.sprite = LoadSprite("Assets/Art/sprites/order_panel.png");
+            frame.enabled = false;
+            SetSorting(frame, Core.SortingLayers.Segments, 8);
+
+            var swatchGo = Child("Swatch", panel.transform, new Vector2(-1.325f, 0f));
+            swatchGo.transform.localScale = new Vector3(1.30f, 0.98f, 1f);
+            var swatch = swatchGo.AddComponent<SpriteRenderer>();
+            swatch.sprite = WhitePixelSprite();
+            swatch.enabled = false;
+            SetSorting(swatch, Core.SortingLayers.Segments, 9);
+
+            Vector2 labelPosition = laneConfig.orderPanelPosition + new Vector2(0.975f * laneConfig.orderPanelScale, 0f);
+            TMP_Text label = WorldText("OrderLabel", screenRoot, labelPosition, "ESPRESSO", 3.2f, monoFont,
+                ActiveAmber, 0, new Vector2(2.9f * laneConfig.orderPanelScale, 0.8f));
+            label.gameObject.SetActive(false);
+
+            var view = panel.AddComponent<OrderPanelView>();
+            SetSerialized(view, so =>
+            {
+                so.FindProperty("frame").objectReferenceValue = frame;
+                so.FindProperty("swatch").objectReferenceValue = swatch;
+                so.FindProperty("label").objectReferenceValue = label;
+            });
+
+            return view;
+        }
+
+        /// <summary>
+        /// GDD 5.2 segment ghosts: every sprite the LCD can show, parked in every slot at 5 %
+        /// opacity, the way an unlit segment still shadows through real LCD glass. One static
+        /// root toggled by the settings; nothing here moves.
+        /// </summary>
+        static GameObject BuildGhosts(Transform screenRoot, LaneConfig laneConfig)
+        {
+            Color ghost = new(ActiveAmber.r, ActiveAmber.g, ActiveAmber.b, laneConfig.ghostAlpha);
+            GameObject root = Child("Ghosts", screenRoot);
+
+            Sprite cup = LoadSprite("Assets/Art/sprites/cup.png");
+            Sprite brokenCup = LoadSprite("Assets/Art/sprites/cup_broken.png");
+            Sprite trayUp = LoadSprite("Assets/Art/sprites/barista_up.png");
+            Sprite trayDown = LoadSprite("Assets/Art/sprites/barista_down.png");
+
+            foreach (LanePosition lane in Enum.GetValues(typeof(LanePosition)))
+            {
+                var steps = laneConfig.GetSteps(lane);
+                for (int i = 0; i < steps.Count; i++)
+                    Ghost($"Cup_{lane}_{i}", root.transform, steps[i], laneConfig.cupScale, cup, ghost, false);
+
+                Ghost($"Broken_{lane}", root.transform, laneConfig.GetCatchPoint(lane), laneConfig.brokenCupScale,
+                    brokenCup, ghost, false);
+
+                Ghost($"Barista_{lane}", root.transform, laneConfig.GetBaristaSlot(lane), laneConfig.baristaScale,
+                    lane.IsUp() ? trayUp : trayDown, ghost, lane.IsLeft());
+            }
+
+            Ghost("Cat", root.transform, new Vector2(0f, laneConfig.barLineY), laneConfig.catScale,
+                LoadSprite("Assets/Art/sprites/cat_a.png"), ghost, false);
+            Ghost("OrderPanel", root.transform, laneConfig.orderPanelPosition, laneConfig.orderPanelScale,
+                LoadSprite("Assets/Art/sprites/order_panel.png"), ghost, false);
+
+            root.SetActive(false); // GameLoopController switches it on from the saved setting
+            return root;
+        }
+
+        static void Ghost(string name, Transform parent, Vector2 position, float scale, Sprite sprite,
+            Color colour, bool mirrorX)
+        {
+            var go = Child(name, parent, position, scale);
+            if (mirrorX)
+                go.transform.localScale = new Vector3(-scale, scale, 1f);
+
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.color = colour;
+            SetSorting(renderer, Core.SortingLayers.Segments, -1);
         }
 
         static AudioService BuildAudio(GameObject context, AudioConfig config)

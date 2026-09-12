@@ -47,6 +47,14 @@ namespace NightCafe.Config
         [Tooltip("The bar line baked into screen_bg; stains sit on it and the cat mops along it.")]
         public float barLineY = -3.67f;
 
+        [Header("Mode B order light (GDD 3) - above the bar, opposite the stains")]
+        public Vector2 orderPanelPosition = new(4.1f, -2.85f);
+        public float orderPanelScale = 0.5f;
+
+        [Header("Segment ghosts (GDD 5.2)")]
+        [Tooltip("Blended in linear colour space, so this reads far brighter than the number suggests: 0.012 looks like the faint 5 % ghost the GDD describes.")]
+        [Range(0f, 1f)] public float ghostAlpha = 0.012f;
+
         [Header("Sprite scale (art is authored @4x, tuned down to read on the LCD screen)")]
         public float cupScale = 0.5f;
         public float baristaScale = 0.42f;

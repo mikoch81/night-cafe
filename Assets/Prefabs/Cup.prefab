@@ -105,3 +105,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47e7a0bfd9631ef2592f04358137136a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Gameplay.CupController
+  spriteRenderer: {fileID: 1779081547366600068}

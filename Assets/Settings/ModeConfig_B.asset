@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 85ba491a65c27a52faff89347330215d, type: 3}
-  m_Name: ModeConfig_A
+  m_Name: ModeConfig_B
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.ModeConfig
   baseStepTime: 0.9
   stepTimeDecrement: 0.055
   minStepTime: 0.4
-  catchesPerTempoLevel: 12
+  catchesPerTempoLevel: 10
   maxTempoLevel: 9
-  startTempoLevel: 0
+  startTempoLevel: 2
   firstSpawnDelay: 1.2
   intervalMultipliers: 020000000300000004000000
   intervalWeights:
@@ -27,7 +27,7 @@ MonoBehaviour:
   maxCupsPerLane: 2
   minStepGap: 2
   screenLimitByTempo: 02000000020000000200000003000000030000000300000004000000040000000400000004000000
-  pointsPerCatch: 1
+  pointsPerCatch: 2
   comboBonusEvery: 25
   comboBonusPoints: 5
   rolloverModulo: 1000
@@ -38,7 +38,7 @@ MonoBehaviour:
   catchPoseDuration: 0.12
   missPoseDuration: 0.3
   brokenCupDuration: 0.4
-  ordersEnabled: 0
+  ordersEnabled: 1
   orderColors:
   - {r: 1, g: 0.788, b: 0.4, a: 1}
   - {r: 1, g: 0.616, b: 0.431, a: 1}

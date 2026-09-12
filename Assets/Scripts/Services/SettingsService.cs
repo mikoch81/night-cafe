@@ -32,13 +32,15 @@ namespace NightCafe.Services
     }
 
     /// <summary>
-    /// Player toggles for music, sound effects and haptics (GDD 4, 5.3). Everything defaults to on.
+    /// Player toggles for music, sound effects, haptics (GDD 4, 5.3) and segment ghosts (GDD 5.2).
+    /// Everything defaults to on except the ghosts, which are an opt-in LCD affectation.
     /// </summary>
     public sealed class SettingsService
     {
         const string MusicKey = "nightcafe.music";
         const string SfxKey = "nightcafe.sfx";
         const string HapticsKey = "nightcafe.haptics";
+        const string GhostsKey = "nightcafe.ghosts";
 
         readonly ISettingsStore _store;
 
@@ -48,11 +50,13 @@ namespace NightCafe.Services
             MusicEnabled = _store.Load(MusicKey, true);
             SfxEnabled = _store.Load(SfxKey, true);
             HapticsEnabled = _store.Load(HapticsKey, true);
+            GhostsEnabled = _store.Load(GhostsKey, false);
         }
 
         public bool MusicEnabled { get; private set; }
         public bool SfxEnabled { get; private set; }
         public bool HapticsEnabled { get; private set; }
+        public bool GhostsEnabled { get; private set; }
 
         public event Action Changed;
 
@@ -61,6 +65,8 @@ namespace NightCafe.Services
         public void ToggleSfx() => Set(SfxKey, SfxEnabled = !SfxEnabled);
 
         public void ToggleHaptics() => Set(HapticsKey, HapticsEnabled = !HapticsEnabled);
+
+        public void ToggleGhosts() => Set(GhostsKey, GhostsEnabled = !GhostsEnabled);
 
         void Set(string key, bool value)
         {

@@ -17,6 +17,9 @@ namespace NightCafe.Audio
 
         SettingsService _settings;
 
+        /// <summary>Silences effects only; the lo-fi bed keeps playing under the attract demo.</summary>
+        public bool SfxMuted { get; set; }
+
         public void Initialise(SettingsService settings)
         {
             _settings = settings;
@@ -41,7 +44,7 @@ namespace NightCafe.Audio
 
         public void Play(GameSfx sfx)
         {
-            if (_settings != null && !_settings.SfxEnabled)
+            if (SfxMuted || (_settings != null && !_settings.SfxEnabled))
                 return;
 
             AudioClip clip = config.Clip(sfx);

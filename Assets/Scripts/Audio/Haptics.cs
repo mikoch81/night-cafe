@@ -98,15 +98,20 @@ namespace NightCafe.Audio
             _settings = settings;
         }
 
+        /// <summary>Attract mode plays silently: the phone must not buzz on the title screen.</summary>
+        public bool Muted { get; set; }
+
+        bool Enabled => !Muted && (_settings == null || _settings.HapticsEnabled);
+
         public void OneShot(int milliseconds)
         {
-            if (_settings == null || _settings.HapticsEnabled)
+            if (Enabled)
                 _backend.OneShot(milliseconds);
         }
 
         public void Pattern(long[] pattern)
         {
-            if (_settings == null || _settings.HapticsEnabled)
+            if (Enabled)
                 _backend.Pattern(pattern);
         }
 

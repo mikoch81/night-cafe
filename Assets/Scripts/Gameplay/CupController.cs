@@ -10,6 +10,11 @@ namespace NightCafe.Gameplay
     /// </summary>
     public sealed class CupController : MonoBehaviour
     {
+        [SerializeField] SpriteRenderer spriteRenderer;
+
+        static int _nextSerial;
+
+        Color _defaultTint = Color.white;
         IReadOnlyList<Vector2> _steps;
         Func<float> _stepTimeProvider;
         float _stepDuration;
@@ -21,6 +26,15 @@ namespace NightCafe.Gameplay
         /// <summary>Index of the step the cup has last reached; 0 = K1.</summary>
         public int StepIndex { get; private set; }
 
+        /// <summary>Mode B colour index (GDD 3); 0 in Mode A.</summary>
+        public int Colour { get; private set; }
+
+        /// <summary>
+        /// Unique per launch, not per object: pooled cups are reused, and the attract pilot
+        /// must not mistake a relaunched cup for the one it already decided to fumble.
+        /// </summary>
+        public int Serial { get; private set; }
+
         public event Action<CupController> ReachedCatchPoint;
 
         public void Launch(int lane, IReadOnlyList<Vector2> steps, Func<float> stepTimeProvider)
@@ -28,6 +42,7 @@ namespace NightCafe.Gameplay
             Lane = lane;
             _steps = steps;
             _stepTimeProvider = stepTimeProvider;
+            Serial = ++_nextSerial;
             StepIndex = 0;
             _elapsed = 0f;
             _stepDuration = Mathf.Max(0.0001f, stepTimeProvider());
@@ -37,8 +52,22 @@ namespace NightCafe.Gameplay
             gameObject.SetActive(true);
         }
 
+        void Awake()
+        {
+            if (spriteRenderer != null)
+                _defaultTint = spriteRenderer.color;
+        }
+
+        public void Paint(int colour, Color tint)
+        {
+            Colour = colour;
+            if (spriteRenderer != null)
+                spriteRenderer.color = tint;
+        }
+
         public void Despawn()
         {
+            Paint(0, _defaultTint); // Mode A never paints, so a cup last used in Mode B must not keep its colour
             _running = false;
             _steps = null;
             _stepTimeProvider = null;

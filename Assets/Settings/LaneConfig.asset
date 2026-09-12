@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68ead356c81bef234a4c735cd4e72d0b, type: 3}
-  m_Name: 
+  m_Name: LaneConfig
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.LaneConfig
   lanes:
   - steps:
@@ -50,6 +50,9 @@ MonoBehaviour:
   leftUpSlot: {x: -1.16, y: -0.04}
   leftDownSlot: {x: -1.16, y: -2.64}
   barLineY: -3.67
+  orderPanelPosition: {x: 4.1, y: -2.85}
+  orderPanelScale: 0.5
+  ghostAlpha: 0.012
   cupScale: 0.5
   baristaScale: 0.42
   machineHeadScale: 0.5

@@ -46,6 +46,30 @@ namespace NightCafe.Config
         public float missPoseDuration = 0.30f;
         public float brokenCupDuration = 0.40f;
 
+        [Header("Orders (GDD 3, Mode B only)")]
+        [Tooltip("Off for Mode A: every cup is wanted and cups keep the default tint.")]
+        public bool ordersEnabled;
+
+        [Tooltip("Cup tints in order: espresso, caramel, latte, decaf (GDD 3).")]
+        public Color[] orderColors =
+        {
+            new(1f, 0.788f, 0.4f),     // #ffc966 espresso
+            new(1f, 0.616f, 0.431f),   // #ff9d6e caramel
+            new(1f, 0.914f, 0.659f),   // #ffe9a8 latte
+            new(0.851f, 0.549f, 1f)    // #d98cff decaf
+        };
+
+        public string[] orderNames = { "ESPRESSO", "CARAMEL", "LATTE", "DECAF" };
+
+        [Tooltip("Spawn weight of the ordered colour; every other colour shares the rest equally.")]
+        [Range(0f, 1f)] public float orderedColorWeight = 0.55f;
+
+        [Tooltip("The order rotates after this many correct catches ...")]
+        public int orderChangeCatches = 10;
+
+        [Tooltip("... or after this many seconds, whichever comes first.")]
+        public float orderChangeSeconds = 20f;
+
         public TempoSettings Tempo => new(
             baseStepTime, stepTimeDecrement, minStepTime, catchesPerTempoLevel, maxTempoLevel, startTempoLevel);
 
@@ -56,6 +80,29 @@ namespace NightCafe.Config
         public SpawnSettings Spawn => new(
             firstSpawnDelay, intervalMultipliers, intervalWeights,
             maxCupsPerLane, minStepGap, screenLimitByTempo);
+
+        public OrderSettings Orders => new(
+            ordersEnabled, orderColors?.Length ?? 0, orderedColorWeight,
+            orderChangeCatches, orderChangeSeconds);
+    }
+
+    public readonly struct OrderSettings
+    {
+        public readonly bool Enabled;
+        public readonly int ColourCount;
+        public readonly float OrderedWeight;
+        public readonly int ChangeAfterCatches;
+        public readonly float ChangeAfterSeconds;
+
+        public OrderSettings(bool enabled, int colourCount, float orderedWeight,
+            int changeAfterCatches, float changeAfterSeconds)
+        {
+            Enabled = enabled;
+            ColourCount = Mathf.Max(1, colourCount);
+            OrderedWeight = Mathf.Clamp01(orderedWeight);
+            ChangeAfterCatches = Mathf.Max(1, changeAfterCatches);
+            ChangeAfterSeconds = Mathf.Max(0.01f, changeAfterSeconds);
+        }
     }
 
     public readonly struct TempoSettings

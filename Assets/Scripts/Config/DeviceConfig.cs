@@ -24,11 +24,27 @@ namespace NightCafe.Config
         [Tooltip("How long a button stays lit after a press, in seconds.")]
         public float buttonLitDuration = 0.10f;
 
-        [Header("Mode lever (decorative until Mode B ships)")]
+        [Header("Mode lever (GDD 5.1: A on the left, B on the right)")]
         public Vector2 leverTrack = new(0f, -3.86f);
         public Vector2 leverKnob = new(-0.64f, -3.86f);
         public float leverTrackScale = 0.2961f;
         public float leverKnobScale = 0.2897f;
+
+        [Tooltip("Tap area around the track that flips the mode on the title screen.")]
+        public Vector2 leverHitSize = new(3.6f, 1.3f);
+
+        [Header("Attract mode (GDD 6)")]
+        [Tooltip("Seconds of an untouched title screen before the demo starts.")]
+        public float attractDelay = 8f;
+
+        [Tooltip("Longest a demo runs before handing back to the title, even if the pilot is still alive.")]
+        public float attractMaxDuration = 45f;
+
+        [Tooltip("How long the pilot takes to react to a cup that needs a lane change.")]
+        public float pilotReactionSeconds = 0.22f;
+
+        [Tooltip("Share of cups the pilot deliberately lets drop, so the demo ends on its own.")]
+        [Range(0f, 1f)] public float pilotFumbleChance = 0.08f;
 
         [Header("Shell")]
         public float shellScale = 1f;
