@@ -15,20 +15,23 @@ namespace NightCafe.EditorTools
         static (HudView hud, TitleToggleView toggles) BuildHud(Transform screenRoot, TMP_FontAsset monoFont)
         {
             Transform root = Child("ScreenHud", screenRoot).transform;
+            TMP_FontAsset digitFont = Segment7Font != null ? Segment7Font : monoFont;
+            TMP_FontAsset letterFont = Segment14Font != null ? Segment14Font : monoFont;
 
-            TMP_Text score = WorldText("ScoreText", root, new Vector2(0f, 3.55f), "000", 14f, monoFont,
+            TMP_Text score = WorldText("ScoreText", root, new Vector2(0f, 3.55f), "000", 14f, digitFont,
                 ActiveAmber, 0, new Vector2(8f, 1.8f));
 
-            TMP_Text mode = WorldText("ModeText", root, new Vector2(4.60f, 3.55f), "A", 8f, monoFont,
+            TMP_Text mode = WorldText("ModeText", root, new Vector2(4.60f, 3.55f), "A", 8f, letterFont,
                 ActiveAmber, 0, new Vector2(2f, 1.2f));
 
-            TMP_Text best = WorldText("BestText", root, new Vector2(-4.30f, 3.55f), "BEST 000", 5f, monoFont,
-                ActiveAmber, 0, new Vector2(3.6f, 1.2f));
+            TMP_Text best = WorldText("BestText", root, new Vector2(-4.30f, 3.55f), "BEST 000", 4.6f, letterFont,
+                ActiveAmber, 0, new Vector2(3.9f, 1.2f));
+            best.wordSpacing = 12f; // DSEG's space is a bare segment gap; open it up between BEST and the digits
 
             // --- Title ---------------------------------------------------------
             GameObject titlePanel = Child("TitlePanel", root);
             TMP_Text clock = WorldText("ClockText", titlePanel.transform, new Vector2(0f, 1.30f),
-                "23:41", 11f, monoFont, BrightAmber, 0, new Vector2(8f, 1.6f));
+                "23:41", 11f, digitFont, BrightAmber, 0, new Vector2(8f, 1.6f));
 
             WorldText("TitleText", titlePanel.transform, new Vector2(0f, -0.30f),
                 "NIGHT CAFÉ\nTAP TO START", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 2.6f));

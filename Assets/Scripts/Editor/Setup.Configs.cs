@@ -13,6 +13,18 @@ namespace NightCafe.EditorTools
         const string FontDir = "Assets/Fonts";
         const string MonoFontPath = FontDir + "/LiberationMono-Bold.ttf";
         const string MonoFontAssetPath = FontDir + "/LiberationMono-Bold SDF.asset";
+        const string Segment14FontPath = FontDir + "/DSEG14Classic-Regular.ttf";
+        const string Segment14FontAssetPath = FontDir + "/DSEG14Classic-Regular SDF.asset";
+        const string Segment7FontPath = FontDir + "/DSEG7Classic-Regular.ttf";
+        const string Segment7FontAssetPath = FontDir + "/DSEG7Classic-Regular SDF.asset";
+
+        /// <summary>
+        /// DSEG (OFL, Assets/Fonts) for what a real LCD shows on segment displays. Digits-only
+        /// fields (score, clock) use the 7-segment face - its zero has no slash; fields with
+        /// letters (best, mode) use the 14-segment one. Prose stays in the mono font.
+        /// </summary>
+        static TMP_FontAsset Segment14Font;
+        static TMP_FontAsset Segment7Font;
 
         /// <summary>
         /// Mode A is exactly the field initialisers in ModeConfig, which are the GDD numbers, so
@@ -144,12 +156,35 @@ namespace NightCafe.EditorTools
             " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" +
             "ÉéÓóŁłŚśŻżŹźĄąĘęĆćŃń·♪░▒▓";
 
+        /// <summary>Digits, the colon and capitals - DSEG has no lowercase or diacritics.</summary>
+        const string Segment14Charset = " 0123456789:-ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string Segment7Charset = " 0123456789:-";
+
+        static TMP_FontAsset EnsureSegmentFont(string ttfPath, string assetPath, string baseName, string charset)
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
+            if (existing != null)
+            {
+                BakeStaticAtlas(existing, charset);
+                return existing;
+            }
+
+            var font = AssetDatabase.LoadAssetAtPath<Font>(ttfPath);
+            if (font == null)
+            {
+                Debug.LogWarning($"[NightCafe] {baseName} not found in Assets/Fonts; that HUD field falls back to the mono font.");
+                return null;
+            }
+
+            return CreateFontAsset(font, assetPath, baseName, charset);
+        }
+
         static TMP_FontAsset EnsureMonoFont()
         {
             var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(MonoFontAssetPath);
             if (existing != null)
             {
-                BakeStaticAtlas(existing);
+                BakeStaticAtlas(existing, HudCharset);
                 return existing;
             }
 
@@ -185,35 +220,40 @@ namespace NightCafe.EditorTools
                 return null;
             }
 
+            return CreateFontAsset(font, MonoFontAssetPath, "LiberationMono-Bold", HudCharset);
+        }
+
+        static TMP_FontAsset CreateFontAsset(Font font, string assetPath, string baseName, string charset)
+        {
             TMP_FontAsset fontAsset = TMP_FontAsset.CreateFontAsset(font);
-            fontAsset.name = "LiberationMono-Bold SDF";
-            AssetDatabase.CreateAsset(fontAsset, MonoFontAssetPath);
+            fontAsset.name = baseName + " SDF";
+            AssetDatabase.CreateAsset(fontAsset, assetPath);
 
             // The atlas texture and material are sub-assets and must be stored alongside it.
             if (fontAsset.atlasTexture != null)
             {
-                fontAsset.atlasTexture.name = "LiberationMono-Bold Atlas";
+                fontAsset.atlasTexture.name = baseName + " Atlas";
                 AssetDatabase.AddObjectToAsset(fontAsset.atlasTexture, fontAsset);
             }
 
             if (fontAsset.material != null)
             {
-                fontAsset.material.name = "LiberationMono-Bold Material";
+                fontAsset.material.name = baseName + " Material";
                 AssetDatabase.AddObjectToAsset(fontAsset.material, fontAsset);
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[NightCafe] Created mono TMP font asset.");
-            BakeStaticAtlas(fontAsset);
+            Debug.Log($"[NightCafe] Created TMP font asset {fontAsset.name}.");
+            BakeStaticAtlas(fontAsset, charset);
             return fontAsset;
         }
 
-        static void BakeStaticAtlas(TMP_FontAsset fontAsset)
+        static void BakeStaticAtlas(TMP_FontAsset fontAsset, string charset)
         {
             if (fontAsset.atlasPopulationMode == AtlasPopulationMode.Static)
                 return;
 
-            if (!fontAsset.TryAddCharacters(HudCharset, out string missing))
+            if (!fontAsset.TryAddCharacters(charset, out string missing))
                 Debug.LogWarning($"[NightCafe] Font is missing HUD glyphs: {missing}");
 
             fontAsset.atlasPopulationMode = AtlasPopulationMode.Static;

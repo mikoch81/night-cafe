@@ -78,6 +78,8 @@ namespace NightCafe.EditorTools
             ConfigureAudioImporters();
 
             TMP_FontAsset monoFont = EnsureMonoFont();
+            Segment14Font = EnsureSegmentFont(Segment14FontPath, Segment14FontAssetPath, "DSEG14Classic-Regular", Segment14Charset);
+            Segment7Font = EnsureSegmentFont(Segment7FontPath, Segment7FontAssetPath, "DSEG7Classic-Regular", Segment7Charset);
             ModeConfig[] modeConfigs = { CreateModeConfig(), CreateModeConfigB() };
             LaneConfig laneConfig = CreateLaneConfig();
             DeviceConfig deviceConfig = CreateDeviceConfig();
