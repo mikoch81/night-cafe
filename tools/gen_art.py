@@ -144,9 +144,9 @@ def stroke_path(d, width, colour, extra=""):
 # saucer carries a cup. The catch pose puts the saucer where the rails end (K5 sits at about
 # (93, 37) in this canvas), up/down lift or drop it towards the lane the barista serves.
 BARISTA_POSES = {
-    "up": dict(arm=-26, saucer=True, cup=False, far=8, miss=False),
-    "down": dict(arm=2, saucer=True, cup=False, far=8, miss=False),
-    "catch": dict(arm=-12, saucer=True, cup=True, far=8, miss=False),
+    "up": dict(arm=-28, saucer=True, cup=False, far=8, miss=False),
+    "down": dict(arm=-4, saucer=True, cup=False, far=8, miss=False),
+    "catch": dict(arm=-20, saucer=True, cup=True, far=8, miss=False),
     "miss": dict(arm=42, saucer=False, cup=False, far=-14, miss=True),
     # Breather (GDD 2.6): the barista wipes his hands on the apron; alternated with "down".
     "wipe": dict(arm=58, saucer=False, cup=False, far=8, miss=False, cloth=True),
@@ -154,68 +154,73 @@ BARISTA_POSES = {
 
 
 def barista(pose, style, palette):
-    """Segmented LCD barista in one of BARISTA_POSES. Same canvas and anchor for every pose."""
+    """Segmented LCD barista in one of BARISTA_POSES. Same canvas and anchor for every pose.
+
+    Proportions follow docs/references/02_barista_a.png: a head a third of the height under a
+    wide flat cap, a knee-length apron with a bib, short legs in boots, a flat tray.
+    """
     import math
     amber = palette["activeAmber"]
     bright = palette["brightAmber"]
     p = BARISTA_POSES[pose]
     b, d = [], []
-    sx, sy = 57, 44                                   # near shoulder joint
+    sx, sy = 58, 49                                   # near shoulder joint
     theta = math.radians(p["arm"])
     cos, sin = math.cos(theta), math.sin(theta)
 
-    head_tilt = 'transform="rotate(9 42 34)"' if p["miss"] else ""
+    head_tilt = 'transform="rotate(8 43 40)"' if p["miss"] else ""
     b.append(f'    <g {head_tilt}>\n')
-    b.append(path("M28 16 Q41 -2 56 14 L56 16.5 L28 16.5 Z"))              # cap crown
-    b.append(rrect(50, 13.5, 17, 4, 2))                                     # visor
-    b.append(rrect(30, 17.5, 24, 17, 9))                                    # head
+    b.append(path("M24 19 Q26 4 43 3 Q60 4 62 19 Z"))                        # cap crown
+    b.append(rrect(24, 17, 46, 4.5, 2.25))                                  # cap band + visor
+    b.append(rrect(30, 20, 26, 21, 10))                                     # head
+    b.append(path("M55 29 q4 0 4 3.5 q0 3.5 -4 3.5 z"))                     # nose
     b.append("    </g>\n")
     if p["miss"]:
-        d.append(cut_stroke("M47 23 l3.4 3.4 M50.4 23 l-3.4 3.4", 1.4, style, palette))  # x-eye
+        d.append(cut_stroke("M47.5 27 l3.4 3.4 M50.9 27 l-3.4 3.4", 1.4, style, palette))  # x-eye
         if style.details:
-            b.append(path("M60 24 q2.6 3.4 0 5.6 q-2.6 -2.2 0 -5.6 z"))     # sweat drop
+            b.append(path("M64 26 q2.6 3.4 0 5.6 q-2.6 -2.2 0 -5.6 z"))     # sweat drop
     else:
-        d.append(cut(circle(48.5, 25, 1.7), style, palette))                # eye
-    b.append(rrect(38, 33, 8, 7, 2))                                        # neck
-    b.append(rrect(28, 39, 30, 12, 5))                                      # chest
-    b.append(path("M31 50 L55 50 L53 71 Q43 74 33 71 Z"))                   # apron
-    b.append(rrect(21, 43, 7, 22, 3.5, f'transform="rotate({p["far"]} 24.5 43)"'))  # far arm
+        d.append(cut(circle(49.5, 29, 1.8), style, palette))                # eye
+    b.append(rrect(39, 40, 8, 6, 2))                                        # neck
+    b.append(rrect(27, 44, 32, 14, 5))                                      # shirt
+    b.append(path("M36 45 L50 45 L50 56 L54 56 L56 77 Q43 80 30 77 L32 56 L36 56 Z"))  # apron with bib
+    d.append(cut_stroke("M36 45.5 L31 50 M50 45.5 L55 50", 1.4, style, palette))  # bib straps
+    b.append(rrect(21, 48, 7, 22, 3.5, f'transform="rotate({p["far"]} 24.5 48)"'))  # far arm
     b.append(rrect(sx, sy - 3.5, 30, 7, 3.5, f'transform="rotate({p["arm"]} {sx} {sy})"'))  # near arm
     if p["saucer"]:
         cx, cy = sx + 37 * cos, sy + 37 * sin - 2
-        b.append(ellipse(round(cx, 1), round(cy, 1), 13, 3.4))              # saucer
+        b.append(rrect(round(cx - 13, 1), round(cy - 1.6, 1), 26, 3.4, 1.7))  # tray
         d.append(seam([(round(sx + 28 * cos - 4 * sin, 1), round(sy + 28 * sin + 4 * cos, 1)),
                        (round(sx + 28 * cos + 4 * sin, 1), round(sy + 28 * sin - 4 * cos, 1))],
-                      style, palette))                                      # arm / saucer
+                      style, palette))                                      # arm / tray
         if p["cup"]:
             b.append(rrect(round(cx - 8, 1), round(cy - 12.5, 1), 15, 11, 2, f'fill="{bright}"'))  # cup
             b.append(path(f"M{cx + 7:.1f} {cy - 10:.1f} h3.5 a3 3 0 0 1 0 6 h-3.5 v-2 h3.5 "
                           f"a1 1 0 0 0 0 -2 h-3.5 z", f'fill="{bright}"'))  # cup handle
-            d.append(seam([(round(cx - 9, 1), round(cy - 1.2, 1)), (round(cx + 9, 1), round(cy - 1.2, 1))],
-                          style, palette))                                  # cup / saucer
+            d.append(seam([(round(cx - 9, 1), round(cy - 1.4, 1)), (round(cx + 9, 1), round(cy - 1.4, 1))],
+                          style, palette))                                  # cup / tray
             if style.details:
                 b.append(stroke_path(f"M{cx - 4:.1f} {cy - 15:.1f} q1.5 -2.5 0 -5 M{cx + 1:.1f} {cy - 15:.1f} q1.5 -2.5 0 -5",
                                      1.3, bright, 'opacity="0.75"'))        # steam
     if p.get("cloth"):
-        b.append(path("M60 58 q5 -4 9 0 q3 5 -1 9 q-5 3 -9 -1 q-3 -4 1 -8 z"))  # cloth in the near hand
-        d.append(seam([(58, 60), (62, 56)], style, palette))                 # hand / cloth
-    b.append(rrect(32, 72, 9, 15, 3))                                       # leg
-    b.append(rrect(45, 72, 9, 15, 3))                                       # leg
-    b.append(rrect(31, 86, 12, 4, 2))                                       # shoe
-    b.append(rrect(44, 86, 13, 4, 2))                                       # shoe
+        b.append(path("M61 63 q5 -4 9 0 q3 5 -1 9 q-5 3 -9 -1 q-3 -4 1 -8 z"))  # cloth in the near hand
+        d.append(seam([(59, 65), (63, 61)], style, palette))                 # hand / cloth
+    b.append(rrect(32, 77, 9, 10, 3))                                       # leg
+    b.append(rrect(45, 77, 9, 10, 3))                                       # leg
+    b.append(path("M30 85 h11 a2 2 0 0 1 2 2 v3 h-14 a3 3 0 0 1 -3 -3 v-1 a1 1 0 0 1 1 -1 z"))  # boot
+    b.append(path("M44 85 h11 a4 4 0 0 1 4 4 v1 h-16 a2 2 0 0 1 -2 -2 v-1 a2 2 0 0 1 2 -2 z"))  # boot
 
     # grooves between the segments
-    d.append(seam([(27, 16.8), (68, 16.8)], style, palette))                # cap / head
-    d.append(seam([(29, 33.5), (55, 33.5)], style, palette))                # head / neck
-    d.append(seam([(27, 39.5), (59, 39.5)], style, palette))                # neck / chest
-    d.append(seam([(29, 50), (57, 50)], style, palette))                    # chest / apron
+    d.append(seam([(23, 21.2), (71, 21.2)], style, palette))                # cap / head
+    d.append(seam([(29, 40.5), (57, 40.5)], style, palette))                # head / neck
+    d.append(seam([(26, 44.5), (60, 44.5)], style, palette))                # neck / shirt
     d.append(seam([(round(sx + 1.5 * cos - 5 * sin, 1), round(sy + 1.5 * sin + 5 * cos, 1)),
                    (round(sx + 1.5 * cos + 5 * sin, 1), round(sy + 1.5 * sin - 5 * cos, 1))],
-                  style, palette))                                          # chest / near arm
-    d.append(seam([(21.5, 44), (28.5, 44)], style, palette))                # chest / far arm
-    d.append(seam([(43, 71), (43, 87)], style, palette))                    # between legs
-    d.append(seam([(30, 71.5), (56, 71.5)], style, palette))                # apron / legs
-    d.append(seam([(30, 86), (58, 86)], style, palette))                    # legs / shoes
+                  style, palette))                                          # shirt / near arm
+    d.append(seam([(21.5, 49), (28.5, 49)], style, palette))                # shirt / far arm
+    d.append(seam([(43, 77), (43, 86)], style, palette))                    # between legs
+    d.append(seam([(29, 77.5), (57, 77.5)], style, palette))                # apron / legs
+    d.append(seam([(29, 85.5), (60, 85.5)], style, palette))                # legs / boots
 
     return svg(110, 100, "".join(b), "".join(d), style, palette)
 

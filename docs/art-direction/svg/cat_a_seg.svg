@@ -7,12 +7,12 @@
     <path d="M22 53 C12 53 7 42 13 32 C21 23 37 19 46 22 C52 25 54 40 54 53 Z" />
     <rect x="46" y="33" width="8" height="20" rx="3.5" />
     <rect x="52" y="35" width="21" height="5.5" rx="2.75" transform="rotate(-6 52 37.5)"/>
+    <rect x="72.5" y="4" width="4" height="41" rx="2" />
+    <ellipse cx="75" cy="49" rx="12" ry="4.5" />
     <circle cx="54" cy="17" r="10" />
     <path d="M46 10 L44 -0.5 L52 7 Z" />
     <path d="M57 7.5 L63 -1 L64 10 Z" />
     <path d="M14 50 Q2 45 5 33 Q6 28 11 29" fill="none" stroke="#ffc966" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" />
-    <rect x="72.5" y="4" width="4" height="41" rx="2" />
-    <ellipse cx="75" cy="49" rx="12" ry="4.5" />
 
   </g>
   <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="56">
@@ -20,12 +20,12 @@
     <path d="M22 53 C12 53 7 42 13 32 C21 23 37 19 46 22 C52 25 54 40 54 53 Z" />
     <rect x="46" y="33" width="8" height="20" rx="3.5" />
     <rect x="52" y="35" width="21" height="5.5" rx="2.75" transform="rotate(-6 52 37.5)"/>
+    <rect x="72.5" y="4" width="4" height="41" rx="2" />
+    <ellipse cx="75" cy="49" rx="12" ry="4.5" />
     <circle cx="54" cy="17" r="10" />
     <path d="M46 10 L44 -0.5 L52 7 Z" />
     <path d="M57 7.5 L63 -1 L64 10 Z" />
     <path d="M14 50 Q2 45 5 33 Q6 28 11 29" fill="none" stroke="#fff" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" />
-    <rect x="72.5" y="4" width="4" height="41" rx="2" />
-    <ellipse cx="75" cy="49" rx="12" ry="4.5" />
 
     </g>
   </mask>
@@ -33,13 +33,13 @@
 <use xlink:href="#seg" filter="url(#glow)" opacity="0.85"/>
 <use xlink:href="#seg"/>
 <g mask="url(#ink)">
+    <path d="M68 45 L82 45" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M53.5 33 L53.5 41" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
     <circle cx="57.5" cy="15.5" r="1.6"  fill="#120d09"/>
 
     <path d="M45 24 L52 27" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
     <path d="M45.5 32 L45.5 53" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
-    <path d="M53.5 33 L53.5 41" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
     <path d="M13 45 L17 50" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
-    <path d="M68 45 L82 45" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
     <path d="M45.5 10.5 L52.5 8" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
     <path d="M56.5 8.5 L64.5 10.5" fill="none" stroke="#120d09" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
 
