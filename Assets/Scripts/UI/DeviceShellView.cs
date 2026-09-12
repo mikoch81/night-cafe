@@ -27,6 +27,15 @@ namespace NightCafe.UI
         [SerializeField] SpriteRenderer shell;
         [SerializeField] Camera worldCamera;
         [SerializeField] Color woodBackground = new(0.329f, 0.188f, 0.102f);
+        [Tooltip("Rendered shell per skin id; a skin without one falls back to tinting the default sprite")]
+        [SerializeField] SkinShell[] skinShells = System.Array.Empty<SkinShell>();
+
+        [System.Serializable]
+        public struct SkinShell
+        {
+            public string id;
+            public Sprite shell;
+        }
 
         readonly float[] _timers = new float[LanePositionExtensions.Count];
 
@@ -79,10 +88,35 @@ namespace NightCafe.UI
         public void ApplySkin(in Skin skin)
         {
             if (shell != null)
-                shell.color = skin.ShellTint;
+            {
+                Sprite rendered = FindShell(skin.Id);
+                if (rendered != null)
+                {
+                    shell.sprite = rendered;
+                    shell.color = Color.white;
+                }
+                else
+                {
+                    Sprite fallback = FindShell(SkinCatalog.DefaultId);
+                    if (fallback != null)
+                        shell.sprite = fallback;
+                    shell.color = skin.ShellTint;
+                }
+            }
 
             if (worldCamera != null)
-                worldCamera.backgroundColor = woodBackground * skin.ShellTint;
+                worldCamera.backgroundColor = FindShell(skin.Id) != null ? skin.Background : woodBackground * skin.ShellTint;
+        }
+
+        Sprite FindShell(string id)
+        {
+            for (int i = 0; i < skinShells.Length; i++)
+            {
+                if (skinShells[i].id == id)
+                    return skinShells[i].shell;
+            }
+
+            return null;
         }
 
         void Update()

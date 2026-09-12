@@ -4,6 +4,7 @@ using NightCafe.Audio;
 using NightCafe.Config;
 using NightCafe.Core;
 using NightCafe.Gameplay;
+using NightCafe.Services;
 using NightCafe.InputLayer;
 using NightCafe.UI;
 using TMPro;
@@ -179,6 +180,22 @@ namespace NightCafe.EditorTools
                 so.FindProperty("shell").objectReferenceValue = shellRenderer;
                 so.FindProperty("worldCamera").objectReferenceValue = camera;
                 so.FindProperty("woodBackground").colorValue = WoodBackground;
+
+                // One rendered shell per skin (tools/shell_render.py); missing ones just tint.
+                SerializedProperty skins = so.FindProperty("skinShells");
+                skins.arraySize = 0;
+                foreach (Skin skin in SkinCatalog.All)
+                {
+                    string suffix = SkinCatalog.IsDefault(skin.Id) ? "" : "_" + skin.Id;
+                    var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Art/device/device_shell{suffix}.png");
+                    if (sprite == null)
+                        continue;
+
+                    skins.arraySize++;
+                    SerializedProperty entry = skins.GetArrayElementAtIndex(skins.arraySize - 1);
+                    entry.FindPropertyRelative("id").stringValue = skin.Id;
+                    entry.FindPropertyRelative("shell").objectReferenceValue = sprite;
+                }
 
                 SerializedProperty array = so.FindProperty("buttons");
                 array.arraySize = renderers.Length;

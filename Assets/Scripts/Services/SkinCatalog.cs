@@ -4,26 +4,30 @@ using UnityEngine;
 
 namespace NightCafe.Services
 {
-    /// <summary>A shell finish: a multiply tint over device_shell.png and the wood behind it.</summary>
+    /// <summary>
+    /// A shell finish. Each skin has its own rendered sprite (device_shell_&lt;id&gt;.png from
+    /// tools/shell_render.py); ShellTint is the multiply fallback when that sprite is missing,
+    /// Background the camera clear colour that continues the finish past the sprite edge.
+    /// </summary>
     public readonly struct Skin
     {
         public readonly string Id;
         public readonly string Name;
         public readonly Color ShellTint;
+        public readonly Color Background;
 
-        public Skin(string id, string name, Color shellTint)
+        public Skin(string id, string name, Color shellTint, Color background)
         {
             Id = id;
             Name = name;
             ShellTint = shellTint;
+            Background = background;
         }
     }
 
     /// <summary>
     /// GDD 6 shell skins and their unlock rules. Walnut is the factory finish; the rest are
     /// earned: Ash at 250 in Mode A, Onyx at 500 in Mode B, Neon by rolling the counter past 999.
-    /// The art is one walnut sprite, so every other finish is a multiply tint - which is why
-    /// none of them can be lighter than the walnut.
     /// </summary>
     public static class SkinCatalog
     {
@@ -34,10 +38,10 @@ namespace NightCafe.Services
 
         static readonly Skin[] Skins =
         {
-            new(DefaultId, "WALNUT", Color.white),
-            new(AshId, "ASH", new Color(0.78f, 0.84f, 0.74f)),
-            new(OnyxId, "ONYX", new Color(0.32f, 0.33f, 0.38f)),
-            new(NeonId, "NEON", new Color(0.62f, 0.34f, 0.86f))
+            new(DefaultId, "WALNUT", Color.white, new Color(0.329f, 0.188f, 0.102f)),
+            new(AshId, "ASH", new Color(0.78f, 0.84f, 0.74f), new Color(0.62f, 0.52f, 0.38f)),
+            new(OnyxId, "ONYX", new Color(0.32f, 0.33f, 0.38f), new Color(0.11f, 0.10f, 0.11f)),
+            new(NeonId, "NEON", new Color(0.62f, 0.34f, 0.86f), new Color(0.13f, 0.09f, 0.19f))
         };
 
         public static IReadOnlyList<Skin> All => Skins;
