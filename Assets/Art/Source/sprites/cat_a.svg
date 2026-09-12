@@ -1,10 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 56"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">
-  <feGaussianBlur stdDeviation="2.2" result="b"/>
-  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-</filter></defs><g fill="#ffc966" filter="url(#g)">
-  <ellipse cx="32" cy="34" rx="23" ry="14"/>
-  <circle cx="59" cy="23" r="10"/>
-  <path d="M53 16 l-4 -9 6 3z M65 16 l4 -9 -6 3z"/>
-  <circle cx="56" cy="21" r="1.6" fill="#120d09"/>
-  <path d="M9 34 q-11 -4 -7 -15" stroke="#ffc966" stroke-width="4.5" fill="none" stroke-linecap="round"/><rect x="72" y="6" width="4.5" height="38" rx="2.2"/><ellipse cx="74" cy="48" rx="12" ry="5.5"/>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 56">
+<defs>
+  <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="2.4"/>
+  </filter>
+  <g id="seg" fill="#ffc966" stroke="none">
+    <path d="M22 53 C12 53 7 42 13 32 C21 23 37 19 46 22 C52 25 54 40 54 53 Z" />
+    <rect x="46" y="33" width="8" height="20" rx="3.5" />
+    <rect x="52" y="35" width="21" height="5.5" rx="2.75" transform="rotate(-6 52 37.5)"/>
+    <rect x="72.5" y="4" width="4" height="41" rx="2" />
+    <ellipse cx="75" cy="49" rx="12" ry="4.5" />
+    <circle cx="54" cy="17" r="10" />
+    <path d="M46 10 L44 -0.5 L52 7 Z" />
+    <path d="M57 7.5 L63 -1 L64 10 Z" />
+    <path d="M14 50 Q2 45 5 33 Q6 28 11 29" fill="none" stroke="#ffc966" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M61 20 l5.5 -1 M61 21.5 l5.5 1.2" fill="none" stroke="#ffc966" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M66 50.5 l-1 4.5 M70.5 51.5 l-0.5 4 M75 51.5 l0 4.5 M79.5 51.5 l0.5 4 M84 50.5 l1 4.5" fill="none" stroke="#ffc966" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+
+  </g>
+  <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="56">
+    <g fill="#fff" stroke="none">
+    <path d="M22 53 C12 53 7 42 13 32 C21 23 37 19 46 22 C52 25 54 40 54 53 Z" />
+    <rect x="46" y="33" width="8" height="20" rx="3.5" />
+    <rect x="52" y="35" width="21" height="5.5" rx="2.75" transform="rotate(-6 52 37.5)"/>
+    <rect x="72.5" y="4" width="4" height="41" rx="2" />
+    <ellipse cx="75" cy="49" rx="12" ry="4.5" />
+    <circle cx="54" cy="17" r="10" />
+    <path d="M46 10 L44 -0.5 L52 7 Z" />
+    <path d="M57 7.5 L63 -1 L64 10 Z" />
+    <path d="M14 50 Q2 45 5 33 Q6 28 11 29" fill="none" stroke="#fff" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M61 20 l5.5 -1 M61 21.5 l5.5 1.2" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M66 50.5 l-1 4.5 M70.5 51.5 l-0.5 4 M75 51.5 l0 4.5 M79.5 51.5 l0.5 4 M84 50.5 l1 4.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+
+    </g>
+  </mask>
+</defs>
+<use xlink:href="#seg" filter="url(#glow)" opacity="0.85"/>
+<use xlink:href="#seg"/>
+<g mask="url(#ink)">
+    <path d="M68 45 L82 45" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M53.5 33 L53.5 41" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <circle cx="57.5" cy="15.5" r="1.6"  fill="#120d09"/>
+
+    <path d="M45 24 L52 27" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M45.5 32 L45.5 53" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M13 45 L17 50" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M45.5 10.5 L52.5 8" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M56.5 8.5 L64.5 10.5" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+
+</g>
+</svg>

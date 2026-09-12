@@ -1,8 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 40"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">
-  <feGaussianBlur stdDeviation="2.2" result="b"/>
-  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-</filter></defs><g fill="#ffd27a" filter="url(#g)">
-  <path d="M4 16 l10 -13 4 8 8 -8 5 13 -7 8 -17 2z"/>
-  <path d="M6 31 q11 6 28 2" stroke="#ffd27a" stroke-width="3" fill="none"/>
-  <circle cx="42" cy="12" r="2.4"/><circle cx="46" cy="24" r="2"/>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 52 40">
+<defs>
+  <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="2.4"/>
+  </filter>
+  <g id="seg" fill="#ffc966" stroke="none">
+    <path d="M5 27 L9 10 L20 6 L23 17 L17 27 Z" fill="#ffd27a"/>
+    <path d="M25 24 L27 8 L38 12 L43 24 L36 30 Z" fill="#ffd27a"/>
+    <path d="M4 33 Q24 39 44 33 Q46 36 44 37 Q24 41 4 37 Q2 35 4 33 Z" fill="#ffd27a"/>
+    <circle cx="45" cy="6" r="2.4" fill="#ffd27a"/>
+    <circle cx="48" cy="15" r="1.9" fill="#ffd27a"/>
+    <circle cx="8" cy="4" r="1.7" fill="#ffd27a"/>
+
+  </g>
+  <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="52" height="40">
+    <g fill="#fff" stroke="none">
+    <path d="M5 27 L9 10 L20 6 L23 17 L17 27 Z" fill="#ffd27a"/>
+    <path d="M25 24 L27 8 L38 12 L43 24 L36 30 Z" fill="#ffd27a"/>
+    <path d="M4 33 Q24 39 44 33 Q46 36 44 37 Q24 41 4 37 Q2 35 4 33 Z" fill="#ffd27a"/>
+    <circle cx="45" cy="6" r="2.4" fill="#ffd27a"/>
+    <circle cx="48" cy="15" r="1.9" fill="#ffd27a"/>
+    <circle cx="8" cy="4" r="1.7" fill="#ffd27a"/>
+
+    </g>
+  </mask>
+</defs>
+<use xlink:href="#seg" filter="url(#glow)" opacity="0.85"/>
+<use xlink:href="#seg"/>
+<g mask="url(#ink)">
+    <path d="M11 12 L18 24" fill="none" stroke="#120d09" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M30 12 L34 27" fill="none" stroke="#120d09" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+
+</g>
+</svg>

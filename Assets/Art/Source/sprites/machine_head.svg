@@ -1,8 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 42"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%">
-  <feGaussianBlur stdDeviation="2.2" result="b"/>
-  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-</filter></defs><g filter="url(#g)" fill="#ffc966">
-  <rect x="2" y="2" width="40" height="26" rx="6"/>
-  <rect x="16" y="28" width="12" height="8" rx="2"/>
-  <circle cx="12" cy="15" r="3.5" fill="#120d09"/>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 46 42">
+<defs>
+  <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="2.4"/>
+  </filter>
+  <g id="seg" fill="#ffc966" stroke="none">
+    <rect x="2" y="2" width="40" height="22" rx="5" />
+    <rect x="8" y="25" width="28" height="6" rx="2" />
+    <rect x="18" y="32" width="8" height="8" rx="2" />
+    <rect x="36" y="8" width="8" height="5" rx="2.5" />
+
+  </g>
+  <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="46" height="42">
+    <g fill="#fff" stroke="none">
+    <rect x="2" y="2" width="40" height="22" rx="5" />
+    <rect x="8" y="25" width="28" height="6" rx="2" />
+    <rect x="18" y="32" width="8" height="8" rx="2" />
+    <rect x="36" y="8" width="8" height="5" rx="2.5" />
+
+    </g>
+  </mask>
+</defs>
+<use xlink:href="#seg" filter="url(#glow)" opacity="0.85"/>
+<use xlink:href="#seg"/>
+<g mask="url(#ink)">
+    <circle cx="11" cy="13" r="3.2"  fill="#120d09"/>
+
+    <path d="M2 24.5 L42 24.5" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M14 31.5 L30 31.5" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+    <path d="M37 6 L37 15" fill="none" stroke="#120d09" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="seam"/>
+
+</g>
+</svg>
