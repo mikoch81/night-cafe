@@ -67,6 +67,7 @@ namespace NightCafe.Core
 
         float _breatherEndsAt;
         float _idleSince;
+        float _gameOverAt;
         float _demoEndsAt;
         bool _tapConsumed;
         bool _rolledOver;
@@ -246,6 +247,12 @@ namespace NightCafe.Core
                         EnterDemo();
                     return;
 
+                case GameState.GameOver:
+                    // Tap restarts; leaving it alone returns to the title, the only place the lever works.
+                    if (Time.time - _gameOverAt >= deviceConfig.gameOverIdleSeconds)
+                        EnterTitle();
+                    return;
+
                 case GameState.Breather:
                     _orders.Tick(dt);
                     if (Time.time >= _breatherEndsAt)
@@ -419,6 +426,7 @@ namespace NightCafe.Core
         void EnterGameOver()
         {
             State = GameState.GameOver;
+            _gameOverAt = Time.time;
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
             barista.SetVisible(false); // the result text sits where the barista stands
