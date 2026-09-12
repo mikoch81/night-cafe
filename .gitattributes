@@ -1,2 +1,31 @@
+# Line endings: normalise everything to LF in the repo and in the working tree,
+# so Linux and Windows checkouts do not produce whole-file diffs.
+* text=auto eol=lf
+
+# Unity YAML: keep as text and use UnityYAMLMerge for conflicts
+# (set up with: git config merge.unityyamlmerge.driver "'<Unity>/Editor/Data/Tools/UnityYAMLMerge' merge -p %O %B %A %A")
+*.unity   text eol=lf merge=unityyamlmerge
+*.prefab  text eol=lf merge=unityyamlmerge
+*.asset   text eol=lf merge=unityyamlmerge
+*.meta    text eol=lf merge=unityyamlmerge
+*.mat     text eol=lf merge=unityyamlmerge
+*.anim    text eol=lf merge=unityyamlmerge
+*.controller text eol=lf merge=unityyamlmerge
+
+# Windows-only scripts must keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.png binary
+*.jpg binary
+*.wav binary
+*.ogg binary
+*.ttf binary
+*.otf binary
+*.apk binary
+*.aab binary
+
+# Git LFS
 Assets/Art/**/*.png filter=lfs diff=lfs merge=lfs -text
 Assets/Audio/**/*.wav filter=lfs diff=lfs merge=lfs -text
