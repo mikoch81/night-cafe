@@ -85,7 +85,10 @@ w liczniku, BEST, trybie i zegarze; shader `NightCafe/LcdGlass` (winieta + odbla
 renderowana w Blenderze (`tools/shell_render.py`, 4 skiny jako osobne sprite'y, tekstury CC0 w
 `art/textures`); pochylenie kubka ±14°; oddech (wycieranie rąk + mruganie neonu); animacja 999 →
 neonowy kot; minutnik parzenia (tap w zegar na tytule). Referencje z Midjourney w `docs/references`.
-Do zrobienia w M4: `SpriteAtlas`, ocena Michała (skala baristy, skin neon), ewentualne poprawki.
+Do zrobienia w M4 (uwagi Michała 2026-09-13): obudowa jest **przycięta na telefonie** (canvas 16:9 vs
+ekran 20:9 — przeskalować/poszerzyć obudowę i `DeviceLayout`), elementy (przyciski, wajcha, kratka,
+tabliczka) wyglądają jak doklejone — renderować **całość jako jedną scenę** w Blenderze (wspólne
+światło, cienie, AO), obudowa 2D ale „udająca 3D", elementy też ala 3D. Potem `SpriteAtlas`.
 
 M1–M3.5 zrobione i przetestowane na Pixelu 10. Sterowanie w edytorze: W/S (lewe tory), ↑/↓ (prawe), Spacja/Enter (start), **mysz** = tap (działa też na wajchę i toggle'e na tytule). Edytor może być otwarty podczas pracy z CLI — pakiet `com.unity.pipeline` + `unity cmd` (testy, `menu NightCafe/Build Scene Setup`, `build`).
 
