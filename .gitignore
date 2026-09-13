@@ -53,3 +53,6 @@ crashlytics-build.properties
 Thumbs.db
 .directory
 __pycache__/
+
+# written by the Performance Testing package during test runs
+Assets/Resources/PerformanceTest*
