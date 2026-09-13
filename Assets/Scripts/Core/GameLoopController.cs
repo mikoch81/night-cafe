@@ -37,6 +37,9 @@ namespace NightCafe.Core
         [SerializeField] CatCrossingView cat;
         [SerializeField] OrderPanelView orderPanel;
         [SerializeField] GameObject ghostRoot;
+        [SerializeField] ScreenStyleApplier styleApplier;
+        [SerializeField] ScreenStyle artStyle;
+        [SerializeField] ScreenStyle retroStyle;
         [SerializeField] FlashFx neonFlash;
         [SerializeField] FlashFx screenDim;
         [SerializeField] SpriteSequenceFx neonCat;
@@ -106,13 +109,26 @@ namespace NightCafe.Core
 
             barista.Initialise(laneConfig);
             audioService.Initialise(_settings);
-            titleToggles.Initialise(_settings, _profile);
+            titleToggles.Initialise(_settings, _profile, ArtAvailable);
             cat.CrossingStarted += OnCatCrossingStarted;
 
             laneInput.Pressed += OnPressed;
 
             ConfigureMode(_profile.SelectedMode);
             ApplySkin();
+            ApplyScreenStyle();
+        }
+
+        bool ArtAvailable => artStyle != null && artStyle.complete;
+
+        /// <summary>GDD 5.2 / 5.2a: the painted diorama unless the player chose RETRO or the painted assets are absent.</summary>
+        public ScreenStyle EffectiveStyle =>
+            !ArtAvailable || _settings.RetroScreen ? (retroStyle != null ? retroStyle : artStyle) : artStyle;
+
+        void ApplyScreenStyle()
+        {
+            if (styleApplier != null)
+                styleApplier.Apply(EffectiveStyle);
             ApplyGhosts();
         }
 
@@ -542,7 +558,7 @@ namespace NightCafe.Core
 
             int colour = _orders.CurrentOrder;
             string name = colour < _config.orderNames.Length ? _config.orderNames[colour] : "";
-            orderPanel.Show(_config.orderColors[colour], name);
+            orderPanel.Show(colour, _config.orderColors[colour], name);
         }
 
         void OnCatCrossingStarted()
@@ -585,7 +601,7 @@ namespace NightCafe.Core
         void OnSettingsChanged()
         {
             audioService.ApplySettings();
-            ApplyGhosts();
+            ApplyScreenStyle();
         }
 
         void OnProfileChanged()
@@ -601,8 +617,10 @@ namespace NightCafe.Core
 
         void ApplyGhosts()
         {
+            ScreenStyle style = EffectiveStyle;
+            bool allowed = style == null || style.ghostsAllowed;
             if (ghostRoot != null)
-                ghostRoot.SetActive(_settings.GhostsEnabled);
+                ghostRoot.SetActive(_settings.GhostsEnabled && allowed);
         }
     }
 }

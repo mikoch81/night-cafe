@@ -68,5 +68,22 @@ namespace NightCafe.UI
                 stains[i].color = i < _shown ? activeColor : inactiveColor;
             }
         }
+
+        /// <summary>
+        /// Screen style: the stain sprite, the colour of a stain that is there, the colour of
+        /// an empty slot (dim amber on the LCD, fully transparent in the painted style) and size.
+        /// </summary>
+        public void SetStyle(Sprite sprite, Color active, Color inactive, float scale)
+        {
+            activeColor = active;
+            inactiveColor = inactive;
+            foreach (SpriteRenderer stain in stains)
+            {
+                if (stain == null) continue;
+                if (sprite != null) stain.sprite = sprite;
+                stain.transform.localScale = Vector3.one * scale;
+            }
+            Render();
+        }
     }
 }

@@ -3,7 +3,8 @@
     "rootNamespace": "NightCafe",
     "references": [
         "Unity.InputSystem",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

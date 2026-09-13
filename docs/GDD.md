@@ -61,17 +61,39 @@ Nocna kawiarnia w deszczowym mieście. Barista **Miro** łapie na tacę kubki zj
 
 ## 5. Prezentacja
 
-### 5.1 Warstwy (sorting layers)
-1. `DeviceShell` — obudowa (`device_shell.png`), przyciski, wajcha
-2. `ScreenGlass` — `screen_bg.png` (tory statyczne, bar, duchy pozycji)
-3. `Segments` — kubki, barista, kot, plamy, panel zamówień
-4. `ScreenFX` — vignette, błyski, animacja 999
-5. `HUD_TMP` — licznik, zegar, A/B (TextMeshPro, font mono, kolor `#ffc966`)
+Urządzenie **Bréve Deck** jest prawdziwym modelem 3D (Blender → FBX, `tools/shell_model.py`): orzechowy
+korpus 22×11×1.8 z aluminiową fazą, wgłębiony ekran 60 % szerokości, kopułkowe przyciski, suwak A/B,
+grawer marki. Kamera perspektywiczna (FOV 24°) patrzy od strony gracza z pochyleniem 14°; paralaksa
+z żyroskopu ±3°. Scena gry jest 2D, renderowana do tekstury na ekranie urządzenia (`LcdCamera`).
 
-### 5.2 Zasady Neo-LCD
-- Sprite'y jednokolorowe (paleta w MANIFEST.txt), glow wypalony w PNG + delikatny bloom URP (intensity 0.15) na warstwach Segments/HUD.
-- Ruch 60 fps (tween), ale postacie zmieniają **pozy skokowo** — hybryda: płynne przemieszczenie, klatkowa animacja.
-- Opcja „Duchy segmentów" (Settings): stałe sprite'y o opacity 5% we wszystkich slotach.
+### 5.1 Warstwy (sorting layers sceny ekranu)
+1. `Background` — malowane tło dioramy (`bg`), lady torów (`plank`), ekspresy na startach
+2. `Segments` — kubki, barista, kot, plamy, rozbity kubek, tablica zamówień (nazwa historyczna)
+3. `ScreenFX` — winieta szkła, błyski, animacja 999
+4. `HUD_TMP` — licznik, zegar, A/B (TextMeshPro)
+
+Obudowa, przyciski i wajcha nie są już sprite'ami — to mesh'e na warstwie `Device`.
+
+### 5.2 Styl ekranu „ART" (domyślny, od M4.6)
+- **Diorama w oknie:** ekran to nie wyświetlacz, tylko okno na bar nocnej kawiarni. Tło i lady
+  malowane gwaszem (referencje `docs/references/08_gouache_*`), postacie i rekwizyty kreską tuszem
+  z płaskim kolorem (`09_ink_*`), poświata bursztynowa zostaje w neonie, HUD-zie i odblasku szkła
+  (`10_mono_*`). Mieszanka wybrana przez Michała 2026-09-13.
+- Assety: tło, plank lady, ekspres, arkusze Miro (5 póz) i Sablé (2 klatki) z Midjourney (plan
+  Standard, prawa komercyjne subskrybenta; prompty 11–15 w `docs/references/PROMPTS.md`), wycinane
+  `tools/cut_sheet.py`; kubki w 4 kolorach zamówień, rozbity kubek, plamy, tablica zamówienia —
+  wektory w tej samej kresce (`tools/gen_art.py`, styl `ink`). Kubek w locie ma dokładnie kolor
+  z §3 (osobne sprite'y, nie tint).
+- Ruch 60 fps (tween), postacie zmieniają **pozy skokowo** — bez zmian względem Neo-LCD.
+- Bez bloomu i bez duchów segmentów; szkło ekranu (winieta, delikatny odblask) zostaje, bo to szyba okna.
+- HUD: font ręczny/kredowy zamiast segmentowego (OFL; wybór po pierwszym zrzucie), kolor `#ffc966`.
+
+### 5.2a Skin ekranu „RETRO" (Neo-LCD, dawny domyślny)
+- Przełączany na ekranie tytułowym (toggle obok skinu obudowy), zapisywany w ustawieniach.
+  Odblokowanie: 250 pkt w trybie A, razem z Jesionem (propozycja).
+- Sprite'y jednokolorowe, segmentowe (`tools/gen_art.py`, styl `lcd`), glow wypalony w PNG + bloom URP
+  (intensity 0.15) na warstwach Segments/HUD, kubki tint (biały sprite × kolor zamówienia),
+  font DSEG7/DSEG14, opcja „Duchy segmentów" (5 % we wszystkich slotach) tylko w tym skinie.
 
 ### 5.3 Audio
 - Złapanie: blip 1050 Hz, 40 ms (jsfxr, square, decay krótki); co 25 combo: arpeggio 3 nut.
@@ -83,7 +105,7 @@ Nocna kawiarnia w deszczowym mieście. Barista **Miro** łapie na tacę kubki zj
 ## 6. Meta i easter eggi
 
 - **Rekordy:** highscore per tryb (JSON w `Application.persistentDataPath`).
-- **Skiny obudowy:** Orzech (start), Jesion (250 pkt A), Onyks (500 pkt B), Neon (999 rollover). Tylko `device_shell` tint/wariant.
+- **Skiny obudowy:** Orzech (start), Jesion (250 pkt A), Onyks (500 pkt B), Neon (999 rollover). Materiały korpusu (drewno/onyks/neonowa obwódka); **skin ekranu** ART/RETRO osobno (§5.2a).
 - **Zegar nocny:** na ekranie tytułowym urządzenie pokazuje prawdziwą godzinę; **minutnik parzenia** (1–5 min) z alarmem-blipem — funkcjonalny easter egg.
 - Ekran tytułowy = urządzenie z demo attract-mode (AI gra samo, jak stare LCD).
 

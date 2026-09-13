@@ -46,3 +46,34 @@ Każda partia: `capture_game_view` z edytora + zrzut z Pixela obok siebie w jedn
 `docs/references/` — obrazy z Midjourney wygenerowane z promptów w `references/PROMPTS.md`.
 Służą wyłącznie jako inspiracja i materiał sklepowy; do gry trafiają tylko wektory i rendery.
 Nic z Nu, pogodi! 1984 (GDD §7).
+
+## Ekran v3 (M4.6): co robi Michał, co robi skrypt, kiedy Krita
+
+1. **Midjourney** — prompty 11–15 z `docs/references/PROMPTS.md`, z referencją stylu (Use → Style).
+   Wybierasz jeden wynik na prompt, **Upscale (Subtle)**, zapisujesz do `art/midjourney/` pod nazwą
+   z promptu (`13_miro_sheet.png` itd.).
+2. **Wycinanie** robi `tools/cut_sheet.py` (tło → przezroczystość, każda poza do osobnego PNG):
+   ```
+   python3 tools/cut_sheet.py art/midjourney/13_miro_sheet.png Assets/Art/screen_v3 --prefix miro --names up down catch miss wipe
+   ```
+   Skrypt narzeka, gdy znajdzie inną liczbę póz niż nazw — wtedy albo `--gap` większy (poza rozpadła
+   się na kawałki), albo `--fuzz` mniejszy (tło zjada jasne części postaci), albo Krita.
+3. **Krita — tylko retusz.** Trzy sytuacje:
+   - *Biała obwódka wokół postaci* (halo po wycięciu): otwórz PNG → `Filtry → Kolory → Kolor na alfę`
+     (Color to Alpha), kolor: biały, próg ~10 % → OK. Jeśli zjada jasne fragmenty postaci, zamiast tego
+     `Warstwa → Nowa → Maska przezroczystości` i miękką gumką (twardość 100 %, rozmiar 3–5 px) przejedź po
+     krawędzi.
+   - *Skrypt nie rozdzielił póz* (stykają się): `Narzędzie zaznaczania prostokątnego` (Ctrl+R) → obrysuj
+     jedną pozę → `Ctrl+C` → `Edycja → Wklej jako nowy obraz` (Ctrl+Shift+N) → `Plik → Eksportuj` jako
+     PNG, w oknie eksportu **zaznacz „Zapisz kanał alfa"** i **odznacz „Spłaszcz"**. Nazwa jak wyżej
+     (`miro_up.png` …). Tło zdejmij wcześniej: `Narzędzie zaznaczania ciągłego obszaru` (kubełek z
+     kropkami, W), „Rozmycie” 30, kliknij w tło → `Zaznaczenie → Odwróć` (Ctrl+Shift+I) → `Ctrl+X`,
+     `Ctrl+Shift+N`.
+   - *Coś dorysować / zamalować* (np. znak w tle, urwana stopa): pędzel „Ink“ z domyślnego zestawu
+     (`b) Basic-5 Size` do konturu, `Basic-1` do wypełnienia kolorem pobranym pipetą, Ctrl+klik).
+4. **Unity** — resztę robię ja: import (200 PPU, pivoty pod `LaneConfig`), `ScreenStyle` ART/RETRO,
+   HUD, szkło. Zrzut z telefonu do oceny przed każdym commitem wyglądu.
+
+Zasada: do `Assets/` trafiają tylko wycięte sprite'y (`Assets/Art/screen_v3/`), oryginały zostają
+w `art/midjourney/` (Git LFS). Licencja: Midjourney Standard, prawa komercyjne subskrybenta —
+`art/midjourney/LICENSE.md`.

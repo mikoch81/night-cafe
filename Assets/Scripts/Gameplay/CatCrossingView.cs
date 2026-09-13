@@ -76,5 +76,11 @@ namespace NightCafe.Gameplay
             color.a = CatPath.EdgeAlpha(t);
             spriteRenderer.color = color;
         }
+
+        public void SetFrames(Sprite a, Sprite b)
+        {
+            frameA = a != null ? a : frameA;
+            frameB = b != null ? b : frameB;
+        }
     }
 }

@@ -91,6 +91,7 @@ namespace NightCafe.EditorTools
             LaneConfig laneConfig = CreateLaneConfig();
             DeviceConfig deviceConfig = CreateDeviceConfig();
             AudioConfig audioConfig = CreateAudioConfig();
+            CreateScreenStyles();
             CreateVolumeProfile();
             CreateSpriteAtlas();
             EnsureLcdRenderTexture(deviceConfig);
@@ -126,7 +127,8 @@ namespace NightCafe.EditorTools
 
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
-                importer.spritePixelsPerUnit = 100f;
+                // The painted set is authored at twice the LCD resolution so it stays crisp on the render texture.
+                importer.spritePixelsPerUnit = path.StartsWith(ScreenV3Dir + "/") ? 200f : 100f;
                 importer.filterMode = FilterMode.Bilinear;
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;

@@ -48,14 +48,19 @@ namespace NightCafe.EditorTools
             });
 
             GameObject togglesGo = Child("Toggles", titlePanel.transform, new Vector2(0f, -2.30f));
-            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-4.05f, 0f),
-                "♪ ON", 6f, monoFont, ActiveAmber, 0, new Vector2(2.6f, 1f));
-            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(-1.35f, 0f),
-                "~ ON", 6f, monoFont, ActiveAmber, 0, new Vector2(2.6f, 1f));
-            TMP_Text ghostsLabel = WorldText("GhostsToggle", togglesGo.transform, new Vector2(1.35f, 0f),
-                "░ OFF", 6f, monoFont, InactiveAmber, 0, new Vector2(2.6f, 1f));
-            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(4.05f, 0f),
-                "WALNUT", 6f, monoFont, ActiveAmber, 0, new Vector2(2.6f, 1f));
+            // Five toggles across the 12.7-wide LCD: sound, haptics, ghosts, shell skin, screen style.
+            const float toggleStep = 2.45f;
+            const float toggleSize = 5.2f;
+            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-2f * toggleStep, 0f),
+                "♪ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(-toggleStep, 0f),
+                "~ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text ghostsLabel = WorldText("GhostsToggle", togglesGo.transform, new Vector2(0f, 0f),
+                "░ OFF", toggleSize, monoFont, InactiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(toggleStep, 0f),
+                "WALNUT", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text screenLabel = WorldText("ScreenToggle", togglesGo.transform, new Vector2(2f * toggleStep, 0f),
+                "RETRO", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
 
             var toggles = togglesGo.AddComponent<TitleToggleView>();
             SetSerialized(toggles, so =>
@@ -64,6 +69,8 @@ namespace NightCafe.EditorTools
                 so.FindProperty("hapticsLabel").objectReferenceValue = hapticsLabel;
                 so.FindProperty("ghostsLabel").objectReferenceValue = ghostsLabel;
                 so.FindProperty("skinLabel").objectReferenceValue = skinLabel;
+                so.FindProperty("screenLabel").objectReferenceValue = screenLabel;
+                so.FindProperty("hitSize").vector2Value = new Vector2(2.3f, 0.9f);
                 so.FindProperty("onColor").colorValue = ActiveAmber;
                 so.FindProperty("offColor").colorValue = InactiveAmber;
             });

@@ -3,10 +3,12 @@
     "rootNamespace": "NightCafe.Tests",
     "references": [
         "NightCafe.Runtime",
+        "NightCafe.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.RenderPipelines.Core.Runtime",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"

@@ -17,8 +17,30 @@ namespace NightCafe.UI
 
         float _flashTimer;
         Color _swatchColor = Color.white;
+        Sprite _swatchSprite;      // the white pixel the scene was built with
+        Vector3 _swatchScale;
+        Sprite[] _cupSprites;      // painted style: a cup per colour instead of a swatch
+        Vector2 _cupScale = new(0.55f, 0.55f);
 
-        public void Show(Color colour, string name)
+        void Awake()
+        {
+            if (swatch != null)
+            {
+                _swatchSprite = swatch.sprite;
+                _swatchScale = swatch.transform.localScale;
+            }
+        }
+
+        /// <summary>Screen style: the panel frame and, for a painted style, the cup sprites (null = swatch).</summary>
+        public void SetStyle(Sprite frameSprite, Sprite[] cupSprites, Vector2 cupScale)
+        {
+            if (frame != null && frameSprite != null)
+                frame.sprite = frameSprite;
+            _cupSprites = cupSprites;
+            _cupScale = cupScale;
+        }
+
+        public void Show(int colourIndex, Color colour, string name)
         {
             _swatchColor = colour;
             _flashTimer = flashSeconds;
@@ -29,6 +51,18 @@ namespace NightCafe.UI
             if (swatch != null)
             {
                 swatch.enabled = true;
+                bool painted = _cupSprites != null && colourIndex >= 0 && colourIndex < _cupSprites.Length && _cupSprites[colourIndex] != null;
+                if (painted)
+                {
+                    swatch.sprite = _cupSprites[colourIndex];
+                    swatch.transform.localScale = new Vector3(_cupScale.x, _cupScale.y, 1f);
+                    _swatchColor = Color.white;
+                }
+                else if (_swatchSprite != null)
+                {
+                    swatch.sprite = _swatchSprite;
+                    swatch.transform.localScale = _swatchScale;
+                }
                 swatch.color = Color.white; // pops white for a frame, then settles on the colour
             }
 

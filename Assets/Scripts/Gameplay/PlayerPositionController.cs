@@ -111,5 +111,24 @@ namespace NightCafe.Gameplay
         {
             spriteRenderer.sprite = Current.IsUp() ? trayUp : trayDown;
         }
+
+        /// <summary>Screen style swap: every pose at once; null keeps the current sprite.</summary>
+        public void SetPoses(Sprite up, Sprite down, Sprite catchSprite, Sprite miss, Sprite wipe)
+        {
+            trayUp = up != null ? up : trayUp;
+            trayDown = down != null ? down : trayDown;
+            catchPose = catchSprite != null ? catchSprite : catchPose;
+            missPose = miss != null ? miss : missPose;
+            wipePose = wipe != null ? wipe : wipePose;
+            if (spriteRenderer != null && _laneConfig != null)
+                spriteRenderer.sprite = Current.IsUp() ? trayUp : trayDown;
+        }
+
+        /// <summary>Uniform size, keeping the facing (negative x = left-hand slots).</summary>
+        public void SetScale(float scale)
+        {
+            float sign = transform.localScale.x < 0f ? -1f : 1f;
+            transform.localScale = new Vector3(sign * scale, scale, 1f);
+        }
     }
 }

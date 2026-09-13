@@ -15,19 +15,27 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text hapticsLabel;
         [SerializeField] TMP_Text ghostsLabel;
         [SerializeField] TMP_Text skinLabel;
+        [SerializeField] TMP_Text screenLabel;
         [SerializeField] Vector2 hitSize = new(2.4f, 0.9f);
         [SerializeField] Color onColor = new(1f, 0.788f, 0.4f);
         [SerializeField] Color offColor = new(0.227f, 0.173f, 0.094f);
 
         SettingsService _settings;
         ProfileService _profile;
+        bool _artAvailable;
 
-        public void Initialise(SettingsService settings, ProfileService profile)
+        /// <param name="artAvailable">False while the painted style has no assets yet: the screen
+        /// toggle then reads RETRO and ignores taps, so the label never lies about what is shown.</param>
+        public void Initialise(SettingsService settings, ProfileService profile, bool artAvailable = true)
         {
             _settings = settings;
             _profile = profile;
+            _artAvailable = artAvailable;
             Render();
         }
+
+        /// <summary>RETRO is a reward like the shell skins (GDD 5.2a): it opens with the first one.</summary>
+        public bool RetroUnlocked => _profile != null && _profile.IsUnlocked(SkinCatalog.AshId);
 
         /// <summary>
         /// Returns true when the tap hit a toggle, so the caller does not also start a round.
@@ -68,6 +76,14 @@ namespace NightCafe.UI
                 return true;
             }
 
+            if (Hits(screenLabel, world))
+            {
+                if (_artAvailable && (RetroUnlocked || _settings.RetroScreen))
+                    _settings.ToggleRetroScreen();
+                Render();
+                return true;
+            }
+
             return false;
         }
 
@@ -85,6 +101,13 @@ namespace NightCafe.UI
                 SkinCatalog.TryGet(_profile.SelectedSkin, out Skin skin);
                 skinLabel.text = skin.Name;
                 skinLabel.color = onColor;
+            }
+
+            if (screenLabel != null)
+            {
+                bool retro = !_artAvailable || _settings.RetroScreen;
+                screenLabel.text = retro ? "RETRO" : "ART";
+                screenLabel.color = _artAvailable && (RetroUnlocked || retro) ? onColor : offColor;
             }
         }
 

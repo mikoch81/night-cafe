@@ -110,3 +110,80 @@ near-black, soft glow like a backlit display, lo-fi, no outlines --ar 10:7 --sty
 
 Po wyborze kierunku: prompt na arkusz postaci Miro (5 póz: góra, dół, złapanie, pudło, wycieranie)
 i kota (2 klatki) w tym samym stylu, `--sref` na wybrany obraz, tło osobno bez postaci.
+
+Wynik (2026-09-13): `08_gouache_a-d`, `09_ink_a-d`, `10_mono_a-d` w tym katalogu (pomniejszone).
+Decyzja Michała: **miks** — tło i lady w gwaszu (08), postacie/rekwizyty w kresce z płaskim kolorem (09),
+poświata bursztynowa (10) zostaje w neonie, HUD-zie i szkle. Ekran = diorama w oknie, stary look
+segmentowy zostaje jako odblokowywany skin ekranu „RETRO".
+
+## 11–15 — Assety ekranu v3 (to już idzie do gry, nie tylko referencja)
+
+Jak podać referencję stylu: otwórz swój obraz w midjourney.com → przycisk **Use** → **Style** (albo
+przeciągnij obraz do paska Imagine i upuść w polu „style reference"). W tekście promptu zostaje tylko
+`--sw 60` (siła stylu). Upscale: **Upscale (Subtle)** — Creative zmienia kształty.
+
+Wynik wrzucaj do `art/midjourney/` jako `11_bg.png`, `12_plank.png`, `13_miro_sheet.png`,
+`14_sable_sheet.png`, `15_machine.png` (pełna rozdzielczość po upscale). Wycinaniem z białego tła
+zajmuje się `tools/cut_sheet.py` — Krita tylko do retuszu (instrukcja w `docs/art-direction.md`).
+
+### 11 — Tło dioramy (styl: 08_gouache_c)
+
+Kompozycja jest ważniejsza niż ładność: góra ciemna (tam siedzi licznik), środek spokojny (tam
+latają kubki i tory), dół = długi bar (tam stoi Miro, plamy, kot). Bez ludzi, kubków i kota.
+
+```
+gouache painting of an empty night café bar interior seen straight on at eye level, a long
+wooden bar counter running along the very bottom edge of the picture, a plain dark wood panelled
+wall filling the middle of the picture with nothing hanging on it, a dark ceiling with two
+pendant lamps and a small amber neon sign at the very top, an espresso machine and shelves of
+bottles far off to the sides only, visible brush strokes, soft paper texture, warm palette of
+deep browns and cream with muted teal shadows, no people, no cups, no cat --ar 10:7 --sw 60
+--style raw --v 7 --no text, signage letters, people, cups, cat, photo, 3d, ui, frame, border
+```
+
+### 12 — Lada / półka toru (styl: 08_gouache_c; obracam ją w Unity, potrzebna prosta)
+
+```
+a single straight wooden bar shelf plank with a thin brass edge, seen from slightly above and
+straight on, horizontal, isolated on a plain white background, gouache, warm walnut wood with
+visible brush strokes, no other objects, nothing on the shelf --ar 3:1 --sw 60 --style raw --v 7
+--no text, cups, background, shadow, photo, 3d
+```
+
+### 13 — Arkusz postaci: barista Miro, 5 póz (styl: 09_ink_a)
+
+Wszystkie pozy w jednym obrazie, żeby postać była spójna. Jeśli jedna poza nie wyjdzie, dogeneruj ją
+osobno z **Use → Omni** na arkuszu (`--ow 80`).
+
+```
+character sheet of a friendly young barista in a flat cap, rolled sleeves and a long apron, side
+view facing right, five full-body poses in one row on a plain white background: holding a round
+tray up at shoulder height, holding the tray down at hip height, catching a coffee cup on the
+tray, flinching as a cup drops past him, wiping his hands on a towel; ink line illustration with
+flat colour fills, thick confident black outlines, warm palette of amber, cream and dark brown,
+same character and proportions in every pose, big readable silhouette, evenly spaced, feet on
+the same line --ar 5:2 --sw 60 --style raw --v 7 --no text, labels, numbers, background,
+shading, gradients, photo, 3d
+```
+
+### 14 — Arkusz kota Sablé, 2 klatki (styl: 09_ink_a)
+
+```
+two poses of the same small black cat pushing a mop along the floor, side view walking to the
+right, in one row on a plain white background, walking pose A and walking pose B with the legs
+swapped, ink line illustration with flat colour fills, thick black outlines, amber eyes, big
+readable silhouette --ar 2:1 --sw 60 --style raw --v 7 --no text, labels, background, shading,
+photo, 3d, fur texture
+```
+
+### 15 — Ekspres na starcie toru (styl: 09_ink_a)
+
+```
+a small vintage chrome espresso machine seen from the side with the spout pointing to the right,
+isolated on a plain white background, ink line illustration with flat colour fills, thick black
+outlines, warm palette of cream, amber and dark brown, simple readable shape --ar 1:1 --sw 60
+--style raw --v 7 --no text, labels, background, shadow, photo, 3d
+```
+
+Kubki (4 kolory), rozbity kubek, plamy i tablica zamówienia robię jako wektory w tej samej kresce
+(`tools/gen_art.py`, styl `ink`) — kolory muszą się zgadzać co do heksa z GDD §3.

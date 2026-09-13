@@ -41,6 +41,7 @@ namespace NightCafe.Services
         const string SfxKey = "nightcafe.sfx";
         const string HapticsKey = "nightcafe.haptics";
         const string GhostsKey = "nightcafe.ghosts";
+        const string RetroScreenKey = "nightcafe.retro";
 
         readonly ISettingsStore _store;
 
@@ -51,12 +52,16 @@ namespace NightCafe.Services
             SfxEnabled = _store.Load(SfxKey, true);
             HapticsEnabled = _store.Load(HapticsKey, true);
             GhostsEnabled = _store.Load(GhostsKey, false);
+            RetroScreen = _store.Load(RetroScreenKey, false);
         }
 
         public bool MusicEnabled { get; private set; }
         public bool SfxEnabled { get; private set; }
         public bool HapticsEnabled { get; private set; }
         public bool GhostsEnabled { get; private set; }
+
+        /// <summary>GDD 5.2a: the segmented Neo-LCD look instead of the painted default.</summary>
+        public bool RetroScreen { get; private set; }
 
         public event Action Changed;
 
@@ -67,6 +72,8 @@ namespace NightCafe.Services
         public void ToggleHaptics() => Set(HapticsKey, HapticsEnabled = !HapticsEnabled);
 
         public void ToggleGhosts() => Set(GhostsKey, GhostsEnabled = !GhostsEnabled);
+
+        public void ToggleRetroScreen() => Set(RetroScreenKey, RetroScreen = !RetroScreen);
 
         void Set(string key, bool value)
         {

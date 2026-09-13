@@ -43,6 +43,7 @@ namespace NightCafe.EditorTools
             Transform screenRoot = Child("ScreenRoot", null).transform;
 
             BuildScreenArt(screenRoot, laneConfig);
+            SpriteRenderer[] planks = BuildPlanks(screenRoot, laneConfig);
 
             Transform cupRoot = Child("CupPoolRoot", screenRoot).transform;
             TimedSpriteFx[] brokenFx = BuildBrokenCupFx(screenRoot, laneConfig);
@@ -54,6 +55,9 @@ namespace NightCafe.EditorTools
             OrderPanelView orderPanel = BuildOrderPanel(screenRoot, laneConfig, monoFont);
             GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
             (HudView hud, TitleToggleView toggles, ClockWidget clock) = BuildHud(screenRoot, monoFont);
+            ScreenStyleApplier styleApplier = BuildStyleApplier(screenRoot, laneConfig, planks, barista, cat, stains, brokenFx, orderPanel);
+            var artStyle = AssetDatabase.LoadAssetAtPath<ScreenStyle>(ArtStylePath);
+            var retroStyle = AssetDatabase.LoadAssetAtPath<ScreenStyle>(RetroStylePath);
 
             SetLayerRecursively(screenRoot.gameObject, LayerMask.NameToLayer(LcdLayerName));
 
@@ -91,6 +95,9 @@ namespace NightCafe.EditorTools
                 so.FindProperty("cat").objectReferenceValue = cat;
                 so.FindProperty("orderPanel").objectReferenceValue = orderPanel;
                 so.FindProperty("ghostRoot").objectReferenceValue = ghosts;
+                so.FindProperty("styleApplier").objectReferenceValue = styleApplier;
+                so.FindProperty("artStyle").objectReferenceValue = artStyle;
+                so.FindProperty("retroStyle").objectReferenceValue = retroStyle;
                 so.FindProperty("neonFlash").objectReferenceValue = neon;
                 so.FindProperty("screenDim").objectReferenceValue = dim;
                 so.FindProperty("neonCat").objectReferenceValue = neonCat;
