@@ -139,7 +139,11 @@ namespace NightCafe.EditorTools
                 importer.ReadTextureSettings(settings);
                 settings.spriteMeshType = SpriteMeshType.FullRect; // atlas-friendly, no tight-mesh seams on glow
 
-                if (SpriteAnchors.TryGet(Path.GetFileNameWithoutExtension(path), out Vector2 pivot))
+                bool painted = path.StartsWith(ScreenV3Dir + "/");
+                string spriteName = Path.GetFileNameWithoutExtension(path);
+                // The shelf plank is 9-sliced along the rails: 24 canvas px of end cap, rendered at 3x.
+                settings.spriteBorder = painted && spriteName == "plank" ? new Vector4(72f, 0f, 72f, 0f) : Vector4.zero;
+                if (SpriteAnchors.TryGet(spriteName, painted, out Vector2 pivot))
                 {
                     settings.spriteAlignment = (int)SpriteAlignment.Custom;
                     settings.spritePivot = pivot;

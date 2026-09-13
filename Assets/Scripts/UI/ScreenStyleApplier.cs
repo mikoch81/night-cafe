@@ -23,6 +23,7 @@ namespace NightCafe.UI
         [SerializeField] SpriteRenderer background;
         [SerializeField] GameObject plankRoot;
         [SerializeField] SpriteRenderer[] planks = new SpriteRenderer[0];
+        [SerializeField] SpriteRenderer[] steps = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer[] machineHeads = new SpriteRenderer[0];
         [SerializeField] Volume lcdVolume;
 
@@ -49,6 +50,8 @@ namespace NightCafe.UI
         [SerializeField] float cupScale = 0.5f;
 
         TMP_FontAsset[] _digitDefaults, _letterDefaults, _bodyDefaults;
+        Vector3[] _stepHomes;
+        Vector3[] _plankHomes;
 
         public ScreenStyle Current { get; private set; }
 
@@ -67,19 +70,28 @@ namespace NightCafe.UI
                 background.sprite = style.background;
 
             if (plankRoot != null)
-                plankRoot.SetActive(style.plank != null);
-            foreach (SpriteRenderer plank in planks)
+                plankRoot.SetActive(style.plank != null || style.step != null);
+
+            _stepHomes ??= System.Array.ConvertAll(steps, s => s != null ? s.transform.localPosition : Vector3.zero);
+            for (int i = 0; i < steps.Length; i++)
             {
+                if (steps[i] == null) continue;
+                steps[i].sprite = style.step;
+                steps[i].enabled = style.step != null;
+                steps[i].transform.localPosition = _stepHomes[i] + (Vector3)style.baristaOffset;
+                steps[i].transform.localScale = Vector3.one * (baristaScale * style.baristaScale);
+            }
+            _plankHomes ??= System.Array.ConvertAll(planks, p => p != null ? p.transform.localPosition : Vector3.zero);
+            for (int i = 0; i < planks.Length; i++)
+            {
+                SpriteRenderer plank = planks[i];
                 if (plank == null) continue;
                 plank.sprite = style.plank;
-                if (style.plank != null)
-                {
-                    // The plank is scaled along its own x to the rail segment's length by the setup;
-                    // only its thickness follows the style.
-                    Vector3 scale = plank.transform.localScale;
-                    scale.y = style.plankHeight / Mathf.Max(0.001f, style.plank.bounds.size.y);
-                    plank.transform.localScale = scale;
-                }
+                plank.enabled = style.plank != null;
+                plank.transform.localPosition = _plankHomes[i] + (Vector3)style.plankOffset;
+                // Sliced draw mode: the setup sized the plank along the rail segment; only the
+                // thickness follows the style (the end caps keep their pixels).
+                plank.size = new Vector2(plank.size.x, style.plankHeight);
             }
 
             foreach (SpriteRenderer head in machineHeads)
@@ -96,6 +108,7 @@ namespace NightCafe.UI
             {
                 barista.SetPoses(style.baristaUp, style.baristaDown, style.baristaCatch, style.baristaMiss, style.baristaWipe);
                 barista.SetScale(baristaScale * style.baristaScale);
+                barista.SetOffset(style.baristaOffset);
             }
             if (baristaRenderer != null)
                 baristaRenderer.color = actor;

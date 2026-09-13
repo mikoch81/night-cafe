@@ -18,6 +18,7 @@ namespace NightCafe.Gameplay
         [SerializeField] Sprite wipePose;
 
         LaneConfig _laneConfig;
+        Vector2 _offset;
         float _poseTimer;
         float _wipeTimer;
         float _wipePeriod;
@@ -34,7 +35,7 @@ namespace NightCafe.Gameplay
         {
             _wipeTimer = 0f;
             Current = position;
-            transform.localPosition = _laneConfig.GetBaristaSlot(position);
+            transform.localPosition = _laneConfig.GetBaristaSlot(position) + _offset;
 
             // Art is drawn facing right; the left-hand slots are the mirrored ones.
             Vector3 scale = transform.localScale;
@@ -122,6 +123,14 @@ namespace NightCafe.Gameplay
             wipePose = wipe != null ? wipe : wipePose;
             if (spriteRenderer != null && _laneConfig != null)
                 spriteRenderer.sprite = Current.IsUp() ? trayUp : trayDown;
+        }
+
+        /// <summary>Screen style: a presentation-only shift from the LaneConfig slot (ScreenStyle.baristaOffset).</summary>
+        public void SetOffset(Vector2 offset)
+        {
+            _offset = offset;
+            if (_laneConfig != null)
+                transform.localPosition = _laneConfig.GetBaristaSlot(Current) + _offset;
         }
 
         /// <summary>Uniform size, keeping the facing (negative x = left-hand slots).</summary>

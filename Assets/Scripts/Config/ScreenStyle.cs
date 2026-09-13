@@ -31,7 +31,13 @@ namespace NightCafe.Config
         public Sprite plank;
         [Tooltip("Plank thickness across the rail, in LCD units.")]
         public float plankHeight = 0.5f;
+        [Tooltip("Shift of the plank from the rail line, so the cups rest on its top face rather than through its middle.")]
+        public Vector2 plankOffset;
         public Sprite machineHead;
+        [Tooltip("ART only: the footstool drawn under the upper barista slots, so Miro is not standing in the air.")]
+        public Sprite step;
+        [Tooltip("Added to the LaneConfig barista slots: the painted Miro's tray sits at a different height above his feet than the LCD one's.")]
+        public Vector2 baristaOffset;
 
         [Header("Actors")]
         public Sprite baristaUp;

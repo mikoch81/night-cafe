@@ -14,33 +14,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.ScreenStyle
   id: art
   label: ART
-  complete: 0
+  complete: 1
   monochrome: 0
   bloom: 0
   ghostsAllowed: 0
-  background: {fileID: 21300000, guid: 9ad4bb03c51c64fe999293b8204f1b8a, type: 3}
-  plank: {fileID: 0}
-  plankHeight: 0.5
-  machineHead: {fileID: 21300000, guid: 3d876979ffb81e83da063526725a31f4, type: 3}
-  baristaUp: {fileID: 21300000, guid: a8bc899f3f27a03199c8b8c842fe853b, type: 3}
-  baristaDown: {fileID: 21300000, guid: 7b43f13c36fd2ec758166887b519f79d, type: 3}
-  baristaCatch: {fileID: 21300000, guid: 7658c59a6018a4beba98b2859afe52e8, type: 3}
-  baristaMiss: {fileID: 21300000, guid: f4cbff3e49e7c8989aaab42c2fe0b97e, type: 3}
-  baristaWipe: {fileID: 21300000, guid: 71399cd971e332c57979af50650d0b9d, type: 3}
-  catA: {fileID: 21300000, guid: e56a3ac83d0ce7cc180734c12ad96186, type: 3}
-  catB: {fileID: 21300000, guid: 8a75619f1086453c29dc694cf63a1b81, type: 3}
-  cup: {fileID: 21300000, guid: 6cc11535dc2652336a1cfa147a8b094d, type: 3}
-  cupsByOrder: []
-  cupBroken: {fileID: 21300000, guid: fd93cff07e107d71a845e4824e48a497, type: 3}
-  stain: {fileID: 21300000, guid: 37c1d7726e971461d9eabf480eb35a18, type: 3}
-  orderPanel: {fileID: 21300000, guid: 6fc176b661cddef5e8d8646acbe3ea47, type: 3}
-  orderCupScale: {x: 0.55, y: 0.55}
-  digitFont: {fileID: 0}
-  letterFont: {fileID: 0}
-  textFont: {fileID: 0}
-  baristaScale: 1
+  background: {fileID: 21300000, guid: 399fe56c616040f4a8a407f8ef6dcc19, type: 3}
+  plank: {fileID: 21300000, guid: 8b608537a9bf307889fed4e77d882cdc, type: 3}
+  plankHeight: 0.45
+  plankOffset: {x: 0, y: -0.2}
+  machineHead: {fileID: 21300000, guid: 5373f60a891a43fcea68d12c573c1953, type: 3}
+  step: {fileID: 21300000, guid: 0f61171b469891987a4e3508faf602db, type: 3}
+  baristaOffset: {x: 0, y: -0.4}
+  baristaUp: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
+  baristaDown: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
+  baristaCatch: {fileID: 21300000, guid: d6c8e9ce708ccc6868408c8a1c0f9f31, type: 3}
+  baristaMiss: {fileID: 21300000, guid: 6fbdc7334b696dc58bbc89de5f62f8c9, type: 3}
+  baristaWipe: {fileID: 21300000, guid: 5c27159ea269d1dd3ac7634b0489571d, type: 3}
+  catA: {fileID: 21300000, guid: 1ff10d3b7636d4289a6cb9582c9f158f, type: 3}
+  catB: {fileID: 21300000, guid: eae5d4bcbfa42f2228e670979871fee0, type: 3}
+  cup: {fileID: 21300000, guid: 885173fc31a2ab7aab35b1de0bb25082, type: 3}
+  cupsByOrder:
+  - {fileID: 21300000, guid: 885173fc31a2ab7aab35b1de0bb25082, type: 3}
+  - {fileID: 21300000, guid: cbdd92646cb597ee584e88e4b8707358, type: 3}
+  - {fileID: 21300000, guid: d60e9ef5133b57926a3b4ce15e34d9f1, type: 3}
+  - {fileID: 21300000, guid: caeebfd8eb33879a8964dd0a7160bed9, type: 3}
+  cupBroken: {fileID: 21300000, guid: 70a368889ce3e09dfbb0a00f14696cff, type: 3}
+  stain: {fileID: 21300000, guid: 11a3c1e7361cb56ef97cf77f79d622e2, type: 3}
+  orderPanel: {fileID: 21300000, guid: 3f2276f0514ff0b819b3960b254ce154, type: 3}
+  orderCupScale: {x: 0.6, y: 0.6}
+  digitFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
+  letterFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
+  textFont: {fileID: 11400000, guid: 2e156656e16167ef9b6ccbe28f27bd88, type: 2}
+  baristaScale: 0.96
   cupScale: 1
-  catScale: 1
+  catScale: 1.45
   stainScale: 1
-  machineHeadScale: 1
+  machineHeadScale: 0.34
   brokenCupScale: 1

@@ -26,7 +26,13 @@ namespace NightCafe.EditorTools
             ("catA", "sable_a.png"), ("catB", "sable_b.png"),
             ("cup0", "cup_espresso.png"), ("cup1", "cup_caramel.png"), ("cup2", "cup_latte.png"), ("cup3", "cup_decaf.png"),
             ("cupBroken", "cup_broken.png"), ("stain", "stain.png"), ("orderPanel", "order_panel.png"),
+            ("step", "step.png"),
         };
+
+        const string HandBoldFontPath = FontDir + "/CabinSketch-Bold.ttf";
+        const string HandBoldFontAssetPath = FontDir + "/CabinSketch-Bold SDF.asset";
+        const string HandFontPath = FontDir + "/PatrickHand-Regular.ttf";
+        const string HandFontAssetPath = FontDir + "/PatrickHand-Regular SDF.asset";
 
         /// <summary>
         /// The two screen styles as assets. RETRO is the segmented art this project shipped with;
@@ -83,7 +89,9 @@ namespace NightCafe.EditorTools
             art.background = found["background"] ?? retro.background;
             art.plank = found["plank"];
             art.machineHead = found["machineHead"] ?? retro.machineHead;
-            art.baristaUp = found["baristaUp"] ?? retro.baristaUp;
+            // Both idle slots use the tray-down pose: the painted Miro reaches the upper shelf from
+            // the footstool, not by raising the tray (which would put it well above the rail end).
+            art.baristaUp = found["baristaDown"] ?? retro.baristaUp;
             art.baristaDown = found["baristaDown"] ?? retro.baristaDown;
             art.baristaCatch = found["baristaCatch"] ?? retro.baristaCatch;
             art.baristaMiss = found["baristaMiss"] ?? retro.baristaMiss;
@@ -97,9 +105,23 @@ namespace NightCafe.EditorTools
             art.cupBroken = found["cupBroken"] ?? retro.cupBroken;
             art.stain = found["stain"] ?? retro.stain;
             art.orderPanel = found["orderPanel"] ?? retro.orderPanel;
-            art.digitFont = null; // the painted HUD font is chosen once the first assets are in (GDD 5.2)
-            art.letterFont = null;
-            art.textFont = null;
+            art.step = found["step"];
+            // Chalk-menu lettering (OFL): Cabin Sketch for the counter and headings, Patrick Hand for the rest.
+            TMP_FontAsset handBold = EnsureSegmentFont(HandBoldFontPath, HandBoldFontAssetPath, "CabinSketch-Bold", HudCharset);
+            TMP_FontAsset hand = EnsureSegmentFont(HandFontPath, HandFontAssetPath, "PatrickHand-Regular", HudCharset);
+            art.digitFont = handBold;
+            art.letterFont = handBold;
+            art.textFont = hand;
+            // Sizes on top of LaneConfig: Miro about two units tall, the cat a little over one,
+            // the machine 1.5 with its spout on the rail start; the tray then sits a touch above
+            // the rail end in the up pose and a touch below it in the down pose.
+            art.baristaScale = 0.96f;                    // ~2.5 units tall; the tray-down tray meets the rail end
+            art.baristaOffset = new Vector2(0f, -0.4f);
+            art.catScale = 1.45f;
+            art.machineHeadScale = 0.34f;
+            art.plankHeight = 0.45f;
+            art.plankOffset = new Vector2(0f, -0.2f);    // cups rest on the top face
+            art.orderCupScale = new Vector2(0.6f, 0.6f);
             art.complete = complete;
             EditorUtility.SetDirty(art);
 
@@ -108,24 +130,39 @@ namespace NightCafe.EditorTools
         }
 
         /// <summary>
-        /// Counter planks for the painted style: one sprite per rail segment (start-bend,
-        /// bend-end), stretched along the segment. Hidden until a style provides a plank sprite.
+        /// Wall shelves for the painted style: one plank per rail from its start to its catch
+        /// point (the rail's slight bend is within the plank's thickness). Hidden until a style
+        /// provides a plank sprite.
         /// </summary>
         static SpriteRenderer[] BuildPlanks(Transform screenRoot, LaneConfig laneConfig)
         {
-            GameObject root = Child("Planks", screenRoot);
+            GameObject root = Child("Props", screenRoot);
             var renderers = new List<SpriteRenderer>();
             foreach (LanePosition lane in System.Enum.GetValues(typeof(LanePosition)))
             {
                 IReadOnlyList<Vector2> steps = laneConfig.GetSteps(lane);
-                Vector2 start = steps[0], end = steps[steps.Count - 1];
-                Vector2 bend = steps[steps.Count / 2];
-                renderers.Add(Plank($"Plank_{lane}_A", root.transform, start, bend));
-                renderers.Add(Plank($"Plank_{lane}_B", root.transform, bend, end));
+                renderers.Add(Plank($"Plank_{lane}", root.transform, steps[0], steps[steps.Count - 1]));
             }
 
             root.SetActive(false);
             return renderers.ToArray();
+        }
+
+        /// <summary>The footstools under the two upper barista slots (ART only; sprite set by the applier).</summary>
+        static SpriteRenderer[] BuildSteps(Transform screenRoot, LaneConfig laneConfig)
+        {
+            Transform root = screenRoot.Find("Props");
+            var result = new SpriteRenderer[2];
+            LanePosition[] upper = { LanePosition.LeftUp, LanePosition.RightUp };
+            for (int i = 0; i < upper.Length; i++)
+            {
+                var go = Child($"Step_{upper[i]}", root, laneConfig.GetBaristaSlot(upper[i]), laneConfig.baristaScale);
+                var renderer = go.AddComponent<SpriteRenderer>();
+                renderer.enabled = false;
+                SetSorting(renderer, Core.SortingLayers.Segments, 29); // just under the barista (30)
+                result[i] = renderer;
+            }
+            return result;
         }
 
         static SpriteRenderer Plank(string name, Transform parent, Vector2 from, Vector2 to)
@@ -141,7 +178,7 @@ namespace NightCafe.EditorTools
         }
 
         /// <summary>Wires the applier to every styled renderer in the LCD scene.</summary>
-        static ScreenStyleApplier BuildStyleApplier(Transform screenRoot, LaneConfig laneConfig, SpriteRenderer[] planks,
+        static ScreenStyleApplier BuildStyleApplier(Transform screenRoot, LaneConfig laneConfig, SpriteRenderer[] planks, SpriteRenderer[] steps,
             PlayerPositionController barista, CatCrossingView cat, StainStripView stains, TimedSpriteFx[] brokenFx,
             OrderPanelView orderPanel)
         {
@@ -173,7 +210,7 @@ namespace NightCafe.EditorTools
             }
 
             var volume = Object.FindFirstObjectByType<Volume>();
-            var plankRoot = screenRoot.Find("Planks");
+            var plankRoot = screenRoot.Find("Props");
 
             SetSerialized(applier, so =>
             {
@@ -183,6 +220,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("background").objectReferenceValue = screenRoot.Find("ScreenBG").GetComponent<SpriteRenderer>();
                 so.FindProperty("plankRoot").objectReferenceValue = plankRoot != null ? plankRoot.gameObject : null;
                 Fill(so.FindProperty("planks"), planks);
+                Fill(so.FindProperty("steps"), steps);
                 Fill(so.FindProperty("machineHeads"), heads);
                 so.FindProperty("lcdVolume").objectReferenceValue = volume;
                 so.FindProperty("barista").objectReferenceValue = barista;

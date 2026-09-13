@@ -44,6 +44,7 @@ namespace NightCafe.EditorTools
 
             BuildScreenArt(screenRoot, laneConfig);
             SpriteRenderer[] planks = BuildPlanks(screenRoot, laneConfig);
+            SpriteRenderer[] steps = BuildSteps(screenRoot, laneConfig);
 
             Transform cupRoot = Child("CupPoolRoot", screenRoot).transform;
             TimedSpriteFx[] brokenFx = BuildBrokenCupFx(screenRoot, laneConfig);
@@ -55,7 +56,7 @@ namespace NightCafe.EditorTools
             OrderPanelView orderPanel = BuildOrderPanel(screenRoot, laneConfig, monoFont);
             GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
             (HudView hud, TitleToggleView toggles, ClockWidget clock) = BuildHud(screenRoot, monoFont);
-            ScreenStyleApplier styleApplier = BuildStyleApplier(screenRoot, laneConfig, planks, barista, cat, stains, brokenFx, orderPanel);
+            ScreenStyleApplier styleApplier = BuildStyleApplier(screenRoot, laneConfig, planks, steps, barista, cat, stains, brokenFx, orderPanel);
             var artStyle = AssetDatabase.LoadAssetAtPath<ScreenStyle>(ArtStylePath);
             var retroStyle = AssetDatabase.LoadAssetAtPath<ScreenStyle>(RetroStylePath);
 

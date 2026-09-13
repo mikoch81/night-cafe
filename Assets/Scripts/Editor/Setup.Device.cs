@@ -136,6 +136,14 @@ namespace NightCafe.EditorTools
                 texture.height = height;
             }
 
+            // The render graph wants a depth buffer on a camera's output texture; without one URP
+            // logs a warning every frame (and the console's 100-entry window fills with it).
+            if (texture.depthStencilFormat != GraphicsFormat.D24_UNorm_S8_UInt)
+            {
+                texture.Release();
+                texture.depthStencilFormat = GraphicsFormat.D24_UNorm_S8_UInt;
+            }
+
             texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
             texture.useMipMap = false;

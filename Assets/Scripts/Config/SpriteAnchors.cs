@@ -39,8 +39,36 @@ namespace NightCafe.Config
             { "stain", new Vector2(0.4375f, 0.3934f) }
         };
 
+        /// <summary>
+        /// The painted set (Assets/Art/screen_v3, GDD 5.2): every Miro pose is a differently
+        /// trimmed cut-out, so each carries its own feet anchor (x = centre of the feet, measured
+        /// from the alpha; y just above the trimmed bottom). The cat anchors sit on the paws and
+        /// the body, not the mop; the machine's anchor is its spout, which the rail starts at.
+        /// </summary>
+        static readonly Dictionary<string, Vector2> PaintedPivots = new()
+        {
+            { "miro_up", new Vector2(0.3123f, 0.0100f) },
+            { "miro_down", new Vector2(0.7465f, 0.0100f) },
+            { "miro_catch", new Vector2(0.3431f, 0.0100f) },
+            { "miro_miss", new Vector2(0.4509f, 0.0100f) },
+            { "miro_wipe", new Vector2(0.3810f, 0.0100f) },
+            { "sable_a", new Vector2(0.4300f, 0.0700f) },
+            { "sable_b", new Vector2(0.4500f, 0.0700f) },
+            { "machine_head", new Vector2(0.6200f, 0.3200f) },
+            { "cup_espresso", new Vector2(0.5000f, 0.6029f) },
+            { "cup_caramel", new Vector2(0.5000f, 0.6029f) },
+            { "cup_latte", new Vector2(0.5000f, 0.6029f) },
+            { "cup_decaf", new Vector2(0.5000f, 0.6029f) },
+            { "cup_broken", new Vector2(0.5000f, 0.5094f) },
+            { "stain", new Vector2(0.4375f, 0.3934f) },
+            { "step", new Vector2(0.5000f, 0.9550f) }
+        };
+
         /// <summary>Returns false for sprites that should keep a centred pivot.</summary>
         public static bool TryGet(string spriteName, out Vector2 pivot) =>
             Pivots.TryGetValue(spriteName, out pivot);
+
+        public static bool TryGet(string spriteName, bool painted, out Vector2 pivot) =>
+            painted ? PaintedPivots.TryGetValue(spriteName, out pivot) : Pivots.TryGetValue(spriteName, out pivot);
     }
 }

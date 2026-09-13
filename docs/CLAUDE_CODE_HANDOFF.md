@@ -80,11 +80,18 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   ART/RETRO na tytule (`SettingsService.RetroScreen`, RETRO odblokowany razem z Jesionem), testy.
   ART jest `complete` dopiero gdy w `Assets/Art/screen_v3/` są wszystkie pliki z `NightCafeSetup.ArtSprites`;
   do tego czasu gra pokazuje RETRO, a toggle jest przygaszony.
-- Do zrobienia: (1) Michał generuje prompty 11–15 (`docs/references/PROMPTS.md`) → `art/midjourney/`;
-  (2) `tools/cut_sheet.py` tnie arkusze do `Assets/Art/screen_v3/` (nazwy plików w `ArtSprites`);
-  (3) kubki ×4, rozbity kubek, plamy, tablica zamówienia jako wektory w kresce (`gen_art.py` styl `ink`);
-  (4) pivoty v3 w `SpriteAnchors` (Miro/Sablé: stopy), font HUD (OFL, ręczny), `plankHeight`, skala
-  postaci; (5) zrzut z telefonu → ocena Michała → commit; (6) ekran tytułowy/game over w nowej kresce.
+- Assety ART są w `Assets/Art/screen_v3/` (komplet, styl `complete`): tło z Midjourney (prompt 11,
+  kadr 1868×1310 z oryginału tak, by lada trafiła na dół ekranu), Miro 5 póz i Sablé 2 klatki wycięte
+  `tools/cut_sheet.py` (Miro: `--floor 1265`; Sablé: `--split 540 1078 --floor 594 --floor-keep 955 1085
+  1415 1536`), ekspres (`--fuzz 5`), a kubki ×4/rozbity/plama/tablica/półka/drabinka to wektory z
+  `tools/gen_art_v3.py` (plank z Midjourney wyszedł perspektywicznie, nieużyty). Fonty OFL: Cabin Sketch
+  (licznik, nagłówki) i Patrick Hand (reszta) w `Assets/Fonts`. Pivoty v3 w `SpriteAnchors.PaintedPivots`
+  (stopy Miro liczone z alfy). W ART oba sloty używają pozy „taca w dół" — Miro stoi na drabince przy
+  górnej półce (`step.png`), oryginalna poza „taca w górę" (`miro_up.png`) jest niewykorzystana.
+- Do zrobienia: (1) ocena Michała na telefonie; (2) strojenie: skala Miro/kota, `baristaOffset`,
+  cyfry licznika nad neonem (może przyciemnić neon w tle), ekran tytułowy/game over w nowej kresce,
+  brakujące „miss"/kot na zrzutach (do sprawdzenia wizualnie: plamy w ART = biały sprite / przezroczysty
+  slot); (3) RETRO sprawdzić po przełączeniu (toggle na tytule, odblokowanie razem z Jesionem).
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
 **M5 — release candidate:**

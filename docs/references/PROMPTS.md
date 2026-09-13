@@ -185,5 +185,7 @@ outlines, warm palette of cream, amber and dark brown, simple readable shape --a
 --style raw --v 7 --no text, labels, background, shadow, photo, 3d
 ```
 
-Kubki (4 kolory), rozbity kubek, plamy i tablica zamówienia robię jako wektory w tej samej kresce
-(`tools/gen_art.py`, styl `ink`) — kolory muszą się zgadzać co do heksa z GDD §3.
+Kubki (4 kolory), rozbity kubek, plamy, tablica zamówienia, półka toru i drabinka to wektory w tej
+samej kresce (`tools/gen_art_v3.py`) — kolory kubków co do heksa z GDD §3. Wynik 2026-09-13:
+11, 13, 14 (drugi arkusz, koty 2 i 3), 15 użyte; 12 (plank) wyszedł jako deska w perspektywie i został
+zastąpiony wektorem. Oryginały w `art/midjourney/`.

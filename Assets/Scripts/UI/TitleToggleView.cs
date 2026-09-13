@@ -105,9 +105,10 @@ namespace NightCafe.UI
 
             if (screenLabel != null)
             {
+                // The label names what is on screen; it dims only when there is nothing to switch to.
                 bool retro = !_artAvailable || _settings.RetroScreen;
                 screenLabel.text = retro ? "RETRO" : "ART";
-                screenLabel.color = _artAvailable && (RetroUnlocked || retro) ? onColor : offColor;
+                screenLabel.color = _artAvailable ? onColor : offColor;
             }
         }
 
