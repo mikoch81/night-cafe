@@ -60,3 +60,14 @@ muted dark palette with amber highlights, cinematic, no people --ar 16:9 --style
 app icon, flat amber LCD pictogram of a coffee cup with steam on a dark glass rounded square,
 soft glow, single colour, minimal, centered --ar 1:1 --style raw --v 7 --no text, gradient, photo
 ```
+
+## 07 — Koncept obudowy 3/4 z dokładnym układem (wzór materiałów dla modelu 3D)
+
+```
+three-quarter product photo of a modern retro handheld LCD game console lying on a dark café
+counter, landscape body 2:1 in dark walnut wood with a brushed aluminium chamfered edge, a large
+recessed amber monochrome LCD taking 60% of the width, two small cream domed buttons on each
+side, a small aluminium slide switch below the screen with engraved A and B, engraved maker's mark
+bottom left, speaker holes bottom right, soft studio light, shallow depth of field, 8k
+--ar 16:9 --style raw --v 7 --no hands, text, logo, cables, d-pad
+```

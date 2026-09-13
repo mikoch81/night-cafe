@@ -85,11 +85,17 @@ w liczniku, BEST, trybie i zegarze; shader `NightCafe/LcdGlass` (winieta + odbla
 renderowana w Blenderze (`tools/shell_render.py`, 4 skiny jako osobne sprite'y, tekstury CC0 w
 `art/textures`); pochylenie kubka ±14°; oddech (wycieranie rąk + mruganie neonu); animacja 999 →
 neonowy kot; minutnik parzenia (tap w zegar na tytule). Referencje z Midjourney w `docs/references`.
-Po uwagach Michała (2026-09-13) obudowa v2.1: korpus 22×9.6 (20:9) na canvasie 2400×1080, cała scena
-renderowana razem (gniazda przycisków, szczelina wajchy, kratka, tabliczka, cień pod urządzeniem),
-przyciski i gałka z własnym cieniem kontaktowym (shadow catcher); `DeviceLayout` pokazuje całe
-urządzenie z marginesem na każdym aspekcie; `SpriteAtlas` (`Segments.spriteatlasv2`). Zostaje: ocena
-Michała, ewentualne poprawki, potem M5.
+**M4.5 (2026-09-13, po drugiej ocenie Michała: „makieta, nie urządzenie"): obudowa jest prawdziwym
+modelem 3D w Unity.** `tools/shell_model.py` (Blender, headless) → `Assets/Art/device/breve_deck.fbx`
+(korpus 22×11×1.4 z aluminiową fazą, wgłębiony LCD 13.2×9.26 = 60 % szerokości, kopułkowe przyciski
+w kołnierzach, suwak z grawerem A/B, grawer BRÉVE DECK, kratka). Dwie kamery: `LcdCamera` (2D,
+Renderer2D, bloom) renderuje scenę gry 1:1 do `Assets/Settings/LcdRT.renderTexture`, `DeviceCamera`
+(perspektywa, `UniversalRenderer.asset`) patrzy na model z tą teksturą na ekranie. Dotyk: ćwiartki
+bez zmian; toggle'e/zegar przez `LcdPointer` (raycast → UV ekranu → scena LCD), wajcha = collider.
+`DeviceShellView` porusza prawdziwymi capami (skok + podświetlenie) i gałką (overshoot + klik),
+skiny = materiały korpusu (orzech/jesion/onyks/neon z fioletową obwódką). HDRI Poly Haven (CC0)
+w `Assets/Art/device/env`, paralaksa z żyroskopu (`DeviceTilt`). Sprite'y obudowy z v2 usunięte.
+Zostaje: ocena Michała, szlif modelu (ryflowana gałka, kopułki), M5.
 
 M1–M3.5 zrobione i przetestowane na Pixelu 10. Sterowanie w edytorze: W/S (lewe tory), ↑/↓ (prawe), Spacja/Enter (start), **mysz** = tap (działa też na wajchę i toggle'e na tytule). Edytor może być otwarty podczas pracy z CLI — pakiet `com.unity.pipeline` + `unity cmd` (testy, `menu NightCafe/Build Scene Setup`, `build`).
 
