@@ -71,3 +71,42 @@ side, a small aluminium slide switch below the screen with engraved A and B, eng
 bottom left, speaker holes bottom right, soft studio light, shallow depth of field, 8k
 --ar 16:9 --style raw --v 7 --no hands, text, logo, cables, d-pad
 ```
+
+## 08–10 — Ekran v3: trzy kierunki stylu (do wyboru; potem ten sam styl dla wszystkich assetów)
+
+Wspólny kadr: ekran gry widziany wprost, proporcja 1272:892 (`--ar 10:7`), bar nocnej kawiarni z
+czterema ukośnymi ladami/torami (2 lewe, 2 prawe) schodzącymi do baristy na środku u dołu, ciepłe
+światło lamp, neon w tle. To referencja stylu, nie gotowa plansza.
+
+### 08 — Gwasz / lo-fi kolor (rekomendacja: najbliżej „kreski malowanej", pasuje do orzecha i bursztynu)
+
+```
+gouache painting of a cozy night café bar seen straight on, four diagonal wooden counters sloping
+down towards a small barista in a flat cap at the bottom centre, coffee cups sliding along the
+counters, a cat with a mop in the corner, warm lamp light, amber neon sign in the back, visible
+brush strokes, soft paper texture, limited warm palette with deep browns and cream, muted teal
+shadows, lo-fi illustration, no outlines --ar 10:7 --style raw --v 7 --no text, photo, 3d, ui
+```
+
+### 09 — Kreska tuszem + płaski kolor (czytelniejsze sylwetki, tańsze w produkcji klatek)
+
+```
+ink line illustration with flat colour fills, a cozy night café bar seen straight on, four
+diagonal counters sloping down towards a small barista in a flat cap at the bottom centre, coffee
+cups sliding along the counters, a cat with a mop, thick confident black outlines, limited warm
+palette of amber, cream and dark brown, screen-print texture, minimal shading, clean vector
+look --ar 10:7 --style raw --v 7 --no text, photo, 3d, gradients, ui
+```
+
+### 10 — Malowany monochrom bursztynowy (zachowuje „świecący wyświetlacz", zmienia tylko kreskę)
+
+```
+monochrome amber painted illustration on dark glass, a cozy night café bar seen straight on, four
+diagonal counters sloping down towards a small barista in a flat cap at the bottom centre, coffee
+cups sliding along the counters, a cat with a mop, loose brush strokes, single amber colour on
+near-black, soft glow like a backlit display, lo-fi, no outlines --ar 10:7 --style raw --v 7
+--no colour, rgb, text, photo, 3d, ui
+```
+
+Po wyborze kierunku: prompt na arkusz postaci Miro (5 póz: góra, dół, złapanie, pudło, wycieranie)
+i kota (2 klatki) w tym samym stylu, `--sref` na wybrany obraz, tło osobno bez postaci.

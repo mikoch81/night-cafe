@@ -4,16 +4,16 @@
     <feGaussianBlur stdDeviation="2.4"/>
   </filter>
   <g id="seg" fill="#ffc966" stroke="none">
-    <rect x="3" y="6" width="29" height="21" rx="4" fill="#ffd27a"/>
-    <path d="M32 10 h8 a7.5 7.5 0 0 1 0 15 h-8 v-4 h8 a3.5 3.5 0 0 0 0 -7 h-8 z" fill="#ffd27a"/>
-    <path d="M11 4 q2 -2.5 0 -5 M18 4 q2 -2.5 0 -5" fill="none" stroke="#ffd27a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+    <rect x="3" y="6" width="29" height="21" rx="4" fill="#ffffff"/>
+    <path d="M32 10 h8 a7.5 7.5 0 0 1 0 15 h-8 v-4 h8 a3.5 3.5 0 0 0 0 -7 h-8 z" fill="#ffffff"/>
+    <path d="M11 4 q2 -2.5 0 -5 M18 4 q2 -2.5 0 -5" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
 
   </g>
   <mask id="ink" maskUnits="userSpaceOnUse" x="0" y="0" width="52" height="34">
     <g fill="#fff" stroke="none">
-    <rect x="3" y="6" width="29" height="21" rx="4" fill="#ffd27a"/>
-    <path d="M32 10 h8 a7.5 7.5 0 0 1 0 15 h-8 v-4 h8 a3.5 3.5 0 0 0 0 -7 h-8 z" fill="#ffd27a"/>
-    <path d="M11 4 q2 -2.5 0 -5 M18 4 q2 -2.5 0 -5" fill="none" stroke="#ffd27a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+    <rect x="3" y="6" width="29" height="21" rx="4" fill="#ffffff"/>
+    <path d="M32 10 h8 a7.5 7.5 0 0 1 0 15 h-8 v-4 h8 a3.5 3.5 0 0 0 0 -7 h-8 z" fill="#ffffff"/>
+    <path d="M11 4 q2 -2.5 0 -5 M18 4 q2 -2.5 0 -5" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
 
     </g>
   </mask>

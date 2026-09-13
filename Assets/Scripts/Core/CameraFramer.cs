@@ -52,13 +52,14 @@ namespace NightCafe.Core
                 return;
 
             float aspect = (float)_width / _height;
-            float distance = DeviceLayout.CameraDistanceFor(aspect, fieldOfView);
 
             // The body's top face is at z = -thickness (it faces the camera at negative z); aim at
-            // the middle of the slab and rise above it by the tilt.
+            // the middle of the slab from the player's side, a little above it. Parallax pitch
+            // swings the viewpoint towards the far side (positive) or the near side.
             var target = new Vector3(0f, 0f, -DeviceLayout.BodyThickness * 0.5f);
-            float tilt = (tiltDegrees + _parallax.y) * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(0f, Mathf.Sin(tilt), -Mathf.Cos(tilt)) * distance;
+            float tilt = tiltDegrees - _parallax.y;
+            float distance = DeviceLayout.CameraDistanceFor(aspect, fieldOfView, tilt);
+            Vector3 offset = DeviceLayout.CameraOffset(tilt, distance);
             offset = Quaternion.AngleAxis(_parallax.x, Vector3.up) * offset;
 
             _camera.orthographic = false;

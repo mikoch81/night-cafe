@@ -34,9 +34,10 @@ TEXTURE_SRC = os.path.join(ROOT, "art", "textures")
 TEXTURE_DST = os.path.join(OUT_DIR, "textures")
 
 # ---- dimensions (DeviceLayout.cs mirrors BODY / LCD, DeviceConfig.cs the button and lever spots)
-BODY = 22.0, 11.0, 1.4
+BODY = 22.0, 11.0, 1.8           # a slab thick enough to read as an object, not a sheet
 BODY_RADIUS = 0.86
 CHAMFER = 0.35                   # aluminium chamfer around the wood top
+BOTTOM_RADIUS = 0.30             # rounded underside edge, so the wall is a shaped band
 LCD = 13.2, 9.26                 # 1272:892, the screen_bg proportion
 LCD_RADIUS = 0.30
 LCD_CENTRE_Y = 0.30
@@ -132,7 +133,11 @@ def rounded_face(name, width, height, radius, centre=(0, 0), z=0.0):
     """A single face with UVs spanning 0..1 across its bounding box (the LCD screen)."""
     bm = bmesh.new()
     face = bm.faces.new(rounded_loop(bm, width, height, radius, centre, z))
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    # A lone face has no inside, so recalc_face_normals may point it either way (it flipped
+    # the screen once, and Unity back-face culled it). It must face up, out of the recess.
+    face.normal_update()
+    if face.normal.z < 0:
+        face.normal_flip()
     uv_layer = bm.loops.layers.uv.verify()
     for loop in face.loops:
         p = loop.vert.co
@@ -188,6 +193,23 @@ def bevel_top(obj, offset, segments=6, z_min=None):
     obj.data.shade_smooth()
 
 
+def bevel_bottom(obj, offset, segments=4):
+    """Rounds the outer edges on the underside (z = 0). The LCD window's bottom loop is left
+    alone: it sits under the screen face and is never seen."""
+    hw, hh = BODY[0] / 2, BODY[1] / 2
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    edges = [e for e in bm.edges
+             if all(v.co.z <= 1e-4 and max(abs(v.co.x) / hw, abs(v.co.y) / hh) > 0.9 for v in e.verts)]
+    bmesh.ops.bevel(bm, geom=edges, offset=offset, segments=segments, profile=0.5, affect="EDGES",
+                    clamp_overlap=True)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    box_uv(bm)
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.shade_smooth()
+
+
 def assign_by_normal(obj, up_slot, side_slot, threshold=0.999):
     """Only the perfectly flat top gets `up_slot` (wood); the whole chamfer and every wall are
     `side_slot` (metal), so the aluminium rim is the full rounded band, not a sliver."""
@@ -233,6 +255,7 @@ def build():
     body = ring("Body", BODY[:2], BODY_RADIUS, LCD, LCD_RADIUS, TOP, inner_centre=(0, LCD_CENTRE_Y))
     body.data.materials.append(slot_material(1))   # slot 1 = aluminium
     bevel_top(body, CHAMFER, segments=8)
+    bevel_bottom(body, BOTTOM_RADIUS)
     assign_by_normal(body, up_slot=0, side_slot=1)
 
     # Screen face and glass, recessed below the wood.

@@ -367,14 +367,16 @@ def cat_a(style, palette):
 # ---------------------------------------------------------------- props
 
 def cup(style, palette):
-    """Canvas 52x34, pivot (26, 13.5). Mode B tints the whole sprite, so it is one colour."""
-    bright = palette["brightAmber"]
+    """Canvas 52x34, pivot (26, 13.5). Drawn in white: the SpriteRenderer tints it - bright amber
+    in Mode A, the order colour in Mode B - so a cup in flight is exactly the colour the order
+    panel's swatch shows (GDD 3). An amber sprite under a multiply tint came out darker."""
+    ink = "#ffffff"
     b, d = [], []
-    b.append(rrect(3, 6, 29, 21, 4, f'fill="{bright}"'))                         # body
-    b.append(path("M32 10 h8 a7.5 7.5 0 0 1 0 15 h-8 v-4 h8 a3.5 3.5 0 0 0 0 -7 h-8 z", f'fill="{bright}"'))  # handle
+    b.append(rrect(3, 6, 29, 21, 4, f'fill="{ink}"'))                           # body
+    b.append(path("M32 10 h8 a7.5 7.5 0 0 1 0 15 h-8 v-4 h8 a3.5 3.5 0 0 0 0 -7 h-8 z", f'fill="{ink}"'))  # handle
     d.append(seam([(32.5, 8), (32.5, 27)], style, palette))                      # body / handle
     if style.details:
-        b.append(stroke_path("M11 4 q2 -2.5 0 -5 M18 4 q2 -2.5 0 -5", 1.6, bright, 'opacity="0.75"'))  # steam
+        b.append(stroke_path("M11 4 q2 -2.5 0 -5 M18 4 q2 -2.5 0 -5", 1.6, ink, 'opacity="0.75"'))  # steam
     return svg(52, 34, "".join(b), "".join(d), style, palette)
 
 

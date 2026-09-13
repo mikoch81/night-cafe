@@ -12,28 +12,56 @@ namespace NightCafe.Tests
         static float HalfTan => Mathf.Tan(0.5f * Fov * Mathf.Deg2Rad);
 
         [Test]
-        public void HeightGovernsOnThePhone()
+        public void SeenStraightOnTheMarginIsExact()
         {
-            // 2424x1080: the body is 2:1, so its height plus the margin sets the distance.
-            float expected = (DeviceLayout.BodyHalfHeight + DeviceLayout.Margin) / HalfTan;
-            Assert.AreEqual(expected, DeviceLayout.CameraDistanceFor(2424f / 1080f, Fov), Tolerance);
-            Assert.AreEqual(expected, DeviceLayout.CameraDistanceFor(3.0f, Fov), Tolerance);
-        }
+            // With no tilt the slab is a 2:1 rectangle whose top face is half a thickness nearer
+            // than the target, and the classic framing applies: height plus margin on the phone,
+            // width plus margin at 16:9.
+            float phone = (DeviceLayout.BodyHalfHeight + DeviceLayout.Margin) / HalfTan + DeviceLayout.BodyThickness * 0.5f;
+            Assert.AreEqual(phone, DeviceLayout.CameraDistanceFor(2424f / 1080f, Fov, 0f), Tolerance);
+            Assert.AreEqual(phone, DeviceLayout.CameraDistanceFor(3.0f, Fov, 0f), Tolerance);
 
-        [Test]
-        public void WidthGovernsOnTallerScreens()
-        {
             float aspect = 16f / 9f;
-            float expected = (DeviceLayout.BodyHalfWidth + DeviceLayout.Margin) / (HalfTan * aspect);
-            Assert.AreEqual(expected, DeviceLayout.CameraDistanceFor(aspect, Fov), Tolerance);
-            Assert.Greater(DeviceLayout.CameraDistanceFor(1.6f, Fov), expected, "a squarer screen needs more distance");
+            float editor = (DeviceLayout.BodyHalfWidth + DeviceLayout.Margin) / (HalfTan * aspect) + DeviceLayout.BodyThickness * 0.5f;
+            Assert.AreEqual(editor, DeviceLayout.CameraDistanceFor(aspect, Fov, 0f), Tolerance);
         }
 
         [Test]
-        public void WholeDeviceStaysVisibleAcrossEveryPlausibleAspect()
+        public void HeightGovernsOnThePhoneAndWidthOnTallerScreens()
         {
-            for (float aspect = 1.30f; aspect <= 3.00f; aspect += 0.01f)
-                Assert.IsTrue(DeviceLayout.DeviceFullyVisible(aspect, Fov), $"cropped at aspect {aspect:0.00}");
+            float phone = DeviceLayout.CameraDistanceFor(2424f / 1080f, Fov);
+            Assert.AreEqual(phone, DeviceLayout.CameraDistanceFor(3.0f, Fov), Tolerance, "wider screens keep the phone distance");
+            float editor = DeviceLayout.CameraDistanceFor(16f / 9f, Fov);
+            Assert.Greater(editor, phone);
+            Assert.Greater(DeviceLayout.CameraDistanceFor(1.6f, Fov), editor, "a squarer screen needs more distance");
+        }
+
+        [Test]
+        public void TiltingBacksTheCameraOffJustEnough()
+        {
+            // Tilting trades one critical corner for another (top face corners straight on, the
+            // bottom face's near edge tilted); the distance barely moves and nothing is cropped.
+            float straight = DeviceLayout.CameraDistanceFor(2424f / 1080f, Fov, 0f);
+            float tilted = DeviceLayout.CameraDistanceFor(2424f / 1080f, Fov, DeviceLayout.CameraTiltDegrees);
+            Assert.IsTrue(DeviceLayout.DeviceFullyVisible(2424f / 1080f, Fov));
+            Assert.Less(Mathf.Abs(tilted - straight), 1.0f, "the tilt is not a zoom");
+        }
+
+        [Test]
+        public void CameraSitsOnThePlayersSideInFrontOfTheTopFace()
+        {
+            Vector3 offset = DeviceLayout.CameraOffset(DeviceLayout.CameraTiltDegrees, 10f);
+            Assert.Less(offset.y, 0f, "near side = the bottom edge of the screen");
+            Assert.Less(offset.z, 0f, "the top face is at negative z");
+            Assert.AreEqual(10f, offset.magnitude, Tolerance);
+        }
+
+        [Test]
+        public void WholeDeviceStaysVisibleAcrossEveryPlausibleAspectAndTilt()
+        {
+            for (float tilt = 0f; tilt <= 20f; tilt += 2f)
+                for (float aspect = 1.30f; aspect <= 3.00f; aspect += 0.01f)
+                    Assert.IsTrue(DeviceLayout.DeviceFullyVisible(aspect, Fov, tilt), $"cropped at aspect {aspect:0.00}, tilt {tilt}");
         }
 
         [Test]

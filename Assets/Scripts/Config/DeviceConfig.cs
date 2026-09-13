@@ -15,8 +15,8 @@ namespace NightCafe.Config
         [Tooltip("Vertical field of view of the device camera; the framing distance follows from it.")]
         public float cameraFov = 24f;
 
-        [Tooltip("Pitch towards the device in degrees - a little from above, like a handheld on a counter.")]
-        public float cameraTiltDegrees = 10f;
+        [Tooltip("Pitch towards the device in degrees, looking from the player's side, so the front wall shows below the body.")]
+        public float cameraTiltDegrees = 14f;
 
         [Tooltip("Parallax: how far the viewpoint swings (degrees) as the phone tilts; 0 disables it.")]
         public float parallaxDegrees = 3f;

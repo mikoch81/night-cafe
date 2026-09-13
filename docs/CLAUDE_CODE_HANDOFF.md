@@ -72,6 +72,23 @@ NuPogodiModern/
 - Zakres: arkusz kierunku (3 warianty baristy/kota), font 14-segmentowy DSEG (OFL) do licznika i zegara, shader `LcdSegment` (Shader Graph: glow, ghosting, szkło), `SpriteAtlas`, obudowa v2 (tekstura drewna, ramka), pochylenie kubka ±14°, oddech (barista wyciera ręce, neon mruga), animacja 999 → kot z neonów, minutnik parzenia.
 - Referencje AI wyłącznie lokalnie (ComfyUI + FLUX/SDXL na RTX 4060) i tylko jako inspiracja / grafiki sklepowe — do gry idą wektory.
 
+**M4.6 — Ekran v3 „malowany" (propozycja, czeka na decyzje Michała; GDD §5 do przepisania po jego zgodzie):**
+- Powód: przy realistycznym 3D urządzeniu imitacja starego LCD wygląda obco. Michał: „prosi się o obiekty,
+  tło typu art, kreska malowana"; mechanika bez zmian.
+- Zakres: wyłącznie warstwa prezentacji sceny LCD (`ScreenRoot`): tło (bar nocnej kawiarni, tory jako
+  element sceny), barista Miro (te same 5 póz, klatkowo), kot Sablé, kubki (4 kolory jako osobne
+  grafiki, nie tint), plamy, panel zamówienia, HUD (font pasujący do stylu zamiast DSEG), tytuł.
+  Bez zmian: `LaneConfig` (punkty K1–K5, catch pointy), `GameLoopController`, `RoundStateMachine`, dotyk.
+- Pipeline (do potwierdzenia): Midjourney generuje **assety** (nie tylko referencje) w jednym stylu —
+  arkusz postaci (character sheet) → Michał robi upscale i wycina w Kricie/GIMP-ie (przezroczyste PNG) →
+  Claude składa w Unity (`Setup.Scene` czyta z `Assets/Art/screen_v3/`), dopasowuje pivoty do
+  `LaneConfig`, robi shader ekranu (podświetlenie, delikatna winieta szkła zostaje). Licencja:
+  plan Standard Midjourney daje prawa komercyjne subskrybentowi — zapisać w `art/LICENSE.md`.
+- Decyzje do podjęcia (prompty 08–10 w `docs/references/PROMPTS.md` do porównania): kierunek stylu
+  (gwasz/lo-fi kolor vs kreska+płaski kolor vs malowany monochrom bursztynowy), czy ekran zostaje
+  „wyświetlaczem" (podświetlenie, szkło) czy staje się „dioramą", czy stary look segmentowy zostaje
+  jako odblokowywany skin „RETRO", co z bloomem/duchami segmentów (GDD §5.2, §6).
+
 **M5 — release candidate:**
 - Ikona + splash (wygeneruj z `device/lever_knob` + kubek), IL2CPP ARM64 **release** AAB bez pakietu `com.unity.pipeline` i bez dev flags, README, checklista §7 GDD, test na telefonie, tag `v1.0.0`.
 
@@ -87,7 +104,7 @@ renderowana w Blenderze (`tools/shell_render.py`, 4 skiny jako osobne sprite'y, 
 neonowy kot; minutnik parzenia (tap w zegar na tytule). Referencje z Midjourney w `docs/references`.
 **M4.5 (2026-09-13, po drugiej ocenie Michała: „makieta, nie urządzenie"): obudowa jest prawdziwym
 modelem 3D w Unity.** `tools/shell_model.py` (Blender, headless) → `Assets/Art/device/breve_deck.fbx`
-(korpus 22×11×1.4 z aluminiową fazą, wgłębiony LCD 13.2×9.26 = 60 % szerokości, kopułkowe przyciski
+(korpus 22×11×1.8 z aluminiową fazą i zaokrągloną dolną krawędzią, wgłębiony LCD 13.2×9.26 = 60 % szerokości, kopułkowe przyciski
 w kołnierzach, suwak z grawerem A/B, grawer BRÉVE DECK, kratka). Dwie kamery: `LcdCamera` (2D,
 Renderer2D, bloom) renderuje scenę gry 1:1 do `Assets/Settings/LcdRT.renderTexture`, `DeviceCamera`
 (perspektywa, `UniversalRenderer.asset`) patrzy na model z tą teksturą na ekranie. Dotyk: ćwiartki
@@ -95,7 +112,15 @@ bez zmian; toggle'e/zegar przez `LcdPointer` (raycast → UV ekranu → scena LC
 `DeviceShellView` porusza prawdziwymi capami (skok + podświetlenie) i gałką (overshoot + klik),
 skiny = materiały korpusu (orzech/jesion/onyks/neon z fioletową obwódką). HDRI Poly Haven (CC0)
 w `Assets/Art/device/env`, paralaksa z żyroskopu (`DeviceTilt`). Sprite'y obudowy z v2 usunięte.
-Zostaje: ocena Michała, szlif modelu (ryflowana gałka, kopułki), M5.
+Ocena Michała (2026-09-13 wieczór): urządzenie „w 95 %" dobre; poprawki: (1) korpus wyglądał jak tafla —
+kamera patrzyła od górnej krawędzi (ścianka widoczna u góry, na dole nic); teraz `DeviceLayout.CameraOffset`
+stawia kamerę po stronie gracza (−y) z pochyleniem 14°, korpus ma 1.8 grubości i widać przednią ściankę
+z cieniem; kadr liczony po 8 rogach bryły; (2) kolor kubka w locie ≠ kolor w panelu zamówienia — `cup.png`
+jest teraz biały i barwiony przez `SpriteRenderer` (bursztyn w A, kolor zamówienia w B, dokładnie hex z GDD §3);
+(3) drewno zostaje jak jest. Pułapka: pojedyncza ściana w bmesh dostaje losową normalną —
+`rounded_face` wymusza +Z, a po eksporcie Unity bywa trzeba wymusić reimport FBX (stary mesh w cache).
+**Decyzja Michała: sam ekran (segmentowy Neo-LCD) już nie pasuje do urządzenia — nowy etap M4.6 niżej.**
+Zostaje przed M4.6: szlif modelu (ryflowana gałka, kopułki) — drobne.
 
 M1–M3.5 zrobione i przetestowane na Pixelu 10. Sterowanie w edytorze: W/S (lewe tory), ↑/↓ (prawe), Spacja/Enter (start), **mysz** = tap (działa też na wajchę i toggle'e na tytule). Edytor może być otwarty podczas pracy z CLI — pakiet `com.unity.pipeline` + `unity cmd` (testy, `menu NightCafe/Build Scene Setup`, `build`).
 
