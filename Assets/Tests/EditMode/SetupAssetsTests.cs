@@ -51,6 +51,15 @@ namespace NightCafe.Tests
         }
 
         [Test]
+        public void SegmentAtlasPacksEveryLcdSprite()
+        {
+            var atlas = AssetDatabase.LoadAssetAtPath<UnityEngine.U2D.SpriteAtlas>("Assets/Settings/Segments.spriteatlasv2");
+            Assert.IsNotNull(atlas, "run NightCafe/Build Scene Setup first");
+            int loose = AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art/sprites" }).Length;
+            Assert.AreEqual(loose, atlas.spriteCount, "every sprite under Assets/Art/sprites belongs in the atlas");
+        }
+
+        [Test]
         public void ArtTexturesAreCompressedForAndroid()
         {
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))

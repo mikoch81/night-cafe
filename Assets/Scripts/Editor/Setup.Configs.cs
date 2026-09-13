@@ -59,6 +59,50 @@ namespace NightCafe.EditorTools
 
         static DeviceConfig CreateDeviceConfig() => ResetToDefaults<DeviceConfig>(DeviceConfigPath);
 
+        const string SegmentAtlasPath = SettingsDir + "/Segments.spriteatlasv2";
+
+        /// <summary>
+        /// One atlas for everything on the LCD (Assets/Art/sprites), so the cups, barista, cat and
+        /// stains batch into a single draw call. The shell and screen_bg stay loose: they are
+        /// large and drawn once each.
+        /// </summary>
+        static void CreateSpriteAtlas()
+        {
+            var folder = AssetDatabase.LoadAssetAtPath<DefaultAsset>("Assets/Art/sprites");
+            if (folder == null)
+            {
+                Debug.LogWarning("[NightCafe] Assets/Art/sprites missing; no sprite atlas.");
+                return;
+            }
+
+            // Rebuilt from scratch every run; Save overwrites the file and the .meta keeps the GUID.
+            var atlas = new UnityEditor.U2D.SpriteAtlasAsset();
+            atlas.Add(new Object[] { folder });
+            atlas.SetIncludeInBuild(true);
+
+            var packing = atlas.GetPackingSettings();
+            packing.enableRotation = false;
+            packing.enableTightPacking = false; // FullRect sprites keep their padded glow
+            packing.padding = 4;
+            atlas.SetPackingSettings(packing);
+
+            var texture = atlas.GetTextureSettings();
+            texture.filterMode = FilterMode.Bilinear;
+            texture.generateMipMaps = false;
+            texture.sRGB = true;
+            atlas.SetTextureSettings(texture);
+
+            var android = atlas.GetPlatformSettings("Android");
+            android.overridden = true;
+            android.format = TextureImporterFormat.ASTC_6x6;
+            android.maxTextureSize = 2048;
+            android.compressionQuality = 100;
+            atlas.SetPlatformSettings(android);
+
+            UnityEditor.U2D.SpriteAtlasAsset.Save(atlas, SegmentAtlasPath);
+            AssetDatabase.ImportAsset(SegmentAtlasPath);
+        }
+
         static LaneConfig CreateLaneConfig()
         {
             var config = ResetToDefaults<LaneConfig>(LaneConfigPath);

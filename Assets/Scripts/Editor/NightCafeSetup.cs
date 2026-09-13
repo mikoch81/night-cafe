@@ -86,6 +86,7 @@ namespace NightCafe.EditorTools
             DeviceConfig deviceConfig = CreateDeviceConfig();
             AudioConfig audioConfig = CreateAudioConfig();
             CreateVolumeProfile();
+            CreateSpriteAtlas();
             CreateCupPrefab(laneConfig);
 
             BuildGameScene(modeConfigs, laneConfig, deviceConfig, audioConfig, monoFont);
