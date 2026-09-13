@@ -19,6 +19,10 @@ namespace NightCafe.Gameplay
 
         LaneConfig _laneConfig;
         Vector2 _offset;
+        float _moveSeconds;     // presentation hop (ScreenStyle.moveSeconds); the slot itself changes instantly
+        float _moveTimer;
+        Vector2 _moveFrom;
+        Vector2 _moveTo;
         float _poseTimer;
         float _wipeTimer;
         float _wipePeriod;
@@ -34,8 +38,20 @@ namespace NightCafe.Gameplay
         public void MoveTo(LanePosition position)
         {
             _wipeTimer = 0f;
+            bool changed = position != Current;
             Current = position;
-            transform.localPosition = _laneConfig.GetBaristaSlot(position) + _offset;
+            Vector2 target = _laneConfig.GetBaristaSlot(position) + _offset;
+            if (changed && _moveSeconds > 0f && spriteRenderer != null && spriteRenderer.enabled)
+            {
+                _moveFrom = transform.localPosition;
+                _moveTo = target;
+                _moveTimer = _moveSeconds;
+            }
+            else
+            {
+                _moveTimer = 0f;
+                transform.localPosition = target;
+            }
 
             // Art is drawn facing right; the left-hand slots are the mirrored ones.
             Vector3 scale = transform.localScale;
@@ -86,6 +102,16 @@ namespace NightCafe.Gameplay
 
         void Update()
         {
+            if (_moveTimer > 0f)
+            {
+                _moveTimer -= Time.deltaTime;
+                float t = 1f - Mathf.Clamp01(_moveTimer / _moveSeconds);
+                float eased = 1f - (1f - t) * (1f - t);
+                Vector2 p = Vector2.Lerp(_moveFrom, _moveTo, eased);
+                p.y += 0.22f * Mathf.Sin(t * Mathf.PI); // a small hop, feet leave the ground
+                transform.localPosition = p;
+            }
+
             if (_wipeTimer > 0f)
             {
                 _wipeTimer -= Time.deltaTime;
@@ -129,9 +155,12 @@ namespace NightCafe.Gameplay
         public void SetOffset(Vector2 offset)
         {
             _offset = offset;
+            _moveTimer = 0f;
             if (_laneConfig != null)
                 transform.localPosition = _laneConfig.GetBaristaSlot(Current) + _offset;
         }
+
+        public void SetMoveSeconds(float seconds) => _moveSeconds = Mathf.Max(0f, seconds);
 
         /// <summary>Uniform size, keeping the facing (negative x = left-hand slots).</summary>
         public void SetScale(float scale)

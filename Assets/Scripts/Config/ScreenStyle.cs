@@ -38,6 +38,16 @@ namespace NightCafe.Config
         public Sprite step;
         [Tooltip("Added to the LaneConfig barista slots: the painted Miro's tray sits at a different height above his feet than the LCD one's.")]
         public Vector2 baristaOffset;
+        [Tooltip("ART only: a board behind the score, so the digits do not fight the neon painted into the background.")]
+        public Sprite scoreBoard;
+
+        [Header("Motion (presentation only; the logical slot changes instantly, GDD 4)")]
+        [Tooltip("Seconds the barista sprite takes to hop to a new slot; 0 = the LCD teleport.")]
+        public float moveSeconds = 0f;
+        [Tooltip("How high the cat bobs while walking, in LCD units; 0 = flat.")]
+        public float catBob = 0f;
+        [Tooltip("Degrees the cat rocks while walking.")]
+        public float catTilt = 0f;
 
         [Header("Actors")]
         public Sprite baristaUp;

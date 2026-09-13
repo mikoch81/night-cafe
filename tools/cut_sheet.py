@@ -154,6 +154,7 @@ def main():
     ap.add_argument("--floor", type=int, help="row (px from the top) from which the ground scribble is painted over")
     ap.add_argument("--split", type=int, nargs="*", help="x positions separating the poses (blobs go by their centre)")
     ap.add_argument("--floor-keep", type=int, nargs="*", default=[], help="x1 x2 pairs left unpainted below the floor (a mop head)")
+    ap.add_argument("--flip", nargs="*", default=[], help="pose names to mirror horizontally (a sheet that drew one pose facing the other way)")
     args = ap.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
@@ -170,6 +171,8 @@ def main():
                 continue
             out = os.path.join(args.outdir, f"{args.prefix}_{name}.png")
             write_pose(cut, group, args.min_area, args.pad, out, tmp)
+            if name in args.flip:
+                run("magick", out, "-flop", "PNG32:" + out)
             w, h = size_of(out)
             print(f"{out}: {w}x{h} ({len(group)} blobs)")
 

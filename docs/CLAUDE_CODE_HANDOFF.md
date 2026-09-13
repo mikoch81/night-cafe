@@ -88,10 +88,17 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   (licznik, nagłówki) i Patrick Hand (reszta) w `Assets/Fonts`. Pivoty v3 w `SpriteAnchors.PaintedPivots`
   (stopy Miro liczone z alfy). W ART oba sloty używają pozy „taca w dół" — Miro stoi na drabince przy
   górnej półce (`step.png`), oryginalna poza „taca w górę" (`miro_up.png`) jest niewykorzystana.
-- Do zrobienia: (1) ocena Michała na telefonie; (2) strojenie: skala Miro/kota, `baristaOffset`,
-  cyfry licznika nad neonem (może przyciemnić neon w tle), ekran tytułowy/game over w nowej kresce,
-  brakujące „miss"/kot na zrzutach (do sprawdzenia wizualnie: plamy w ART = biały sprite / przezroczysty
-  slot); (3) RETRO sprawdzić po przełączeniu (toggle na tytule, odblokowanie razem z Jesionem).
+- Ocena Michała (2026-09-14): „ekran pasuje". Poprawki wdrożone: poza „taca w dół" w arkuszu była
+  narysowana w lewo (`cut_sheet.py --flip down`, pivot 0.2535) — Miro stoi teraz twarzą do rampy;
+  tablica kredowa za licznikiem (`scoreboard.png`, `ScreenStyle.scoreBoard`) — cyfry nie zlewają się
+  z neonem; kot 2× i trucht (`catBob`/`catTilt`, `CatCrossingView.SetMotion`); podskok przy zmianie
+  slotu (`moveSeconds` 0.12 s, `PlayerPositionController` — slot logiczny zmienia się natychmiast,
+  GDD §4); półki z fototeksturą drewna (ambientCG Wood027, CC0, `-paint`) pod kreską, grubsze (0.6);
+  kubki z gradientem, ziarnem papieru i „drżącym" konturem (filtry SVG w `gen_art_v3.py`).
+- Do zrobienia: (1) ocena Michała na telefonie po poprawkach; (2) ekran tytułowy/game over w nowej
+  kresce; (3) jeśli kubki/półki nadal „słabe": Midjourney prompt na zestaw kubków (`--sref 09_ink_a`,
+  4 kolory do przebarwienia) i półkę „exactly front view, orthographic"; (4) RETRO sprawdzić po
+  przełączeniu (toggle na tytule, odblokowanie razem z Jesionem).
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
 **M5 — release candidate:**

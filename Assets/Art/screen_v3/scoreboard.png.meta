@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 73bec1b03a6907befb156730866d5dfd
+guid: 04e0174906a364438a8308406296b54c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4521045012317410057
-    second: miro_down_0
+      213: 5798786923323824679
+    second: scoreboard_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,8 +49,8 @@ TextureImporter:
   spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 0
-  alignment: 9
-  spritePivot: {x: 0.2535, y: 0.01}
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: miro_down_0
+      name: scoreboard_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 493
-        height: 1209
+        x: 5
+        y: 5
+        width: 870
+        height: 278
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7fce44bc3850241c0800000000000000
-      internalID: -4521045012317410057
+      spriteID: 72a95e4cbfd697050800000000000000
+      internalID: 5798786923323824679
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      miro_down_0: -4521045012317410057
+      scoreboard_0: 5798786923323824679
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

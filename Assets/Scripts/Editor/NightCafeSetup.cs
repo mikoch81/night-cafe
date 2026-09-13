@@ -141,8 +141,8 @@ namespace NightCafe.EditorTools
 
                 bool painted = path.StartsWith(ScreenV3Dir + "/");
                 string spriteName = Path.GetFileNameWithoutExtension(path);
-                // The shelf plank is 9-sliced along the rails: 24 canvas px of end cap, rendered at 3x.
-                settings.spriteBorder = painted && spriteName == "plank" ? new Vector4(72f, 0f, 72f, 0f) : Vector4.zero;
+                // The shelf plank is 9-sliced along the rails: 24 canvas px of end cap, rendered at 4x.
+                settings.spriteBorder = painted && spriteName == "plank" ? new Vector4(96f, 0f, 96f, 0f) : Vector4.zero;
                 if (SpriteAnchors.TryGet(spriteName, painted, out Vector2 pivot))
                 {
                     settings.spriteAlignment = (int)SpriteAlignment.Custom;

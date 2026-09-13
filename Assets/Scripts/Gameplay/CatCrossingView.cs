@@ -22,6 +22,8 @@ namespace NightCafe.Gameplay
 
         float _elapsed;
         bool _running;
+        float _bob;
+        float _tilt;
 
         public bool IsBusy => _running;
 
@@ -65,10 +67,14 @@ namespace NightCafe.Gameplay
         {
             float t = Mathf.Clamp01(_elapsed / duration);
 
+            // A walk cycle of two frames reads as a shuffle; a little bob and rock (painted style)
+            // at twice the frame rate turns it into a trot. Zero in the LCD style.
+            float phase = _elapsed * framesPerSecond * Mathf.PI;
             Vector3 position = transform.localPosition;
             position.x = CatPath.XAt(t, startX, endX);
-            position.y = y;
+            position.y = y + _bob * Mathf.Abs(Mathf.Sin(phase));
             transform.localPosition = position;
+            transform.localRotation = Quaternion.Euler(0f, 0f, _tilt * Mathf.Sin(phase));
 
             spriteRenderer.sprite = CatPath.FrameIndexAt(_elapsed, framesPerSecond) == 0 ? frameA : frameB;
 
@@ -81,6 +87,14 @@ namespace NightCafe.Gameplay
         {
             frameA = a != null ? a : frameA;
             frameB = b != null ? b : frameB;
+        }
+
+        public void SetMotion(float bob, float tilt)
+        {
+            _bob = bob;
+            _tilt = tilt;
+            if (!_running)
+                transform.localRotation = Quaternion.identity;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace NightCafe.Config
         static readonly Dictionary<string, Vector2> PaintedPivots = new()
         {
             { "miro_up", new Vector2(0.3123f, 0.0100f) },
-            { "miro_down", new Vector2(0.7465f, 0.0100f) },
+            { "miro_down", new Vector2(0.2535f, 0.0100f) }, // the sheet drew this pose facing left; cut with --flip down
             { "miro_catch", new Vector2(0.3431f, 0.0100f) },
             { "miro_miss", new Vector2(0.4509f, 0.0100f) },
             { "miro_wipe", new Vector2(0.3810f, 0.0100f) },

@@ -26,7 +26,7 @@ namespace NightCafe.EditorTools
             ("catA", "sable_a.png"), ("catB", "sable_b.png"),
             ("cup0", "cup_espresso.png"), ("cup1", "cup_caramel.png"), ("cup2", "cup_latte.png"), ("cup3", "cup_decaf.png"),
             ("cupBroken", "cup_broken.png"), ("stain", "stain.png"), ("orderPanel", "order_panel.png"),
-            ("step", "step.png"),
+            ("step", "step.png"), ("scoreBoard", "scoreboard.png"),
         };
 
         const string HandBoldFontPath = FontDir + "/CabinSketch-Bold.ttf";
@@ -106,6 +106,10 @@ namespace NightCafe.EditorTools
             art.stain = found["stain"] ?? retro.stain;
             art.orderPanel = found["orderPanel"] ?? retro.orderPanel;
             art.step = found["step"];
+            art.scoreBoard = found["scoreBoard"];
+            art.moveSeconds = 0.12f;
+            art.catBob = 0.08f;
+            art.catTilt = 4f;
             // Chalk-menu lettering (OFL): Cabin Sketch for the counter and headings, Patrick Hand for the rest.
             TMP_FontAsset handBold = EnsureSegmentFont(HandBoldFontPath, HandBoldFontAssetPath, "CabinSketch-Bold", HudCharset);
             TMP_FontAsset hand = EnsureSegmentFont(HandFontPath, HandFontAssetPath, "PatrickHand-Regular", HudCharset);
@@ -117,10 +121,10 @@ namespace NightCafe.EditorTools
             // the rail end in the up pose and a touch below it in the down pose.
             art.baristaScale = 0.96f;                    // ~2.5 units tall; the tray-down tray meets the rail end
             art.baristaOffset = new Vector2(0f, -0.4f);
-            art.catScale = 1.45f;
+            art.catScale = 2.0f;
             art.machineHeadScale = 0.34f;
-            art.plankHeight = 0.45f;
-            art.plankOffset = new Vector2(0f, -0.2f);    // cups rest on the top face
+            art.plankHeight = 0.6f;
+            art.plankOffset = new Vector2(0f, -0.27f);   // cups rest on the top face
             art.orderCupScale = new Vector2(0.6f, 0.6f);
             art.complete = complete;
             EditorUtility.SetDirty(art);
@@ -146,6 +150,16 @@ namespace NightCafe.EditorTools
 
             root.SetActive(false);
             return renderers.ToArray();
+        }
+
+        /// <summary>The board behind the score (ART only): Segments layer, under the HUD text.</summary>
+        static SpriteRenderer BuildScoreBoard(Transform screenRoot)
+        {
+            var go = Child("ScoreBoard", screenRoot.Find("Props"), new Vector2(0f, 3.55f));
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.enabled = false;
+            SetSorting(renderer, Core.SortingLayers.Segments, 40);
+            return renderer;
         }
 
         /// <summary>The footstools under the two upper barista slots (ART only; sprite set by the applier).</summary>
@@ -211,6 +225,7 @@ namespace NightCafe.EditorTools
 
             var volume = Object.FindFirstObjectByType<Volume>();
             var plankRoot = screenRoot.Find("Props");
+            SpriteRenderer scoreBoard = BuildScoreBoard(screenRoot);
 
             SetSerialized(applier, so =>
             {
@@ -221,6 +236,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("plankRoot").objectReferenceValue = plankRoot != null ? plankRoot.gameObject : null;
                 Fill(so.FindProperty("planks"), planks);
                 Fill(so.FindProperty("steps"), steps);
+                so.FindProperty("scoreBoard").objectReferenceValue = scoreBoard;
                 Fill(so.FindProperty("machineHeads"), heads);
                 so.FindProperty("lcdVolume").objectReferenceValue = volume;
                 so.FindProperty("barista").objectReferenceValue = barista;

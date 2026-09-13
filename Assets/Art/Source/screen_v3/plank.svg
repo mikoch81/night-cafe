@@ -1,10 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 30">
-<g stroke-linecap="round" stroke-linejoin="round">
-  <path d="M3 12 h234 v13 q0 3 -3 3 h-228 q-3 0 -3 -3 z" fill="#5e3a22" stroke="#2b1a12" stroke-width="2.2" />
-  <path d="M3 12 l6 -8 h222 l6 8 z" fill="#9a6a3c" stroke="#2b1a12" stroke-width="2.2" />
-  <path d="M12 8 h216" fill="none" stroke="#ffffff" stroke-width="1.4" opacity="0.22"/>
-  <path d="M20 6 h60 M110 6 h40 M170 6 h50" fill="none" stroke="#734f2d" stroke-width="1.1" opacity="0.5"/>
-  <path d="M6 24.5 h228" fill="none" stroke="#c9a24a" stroke-width="2.2" />
-  <path d="M14 18 h70 M120 19 h30 M180 17 h44" fill="none" stroke="#412817" stroke-width="1.1" opacity="0.6"/>
+<defs>
+  <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="5" result="noise"/>
+    <feColorMatrix in="noise" type="saturate" values="0" result="grey"/>
+    <feComponentTransfer in="grey" result="soft"><feFuncA type="table" tableValues="0 0.16"/></feComponentTransfer>
+    <feComposite in="soft" in2="SourceGraphic" operator="in" result="clipped"/>
+    <feBlend in="SourceGraphic" in2="clipped" mode="multiply"/>
+  </filter>
+  <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="9" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</defs>
+<g stroke-linecap="round" stroke-linejoin="round" filter="url(#wobble)">
+  <path d="M3 12 l6 -8 h222 l6 8 z" fill="#fff3d6" stroke="none" stroke-width="0" opacity="0.22"/>
+  <path d="M3 12 h234 v13 q0 3 -3 3 h-228 q-3 0 -3 -3 z" fill="#1a0e08" stroke="none" stroke-width="0" opacity="0.22"/>
+  <path d="M3 12 h234 v3 h-234 z" fill="#000" stroke="none" stroke-width="0" opacity="0.3"/>
+  <path d="M3 12 h234 v13 q0 3 -3 3 h-228 q-3 0 -3 -3 z" fill="none" stroke="#2b1a12" stroke-width="2.4" />
+  <path d="M3 12 l6 -8 h222 l6 8 z" fill="none" stroke="#2b1a12" stroke-width="2.4" />
+  <path d="M12 7.5 h216" fill="none" stroke="#ffffff" stroke-width="1.6" opacity="0.3"/>
+  <path d="M6 24.5 h228" fill="none" stroke="#c9a24a" stroke-width="2.4" />
+  <path d="M10 23.6 h220" fill="none" stroke="#fbca5c" stroke-width="0.8" opacity="0.7"/>
 </g>
 </svg>

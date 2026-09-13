@@ -20,11 +20,15 @@ MonoBehaviour:
   ghostsAllowed: 0
   background: {fileID: 21300000, guid: 399fe56c616040f4a8a407f8ef6dcc19, type: 3}
   plank: {fileID: 21300000, guid: 8b608537a9bf307889fed4e77d882cdc, type: 3}
-  plankHeight: 0.45
-  plankOffset: {x: 0, y: -0.2}
+  plankHeight: 0.6
+  plankOffset: {x: 0, y: -0.27}
   machineHead: {fileID: 21300000, guid: 5373f60a891a43fcea68d12c573c1953, type: 3}
   step: {fileID: 21300000, guid: 0f61171b469891987a4e3508faf602db, type: 3}
   baristaOffset: {x: 0, y: -0.4}
+  scoreBoard: {fileID: 21300000, guid: 04e0174906a364438a8308406296b54c, type: 3}
+  moveSeconds: 0.12
+  catBob: 0.08
+  catTilt: 4
   baristaUp: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
   baristaDown: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
   baristaCatch: {fileID: 21300000, guid: d6c8e9ce708ccc6868408c8a1c0f9f31, type: 3}
@@ -47,7 +51,7 @@ MonoBehaviour:
   textFont: {fileID: 11400000, guid: 2e156656e16167ef9b6ccbe28f27bd88, type: 2}
   baristaScale: 0.96
   cupScale: 1
-  catScale: 1.45
+  catScale: 2
   stainScale: 1
   machineHeadScale: 0.34
   brokenCupScale: 1

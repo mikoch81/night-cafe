@@ -25,6 +25,7 @@ namespace NightCafe.UI
         [SerializeField] SpriteRenderer[] planks = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer[] steps = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer[] machineHeads = new SpriteRenderer[0];
+        [SerializeField] SpriteRenderer scoreBoard;
         [SerializeField] Volume lcdVolume;
 
         [Header("Actors")]
@@ -94,6 +95,12 @@ namespace NightCafe.UI
                 plank.size = new Vector2(plank.size.x, style.plankHeight);
             }
 
+            if (scoreBoard != null)
+            {
+                scoreBoard.sprite = style.scoreBoard;
+                scoreBoard.enabled = style.scoreBoard != null;
+            }
+
             foreach (SpriteRenderer head in machineHeads)
             {
                 if (head == null) continue;
@@ -109,12 +116,16 @@ namespace NightCafe.UI
                 barista.SetPoses(style.baristaUp, style.baristaDown, style.baristaCatch, style.baristaMiss, style.baristaWipe);
                 barista.SetScale(baristaScale * style.baristaScale);
                 barista.SetOffset(style.baristaOffset);
+                barista.SetMoveSeconds(style.moveSeconds);
             }
             if (baristaRenderer != null)
                 baristaRenderer.color = actor;
 
             if (cat != null)
+            {
                 cat.SetFrames(style.catA, style.catB);
+                cat.SetMotion(style.catBob, style.catTilt);
+            }
             if (catRenderer != null)
             {
                 catRenderer.color = actor;

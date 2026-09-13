@@ -1,10 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 34">
-<g stroke-linecap="round" stroke-linejoin="round">
-  <path d="M5 11 q0 -4 5 -4 h22 q5 0 5 4 l-2 15 q-1 5 -6 5 h-16 q-5 0 -6 -5 z" fill="#ff9d6e" stroke="#2b1a12" stroke-width="2.2" />
-  <path d="M37 13 h4 a6.5 6.5 0 0 1 0 13 h-5 l0.6 -4 h4 a2.5 2.5 0 0 0 0 -5 h-4 z" fill="#ff9d6e" stroke="#2b1a12" stroke-width="2.2" />
-  <path d="M5.5 11 a15.5 4.2 0 1 0 31.0 0 a15.5 4.2 0 1 0 -31.0 0 z" fill="#ff9d6e" stroke="#2b1a12" stroke-width="2.2" />
-  <path d="M8.5 11.4 a12.5 2.9 0 1 0 25.0 0 a12.5 2.9 0 1 0 -25.0 0 z" fill="#3a2216" stroke="#2b1a12" stroke-width="1.4" />
-  <path d="M9 15 q1 9 3 13" fill="none" stroke="#ffffff" stroke-width="1.6" opacity="0.35"/>
-  <path d="M15 22 q6 2 12 0" fill="none" stroke="#995e42" stroke-width="1.2" opacity="0.5"/>
+<defs>
+  <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="5" result="noise"/>
+    <feColorMatrix in="noise" type="saturate" values="0" result="grey"/>
+    <feComponentTransfer in="grey" result="soft"><feFuncA type="table" tableValues="0 0.16"/></feComponentTransfer>
+    <feComposite in="soft" in2="SourceGraphic" operator="in" result="clipped"/>
+    <feBlend in="SourceGraphic" in2="clipped" mode="multiply"/>
+  </filter>
+  <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="9" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+<linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffaf7b"/><stop offset="1" stop-color="#ad6a4a"/></linearGradient><linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffbf86"/><stop offset="1" stop-color="#ff9d6e"/></linearGradient><linearGradient id="coffee" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a3a26"/><stop offset="1" stop-color="#2a1710"/></linearGradient></defs>
+<g stroke-linecap="round" stroke-linejoin="round" filter="url(#wobble)">
+  <path d="M5 11 q0 -4 5 -4 h22 q5 0 5 4 l-2 15 q-1 5 -6 5 h-16 q-5 0 -6 -5 z" fill="url(#body)" stroke="#2b1a12" stroke-width="2.4" />
+  <path d="M37 13 h4 a6.5 6.5 0 0 1 0 13 h-5 l0.6 -4 h4 a2.5 2.5 0 0 0 0 -5 h-4 z" fill="url(#body)" stroke="#2b1a12" stroke-width="2.2" />
+  <path d="M11 26 q10 4 18 0 l-1 3 q-8 3 -16 0 z" fill="#7f4e37" stroke="none" stroke-width="0" opacity="0.55"/>
+  <path d="M5.5 11 a15.5 4.2 0 1 0 31.0 0 a15.5 4.2 0 1 0 -31.0 0 z" fill="url(#rim)" stroke="#2b1a12" stroke-width="2.2" />
+  <path d="M8.5 11.4 a12.5 2.9 0 1 0 25.0 0 a12.5 2.9 0 1 0 -25.0 0 z" fill="url(#coffee)" stroke="#2b1a12" stroke-width="1.4" />
+  <path d="M12 10.6 a4 1.1 0 1 0 8 0 a4 1.1 0 1 0 -8 0 z" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.22"/>
+  <path d="M8.5 14 q0.5 8 3 12.5" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.42"/>
+  <path d="M12 13.5 q0 4 1 7" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.3"/>
+  <path d="M14 23 q7 2.5 14 0" fill="none" stroke="#8c563c" stroke-width="1.6" opacity="0.55"/>
+  <path d="M5 11 q0 -4 5 -4 h22 q5 0 5 4 l-2 15 q-1 5 -6 5 h-16 q-5 0 -6 -5 z" fill="#000" stroke="none" stroke-width="0" filter="url(#grain)" opacity="0.10"/>
 </g>
 </svg>
