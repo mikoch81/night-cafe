@@ -18,6 +18,9 @@ namespace NightCafe.Config
         [Tooltip("Pitch towards the device in degrees - a little from above, like a handheld on a counter.")]
         public float cameraTiltDegrees = 10f;
 
+        [Tooltip("Parallax: how far the viewpoint swings (degrees) as the phone tilts; 0 disables it.")]
+        public float parallaxDegrees = 3f;
+
         [Header("Virtual buttons (GDD 4)")]
         [Tooltip("How far a cap sinks on a press, in device units.")]
         public float capTravel = 0.08f;

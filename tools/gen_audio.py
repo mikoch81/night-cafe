@@ -210,6 +210,17 @@ def sfx_brew_alarm():
     return fade_edges(normalise(buf))
 
 
+def sfx_click():
+    """The mode switch snapping into its end stop: a short filtered noise burst with a body."""
+    n = int(SR * 0.035)
+    rng = random.Random(7)
+    env = env_ad(n, 0.0005, 0.006)
+    noise = [rng.uniform(-1, 1) * env[i] for i in range(n)]
+    noise = onepole_lp(noise, 2600)
+    thump = [math.sin(2 * math.pi * 210 * i / SR) * env_ad(n, 0.0005, 0.010)[i] * 0.6 for i in range(n)]
+    return fade_edges(normalise(mix(noise, thump), peak_dbfs=-6.0))
+
+
 def music_loop():
     """
     GDD 5.3: a 60-90 s lo-fi bed. 18 bars at 72 BPM lands on exactly 60.000 s, and the
@@ -275,6 +286,7 @@ def main():
     write_wav("sfx_cat.wav", sfx_cat())
     write_wav("sfx_gameover.wav", sfx_gameover())
     write_wav("sfx_brew_alarm.wav", sfx_brew_alarm())
+    write_wav("sfx_click.wav", sfx_click())
     write_wav("music_lofi_loop.wav", music_loop())
 
 

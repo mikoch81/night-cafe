@@ -79,6 +79,7 @@ namespace NightCafe.EditorTools
             LoadPalette();
             ConfigureSpriteImporters();
             ConfigureDeviceTextures();
+            ConfigureEnvironmentTexture();
             ConfigureModelImporter();
             ConfigureAudioImporters();
             UniversalRendererIndex = EnsureUniversalRenderer();
@@ -120,8 +121,8 @@ namespace NightCafe.EditorTools
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (path.StartsWith(DeviceTextureDir) || AssetImporter.GetAtPath(path) is not TextureImporter importer)
-                    continue; // the device's material maps are configured by ConfigureDeviceTextures
+                if (path.StartsWith("Assets/Art/device/") || AssetImporter.GetAtPath(path) is not TextureImporter importer)
+                    continue; // the 3D shell's maps and environment are configured in Setup.Device
 
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;

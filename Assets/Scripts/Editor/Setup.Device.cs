@@ -28,6 +28,7 @@ namespace NightCafe.EditorTools
         const string RendererPath = SettingsDir + "/UniversalRenderer.asset";
         const string UrpAssetPath = SettingsDir + "/UniversalRP.asset";
         const string LcdRenderTexturePath = SettingsDir + "/LcdRT.renderTexture";
+        const string EnvironmentPath = "Assets/Art/device/env/studio_small_09_2k.hdr";
 
         // The FBX arrives with its top face along +Y and both X and Z mirrored (Blender (x, y, z)
         // -> Unity (-x, z, -y)). X first then Z turns the face towards the camera (-Z) with the
@@ -151,7 +152,10 @@ namespace NightCafe.EditorTools
                 return;
             }
 
-            importer.materialImportMode = ModelImporterMaterialImportMode.None;
+            // Materials are imported (and then replaced at scene build): with import mode None
+            // Unity folds the body's two material slots into a single submesh.
+            importer.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
+            importer.materialLocation = ModelImporterMaterialLocation.InPrefab;
             importer.useFileScale = false;
             importer.globalScale = 1f;
             importer.isReadable = true; // the screen face's MeshCollider reports UVs
@@ -159,6 +163,33 @@ namespace NightCafe.EditorTools
             importer.meshCompression = ModelImporterMeshCompression.Off;
             importer.animationType = ModelImporterAnimationType.None;
             importer.importAnimation = false;
+            importer.SaveAndReimport();
+        }
+
+        /// <summary>
+        /// The studio HDRI (Poly Haven, CC0) as a cubemap: it is what the aluminium and the glass
+        /// reflect, and the soft ambient the wood sits in. 1024 is plenty for reflections.
+        /// </summary>
+        static void ConfigureEnvironmentTexture()
+        {
+            if (AssetImporter.GetAtPath(EnvironmentPath) is not TextureImporter importer)
+            {
+                Debug.LogWarning($"[NightCafe] {EnvironmentPath} missing; no environment reflections.");
+                return;
+            }
+
+            importer.textureShape = TextureImporterShape.TextureCube;
+            importer.generateCubemap = TextureImporterGenerateCubemap.AutoCubemap;
+            importer.sRGBTexture = false;
+            importer.mipmapEnabled = true;
+            importer.filterMode = FilterMode.Trilinear;
+            importer.maxTextureSize = 1024;
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            var android = importer.GetPlatformTextureSettings("Android");
+            android.overridden = true;
+            android.format = TextureImporterFormat.ASTC_HDR_6x6;
+            android.maxTextureSize = 512;
+            importer.SetPlatformTextureSettings(android);
             importer.SaveAndReimport();
         }
 
@@ -194,7 +225,7 @@ namespace NightCafe.EditorTools
         // ------------------------------------------------------------------ materials
 
         static Material LitMaterial(string name, Color colour, float metallic, float smoothness,
-            string colourMap = null, string normalMap = null, float tiling = 1f)
+            string colourMap = null, string normalMap = null, float tiling = 1f, float bumpScale = 1f)
         {
             Material material = MaterialAsset(name, "Universal Render Pipeline/Lit");
             material.SetColor("_BaseColor", colour);
@@ -204,6 +235,7 @@ namespace NightCafe.EditorTools
             material.SetTexture("_BaseMap", colourMap != null ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{DeviceTextureDir}/{colourMap}") : null);
             material.SetTexture("_BumpMap", normalMap != null ? AssetDatabase.LoadAssetAtPath<Texture2D>($"{DeviceTextureDir}/{normalMap}") : null);
             material.SetTextureScale("_BaseMap", new Vector2(tiling, tiling));
+            material.SetFloat("_BumpScale", bumpScale);
             if (normalMap != null)
                 material.EnableKeyword("_NORMALMAP");
             else
@@ -248,9 +280,9 @@ namespace NightCafe.EditorTools
 
         static Material GlassMaterial()
         {
-            // Barely there until the HDRI reflections land (step 2): a lit transparent surface
-            // over the LCD picks up the ambient light and greys the amber out.
-            Material material = LitMaterial("ScreenGlass", new Color(1f, 1f, 1f, 0.025f), 0f, 0.85f);
+            // Nearly clear; what sells the glass is the environment reflection in its specular,
+            // not the tint (a visible tint greys the amber out).
+            Material material = LitMaterial("ScreenGlass", new Color(1f, 1f, 1f, 0.03f), 0f, 0.94f);
             // URP Lit transparent: surface type 1, alpha blend, no depth write, render after opaques.
             material.SetFloat("_Surface", 1f);
             material.SetFloat("_Blend", 0f);
@@ -321,6 +353,8 @@ namespace NightCafe.EditorTools
                 so.FindProperty("fieldOfView").floatValue = config.cameraFov;
                 so.FindProperty("tiltDegrees").floatValue = config.cameraTiltDegrees;
             });
+            var tilt = cameraGo.AddComponent<DeviceTilt>();
+            SetSerialized(tilt, so => so.FindProperty("degrees").floatValue = config.parallaxDegrees);
 
             var cameraData = cameraGo.AddComponent<UniversalAdditionalCameraData>();
             cameraData.SetRenderer(rendererIndex);
@@ -340,19 +374,37 @@ namespace NightCafe.EditorTools
             var light = lightGo.AddComponent<Light>();
             light.type = LightType.Directional;
             light.color = new Color(1f, 0.95f, 0.88f);
-            light.intensity = 1.6f;
+            light.intensity = 1.3f;
             light.shadows = LightShadows.Soft;
             light.shadowStrength = 0.75f;
             light.cullingMask = 1 << deviceLayer;
             // Into the device (+Z), from the upper left of the view.
             lightGo.transform.rotation = Quaternion.LookRotation(new Vector3(0.35f, -0.45f, 0.82f));
 
-            RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.32f, 0.28f, 0.26f);
-            RenderSettings.ambientEquatorColor = new Color(0.20f, 0.16f, 0.14f);
-            RenderSettings.ambientGroundColor = new Color(0.08f, 0.06f, 0.05f);
-            RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
-            RenderSettings.reflectionIntensity = 0.6f;
+            // Environment: the studio HDRI lights the device softly and is what its metal and
+            // glass reflect. The camera never shows the sky itself (the counter fills the view).
+            var environment = AssetDatabase.LoadAssetAtPath<Cubemap>(EnvironmentPath);
+            if (environment != null)
+            {
+                Material skybox = MaterialAsset("Environment", "Skybox/Cubemap");
+                skybox.SetTexture("_Tex", environment);
+                skybox.SetFloat("_Exposure", 0.7f);
+                EditorUtility.SetDirty(skybox);
+                RenderSettings.skybox = skybox;
+                RenderSettings.ambientMode = AmbientMode.Skybox;
+                RenderSettings.ambientIntensity = 0.35f;
+                RenderSettings.defaultReflectionMode = DefaultReflectionMode.Skybox;
+                RenderSettings.defaultReflectionResolution = 256;
+                RenderSettings.reflectionIntensity = 0.55f; // the studio is bright; wood must stay matte
+                DynamicGI.UpdateEnvironment();
+            }
+            else
+            {
+                RenderSettings.ambientMode = AmbientMode.Trilight;
+                RenderSettings.ambientSkyColor = new Color(0.32f, 0.28f, 0.26f);
+                RenderSettings.ambientEquatorColor = new Color(0.20f, 0.16f, 0.14f);
+                RenderSettings.ambientGroundColor = new Color(0.08f, 0.06f, 0.05f);
+            }
         }
 
         /// <summary>
@@ -387,8 +439,23 @@ namespace NightCafe.EditorTools
             counter.GetComponent<Renderer>().sharedMaterial = LitMaterial("Counter", new Color(0.11f, 0.085f, 0.075f), 0f, 0.15f);
             Object.DestroyImmediate(counter.GetComponent<Collider>());
 
-            Material wood = LitMaterial("Wood_Walnut", Color.white, 0f, 0.35f, "Wood027_Color.jpg", "Wood027_NormalGL.jpg", 0.25f);
+            Material wood = LitMaterial("Wood_Walnut", Color.white, 0f, 0.22f, "Wood027_Color.jpg", "Wood027_NormalGL.jpg", 0.25f, 0.6f);
             Material alu = LitMaterial("Aluminium", new Color(0.86f, 0.86f, 0.86f), 0.9f, 0.62f, "Metal009_Color.jpg", "Metal009_NormalGL.jpg", 0.5f);
+
+            // Skins (GDD 6): the wood top per finish; neon turns the chamfer into a purple tube.
+            Material ash = LitMaterial("Wood_Ash", new Color(0.86f, 0.70f, 0.48f), 0f, 0.16f, "Wood095_Color.jpg", "Wood095_NormalGL.jpg", 0.25f, 0.3f);
+            Material onyx = LitMaterial("Wood_Onyx", new Color(0.5f, 0.5f, 0.55f), 0f, 0.3f, "Wood028_Color.jpg", "Wood028_NormalGL.jpg", 0.25f, 0.6f);
+            Material neonWood = LitMaterial("Wood_Neon", new Color(0.55f, 0.45f, 0.8f), 0f, 0.3f, "Wood028_Color.jpg", "Wood028_NormalGL.jpg", 0.25f, 0.6f);
+            Material neonTube = LitMaterial("NeonTube", new Color(0.35f, 0.15f, 0.8f), 0f, 0.25f);
+            neonTube.EnableKeyword("_EMISSION");
+            neonTube.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            neonTube.SetColor("_EmissionColor", new Color(0.5f, 0.2f, 1.0f) * 3.0f);
+            EditorUtility.SetDirty(neonTube);
+            var skinMaterials = new (string id, Material top, Material edge)[]
+            {
+                (SkinCatalog.DefaultId, wood, alu), (SkinCatalog.AshId, ash, alu),
+                (SkinCatalog.OnyxId, onyx, alu), (SkinCatalog.NeonId, neonWood, neonTube),
+            };
             Material dark = LitMaterial("Dark", new Color(0.05f, 0.04f, 0.035f), 0f, 0.3f);
             Material cap = CapMaterial();
             Material screen = ScreenMaterial(lcd);
@@ -396,6 +463,8 @@ namespace NightCafe.EditorTools
 
             var caps = new Transform[LanePositionExtensions.Count];
             var capRenderers = new Renderer[LanePositionExtensions.Count];
+            Renderer bodyRenderer = null;
+            int bodyTopSlot = 0, bodyEdgeSlot = 1;
             Transform knob = null;
             Collider lever = null;
             MeshCollider screenFace = null;
@@ -409,7 +478,20 @@ namespace NightCafe.EditorTools
 
                 string name = part.name;
                 if (name == "Body")
-                    renderer.sharedMaterials = new[] { wood, alu };
+                {
+                    // Unity orders the submeshes by the imported material names (Slot_Top /
+                    // Slot_Edge from tools/shell_model.py), not by Blender's slot order.
+                    Material[] imported = renderer.sharedMaterials;
+                    var assigned = new Material[imported.Length];
+                    for (int i = 0; i < imported.Length; i++)
+                    {
+                        bool top = imported[i] != null && imported[i].name.Contains("Top");
+                        assigned[i] = top ? wood : alu;
+                        if (top) bodyTopSlot = i; else bodyEdgeSlot = i;
+                    }
+                    renderer.sharedMaterials = assigned;
+                    bodyRenderer = renderer;
+                }
                 else if (name.StartsWith("Collar_") || name == "LeverRail" || name == "LeverKnob")
                     renderer.sharedMaterial = alu;
                 else if (name.StartsWith("Cap_"))
@@ -469,6 +551,19 @@ namespace NightCafe.EditorTools
                 so.FindProperty("leverKnobX").floatValue = config.leverKnobX;
                 so.FindProperty("leverSlideSeconds").floatValue = config.leverSlideSeconds;
                 so.FindProperty("deviceCamera").objectReferenceValue = deviceCamera;
+                so.FindProperty("bodyRenderer").objectReferenceValue = bodyRenderer;
+                so.FindProperty("bodyTopSlot").intValue = bodyTopSlot;
+                so.FindProperty("bodyEdgeSlot").intValue = bodyEdgeSlot;
+
+                SerializedProperty skinArray = so.FindProperty("skins");
+                skinArray.arraySize = skinMaterials.Length;
+                for (int i = 0; i < skinMaterials.Length; i++)
+                {
+                    SerializedProperty entry = skinArray.GetArrayElementAtIndex(i);
+                    entry.FindPropertyRelative("id").stringValue = skinMaterials[i].id;
+                    entry.FindPropertyRelative("top").objectReferenceValue = skinMaterials[i].top;
+                    entry.FindPropertyRelative("edge").objectReferenceValue = skinMaterials[i].edge;
+                }
             });
 
             return (view, screenFace);

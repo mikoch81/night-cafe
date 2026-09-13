@@ -18,6 +18,7 @@ MonoBehaviour:
   catMeow: {fileID: 8300000, guid: 06eb3a32efb9392b0b3af2c14ecab04d, type: 3}
   gameOver: {fileID: 8300000, guid: e992db4ceb47e41139b980d9fba9ab3c, type: 3}
   brewAlarm: {fileID: 8300000, guid: 8f5c3b6ed01cd3e26a65c112d4186b98, type: 3}
+  leverClick: {fileID: 8300000, guid: e3d67df9af0808fe6a2591f97e834bb3, type: 3}
   lofiLoop: {fileID: 8300000, guid: 83c9d7c7a60d22780ac31f721786fa3b, type: 3}
   musicOffsetDb: -18
   sfxVolume: 1

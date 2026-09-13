@@ -230,7 +230,8 @@ namespace NightCafe.Core
             _profile.SelectMode(next);
             ConfigureMode(next);
             ResetRoundState();
-            audioService.Play(GameSfx.Catch);
+            audioService.Play(GameSfx.LeverClick);
+            _haptics.OneShot(audioConfig.catchHapticMs);
         }
 
         // ------------------------------------------------------------------ frame

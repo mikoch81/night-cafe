@@ -142,6 +142,7 @@ namespace NightCafe.EditorTools
             config.catMeow = LoadClip("sfx_cat");
             config.gameOver = LoadClip("sfx_gameover");
             config.brewAlarm = LoadClip("sfx_brew_alarm");
+            config.leverClick = LoadClip("sfx_click");
             config.lofiLoop = LoadClip("music_lofi_loop");
 
             EditorUtility.SetDirty(config);

@@ -93,8 +93,8 @@ namespace NightCafe.Tests
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (path.StartsWith("Assets/Art/device/textures") || AssetImporter.GetAtPath(path) is not TextureImporter importer)
-                    continue; // material maps for the 3D shell are covered by DeviceModelIsWiredForUnity
+                if (path.StartsWith("Assets/Art/device/") || AssetImporter.GetAtPath(path) is not TextureImporter importer)
+                    continue; // the 3D shell's maps and HDRI are covered by DeviceModelIsWiredForUnity
 
                 TextureImporterPlatformSettings android = importer.GetPlatformTextureSettings("Android");
                 Assert.IsTrue(android.overridden, $"{path}: no Android override");

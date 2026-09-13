@@ -32,3 +32,8 @@ Assets/Audio/**/*.wav filter=lfs diff=lfs merge=lfs -text
 art/textures/**/*.jpg filter=lfs diff=lfs merge=lfs -text
 docs/art-direction/**/*.png filter=lfs diff=lfs merge=lfs -text
 docs/references/**/*.png filter=lfs diff=lfs merge=lfs -text
+*.hdr binary
+Assets/Art/device/**/*.hdr filter=lfs diff=lfs merge=lfs -text
+Assets/Art/device/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+Assets/Art/device/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+art/hdri/**/*.hdr filter=lfs diff=lfs merge=lfs -text

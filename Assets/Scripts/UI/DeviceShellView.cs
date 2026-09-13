@@ -30,6 +30,19 @@ namespace NightCafe.UI
 
         [Header("Finish")]
         [SerializeField] Camera deviceCamera;
+        [SerializeField] Renderer bodyRenderer;
+        [SerializeField] int bodyTopSlot;
+        [SerializeField] int bodyEdgeSlot = 1;
+        [Tooltip("Body materials per skin id: the wood top and the chamfer/edge band.")]
+        [SerializeField] SkinMaterials[] skins = System.Array.Empty<SkinMaterials>();
+
+        [System.Serializable]
+        public struct SkinMaterials
+        {
+            public string id;
+            public Material top;
+            public Material edge;
+        }
 
         static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
@@ -113,11 +126,29 @@ namespace NightCafe.UI
         public bool LeverHit(Ray ray) =>
             leverCollider != null && leverCollider.Raycast(ray, out _, 200f);
 
-        /// <summary>The counter under the device takes the skin's background; materials come in M4.5 step 2.</summary>
+        /// <summary>Swaps the body's wood and edge materials for the skin; the counter colour follows.</summary>
         public void ApplySkin(in Skin skin)
         {
             if (deviceCamera != null)
                 deviceCamera.backgroundColor = skin.Background;
+
+            if (bodyRenderer == null)
+                return;
+
+            string id = skin.Id;
+            int index = System.Array.FindIndex(skins, entry => entry.id == id);
+            if (index < 0)
+                index = System.Array.FindIndex(skins, entry => entry.id == SkinCatalog.DefaultId);
+            if (index < 0)
+                return;
+
+            Material[] materials = bodyRenderer.sharedMaterials;
+            if (bodyTopSlot >= materials.Length || bodyEdgeSlot >= materials.Length)
+                return;
+
+            if (skins[index].top != null) materials[bodyTopSlot] = skins[index].top;
+            if (skins[index].edge != null) materials[bodyEdgeSlot] = skins[index].edge;
+            bodyRenderer.sharedMaterials = materials;
         }
 
         void Update()

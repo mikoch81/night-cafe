@@ -9,7 +9,8 @@ namespace NightCafe.Config
         Miss = 2,
         CatMeow = 3,
         GameOver = 4,
-        BrewAlarm = 5
+        BrewAlarm = 5,
+        LeverClick = 6
     }
 
     /// <summary>
@@ -26,6 +27,7 @@ namespace NightCafe.Config
         public AudioClip catMeow;
         public AudioClip gameOver;
         public AudioClip brewAlarm;
+        public AudioClip leverClick;
 
         [Header("Music")]
         public AudioClip lofiLoop;
@@ -53,6 +55,7 @@ namespace NightCafe.Config
             GameSfx.CatMeow => catMeow,
             GameSfx.GameOver => gameOver,
             GameSfx.BrewAlarm => brewAlarm,
+            GameSfx.LeverClick => leverClick,
             _ => null
         };
     }

@@ -350,6 +350,8 @@ namespace NightCafe.EditorTools
             Vector2 labelPosition = laneConfig.orderPanelPosition + new Vector2(0.975f * laneConfig.orderPanelScale, 0f);
             TMP_Text label = WorldText("OrderLabel", screenRoot, labelPosition, "ESPRESSO", 3.2f, monoFont,
                 ActiveAmber, 0, new Vector2(2.9f * laneConfig.orderPanelScale, 0.8f));
+            label.textWrappingMode = TextWrappingModes.NoWrap; // ESPRESSO is wider than the box
+            label.overflowMode = TextOverflowModes.Overflow;
             label.gameObject.SetActive(false);
 
             var view = panel.AddComponent<OrderPanelView>();

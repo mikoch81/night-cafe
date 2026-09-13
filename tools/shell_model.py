@@ -70,15 +70,25 @@ def rounded_loop(bm, width, height, radius, centre=(0, 0), z=0.0, segments=12):
     return verts
 
 
+SLOT_NAMES = ("Top", "Edge")
+
+
+def slot_material(index):
+    """Real (empty) materials per slot: the FBX exporter drops empty slots and merges the faces
+    into one submesh, and Unity then has nowhere to put the second material."""
+    name = f"Slot_{SLOT_NAMES[index] if index < len(SLOT_NAMES) else index}"
+    return bpy.data.materials.get(name) or bpy.data.materials.new(name)
+
+
 def finish(bm, name, materials=1):
-    """bmesh -> object in the scene, with box-projected UVs and `materials` empty slots."""
+    """bmesh -> object in the scene, with box-projected UVs and `materials` slots."""
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     box_uv(bm)
     mesh = bpy.data.meshes.new(name)
     bm.to_mesh(mesh)
     bm.free()
-    for _ in range(materials):
-        mesh.materials.append(None)
+    for i in range(materials):
+        mesh.materials.append(slot_material(i))
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     mesh.shade_smooth()
@@ -130,7 +140,7 @@ def rounded_face(name, width, height, radius, centre=(0, 0), z=0.0):
     mesh = bpy.data.meshes.new(name)
     bm.to_mesh(mesh)
     bm.free()
-    mesh.materials.append(None)
+    mesh.materials.append(slot_material(0))
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return obj
@@ -178,8 +188,9 @@ def bevel_top(obj, offset, segments=6, z_min=None):
     obj.data.shade_smooth()
 
 
-def assign_by_normal(obj, up_slot, side_slot, threshold=0.92):
-    """Flat top faces get `up_slot` (wood), everything tilted or vertical `side_slot` (metal)."""
+def assign_by_normal(obj, up_slot, side_slot, threshold=0.999):
+    """Only the perfectly flat top gets `up_slot` (wood); the whole chamfer and every wall are
+    `side_slot` (metal), so the aluminium rim is the full rounded band, not a sliver."""
     for poly in obj.data.polygons:
         poly.material_index = up_slot if poly.normal.z > threshold else side_slot
 
@@ -202,7 +213,7 @@ def text_mesh(name, body, size, location, extrude=0.02):
     obj = bpy.context.view_layer.objects.active
     obj.name = name
     obj.data.materials.clear()
-    obj.data.materials.append(None)
+    obj.data.materials.append(slot_material(0))
     # the text mesh comes with flat UVs; give it box UVs like everything else
     bm = bmesh.new()
     bm.from_mesh(obj.data)
@@ -220,7 +231,7 @@ def build():
     # Body: wood slab with the LCD window through it. The top edges (outer rim and window rim)
     # get an aluminium chamfer, and the window walls are metal too - a metal-lined recess.
     body = ring("Body", BODY[:2], BODY_RADIUS, LCD, LCD_RADIUS, TOP, inner_centre=(0, LCD_CENTRE_Y))
-    body.data.materials.append(None)          # slot 1 = aluminium
+    body.data.materials.append(slot_material(1))   # slot 1 = aluminium
     bevel_top(body, CHAMFER, segments=8)
     assign_by_normal(body, up_slot=0, side_slot=1)
 
