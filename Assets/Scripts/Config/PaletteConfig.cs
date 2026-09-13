@@ -22,8 +22,8 @@ namespace NightCafe.Config
         [Tooltip("#120d09 - LCD glass")]
         public Color glassBlack = new(0.071f, 0.051f, 0.035f);
 
-        [Tooltip("#54301a - wood behind the shell, also the camera clear colour")]
-        public Color woodBackground = new(0.329f, 0.188f, 0.102f);
+        [Tooltip("#1a1412 - the counter the device lies on: camera clear colour around the shell")]
+        public Color woodBackground = new(0.102f, 0.078f, 0.071f);
 
         [Header("Glass over the LCD (NightCafe/LcdGlass)")]
         [Tooltip("Inner shadow where the bezel meets the display; 0 = flat glass")]

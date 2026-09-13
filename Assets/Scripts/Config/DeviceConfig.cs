@@ -17,16 +17,16 @@ namespace NightCafe.Config
         public float screenOffsetY = DeviceLayout.ScreenOffsetY;
 
         [Header("Virtual buttons (GDD 4) - right side; left mirrors X")]
-        public Vector2 buttonUp = new(7.13f, 1.75f);
-        public Vector2 buttonDown = new(7.13f, -0.87f);
+        public Vector2 buttonUp = new(8.2f, 1.75f);
+        public Vector2 buttonDown = new(8.2f, -0.87f);
         public float buttonScale = 0.3216f;
 
         [Tooltip("How long a button stays lit after a press, in seconds.")]
         public float buttonLitDuration = 0.10f;
 
         [Header("Mode lever (GDD 5.1: A on the left, B on the right)")]
-        public Vector2 leverTrack = new(0f, -3.86f);
-        public Vector2 leverKnob = new(-0.64f, -3.86f);
+        public Vector2 leverTrack = new(0f, -4.1f);
+        public Vector2 leverKnob = new(-0.64f, -4.1f);
         public float leverTrackScale = 0.2961f;
         public float leverKnobScale = 0.2897f;
 

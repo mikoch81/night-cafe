@@ -38,10 +38,11 @@ namespace NightCafe.Services
 
         static readonly Skin[] Skins =
         {
-            new(DefaultId, "WALNUT", Color.white, new Color(0.329f, 0.188f, 0.102f)),
-            new(AshId, "ASH", new Color(0.78f, 0.84f, 0.74f), new Color(0.62f, 0.52f, 0.38f)),
-            new(OnyxId, "ONYX", new Color(0.32f, 0.33f, 0.38f), new Color(0.11f, 0.10f, 0.11f)),
-            new(NeonId, "NEON", new Color(0.62f, 0.34f, 0.86f), new Color(0.13f, 0.09f, 0.19f))
+            // Background = the counter around the whole device, so it barely changes per skin.
+            new(DefaultId, "WALNUT", Color.white, new Color(0.102f, 0.078f, 0.071f)),
+            new(AshId, "ASH", new Color(0.78f, 0.84f, 0.74f), new Color(0.110f, 0.090f, 0.078f)),
+            new(OnyxId, "ONYX", new Color(0.32f, 0.33f, 0.38f), new Color(0.085f, 0.075f, 0.075f)),
+            new(NeonId, "NEON", new Color(0.62f, 0.34f, 0.86f), new Color(0.105f, 0.075f, 0.130f))
         };
 
         public static IReadOnlyList<Skin> All => Skins;

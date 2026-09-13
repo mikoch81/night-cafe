@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: DeviceConfig
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.DeviceConfig
   screenScale: 0.79821
-  screenOffsetY: 0.48
-  buttonUp: {x: 7.13, y: 1.75}
-  buttonDown: {x: 7.13, y: -0.87}
+  screenOffsetY: 0.35
+  buttonUp: {x: 8.2, y: 1.75}
+  buttonDown: {x: 8.2, y: -0.87}
   buttonScale: 0.3216
   buttonLitDuration: 0.1
-  leverTrack: {x: 0, y: -3.86}
-  leverKnob: {x: -0.64, y: -3.86}
+  leverTrack: {x: 0, y: -4.1}
+  leverKnob: {x: -0.64, y: -4.1}
   leverTrackScale: 0.2961
   leverKnobScale: 0.2897
   leverHitSize: {x: 3.6, y: 1.3}

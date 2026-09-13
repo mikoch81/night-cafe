@@ -4,16 +4,20 @@
     blender -b -P tools/shell_render.py -- [--skin walnut|ash|onyx|neon|all] [--samples 128]
                                             [--engine CYCLES|BLENDER_EEVEE] [--out Assets/Art/device]
 
-The canvases and the placement of every part match the hand-drawn v1 SVGs, so DeviceLayout,
-DeviceConfig and the sprite pivots do not change:
+Everything that does not move is one scene rendered into device_shell*.png: the wood body in
+its aluminium chassis, the LCD bezel and recess, the button wells, the lever slot, the grille and
+the plate, plus the device's own drop shadow. The parts the game swaps or moves (button caps,
+lever knob) render separately under the same lights over a shadow catcher, so they carry their
+contact shadow with them and sit in their wells instead of floating on top.
 
-  device_shell   1920x1080  body 1880x1020 (rx 86) with the LCD cutout at x 446..1474, y 136..848
-  button_normal  560x560    disc r 264 (the game scales it to 180 px)
-  button_pressed 560x560    same disc pushed in
-  lever_track    1040x176   slot
-  lever_knob     304x304    knob
+  device_shell   2400x1080  body 2200x960 (rx 86), 20:9 like a phone, LCD cutout 1028x712
+                            centred 35 px above the middle; wells at DeviceConfig.buttonUp/Down
+  button_normal  560x560    cap + rim, r 264 (DeviceConfig.buttonScale 0.3216 -> r 0.849 units)
+  button_pressed 560x560    same cap, lit amber
+  lever_knob     304x304    knob (DeviceConfig.leverKnobScale 0.2897)
 
-One Blender unit is 100 px, like Unity's 100 PPU. Textures are the CC0 sets in art/textures.
+One Blender unit is 100 px, like Unity's 100 PPU. DeviceLayout.cs mirrors BODY/LCD numbers,
+DeviceConfig.cs the button and lever positions. Textures are the CC0 sets in art/textures.
 """
 
 import argparse
@@ -36,14 +40,18 @@ SKINS = {
     "neon": dict(wood="Wood028", tint=(0.8, 0.6, 1.1), glow=1.0),
 }
 
-CANVAS = 19.2, 10.8          # device_shell canvas in units
-BODY = 18.8, 10.2, 1.2       # painted wood extents and thickness
+CANVAS = 24.0, 10.8          # device_shell canvas in units (room for the drop shadow)
+BODY = 22.0, 9.6, 1.2        # chassis extents and thickness - DeviceLayout.ShellContentHalf*
 BODY_RADIUS = 0.86
 FRAME = 10.64, 7.48          # aluminium bezel around the LCD
 FRAME_RADIUS = 0.46
-LCD = 10.28, 7.12            # glass cutout
+LCD = 10.28, 7.12            # glass cutout - DeviceLayout.Lcd*
 LCD_RADIUS = 0.36
-LCD_CENTRE_Y = 0.48          # cutout centre sits 48 px above the shell centre
+LCD_CENTRE_Y = 0.35          # DeviceLayout.ScreenOffsetY
+BUTTONS = [(8.2, 1.75), (8.2, -0.87), (-8.2, 1.75), (-8.2, -0.87)]  # DeviceConfig.buttonUp/Down
+BUTTON_RADIUS = 0.849        # rim r 2.64 in the 560 canvas x buttonScale 0.3216
+LEVER = (0.0, -4.1)          # DeviceConfig.leverTrack
+LEVER_SLOT = 3.08, 0.52      # lever_track's old footprint (1040x176 x 0.2961)
 
 
 # ---------------------------------------------------------------- mesh helpers
@@ -107,6 +115,36 @@ def rounded_ring_mesh(name, outer, outer_radius, inner, inner_radius, depth, inn
     return obj
 
 
+def ring_mesh(name, outer_radius, inner_radius, depth, segments=96):
+    """Annulus extruded to `depth` - button wells and the knob's collar."""
+    bm = bmesh.new()
+    o = [bm.verts.new((outer_radius * math.cos(2 * math.pi * k / segments),
+                       outer_radius * math.sin(2 * math.pi * k / segments), 0)) for k in range(segments)]
+    i = [bm.verts.new((inner_radius * math.cos(2 * math.pi * k / segments),
+                       inner_radius * math.sin(2 * math.pi * k / segments), 0)) for k in range(segments)]
+    faces = [bm.faces.new((o[k], o[(k + 1) % segments], i[(k + 1) % segments], i[k])) for k in range(segments)]
+    extruded = bmesh.ops.extrude_face_region(bm, geom=faces)
+    top = [g for g in extruded["geom"] if isinstance(g, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, verts=top, vec=(0, 0, depth))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    return obj
+
+
+def shadow_catcher(size, z=0.0):
+    """Invisible ground that only records shadows into the alpha channel - how a separately
+    rendered part keeps the contact shadow that makes it belong to the body."""
+    bpy.ops.mesh.primitive_plane_add(size=size, location=(0, 0, z))
+    plane = bpy.context.active_object
+    plane.name = "ShadowCatcher"
+    plane.is_shadow_catcher = True
+    return plane
+
+
 def cylinder(name, radius, depth, segments=96):
     bpy.ops.mesh.primitive_cylinder_add(vertices=segments, radius=radius, depth=depth, location=(0, 0, depth / 2))
     obj = bpy.context.active_object
@@ -127,14 +165,6 @@ def bevel(obj, width, segments=6, angle=30):
 def smooth(obj):
     """Smooth shading; the bevel modifier's harden_normals keeps the flat faces flat."""
     obj.data.shade_smooth()
-
-
-def boolean_cut(obj, cutter):
-    mod = obj.modifiers.new("Cut", "BOOLEAN")
-    mod.operation = "DIFFERENCE"
-    mod.object = cutter
-    cutter.hide_render = True
-    cutter.hide_viewport = True
 
 
 # ---------------------------------------------------------------- materials
@@ -263,7 +293,8 @@ def reset_scene(width_px, height_px, ortho_width, samples, engine):
     sun_data.energy = 4.0
     sun_data.angle = math.radians(6)
     sun = bpy.data.objects.new("Sun", sun_data)
-    sun.rotation_euler = (math.radians(35), math.radians(-25), math.radians(20))
+    # Tilted so shadows fall down and slightly right - the light stands above the counter's far edge.
+    sun.rotation_euler = (math.radians(-32), math.radians(-14), 0)
     bpy.context.collection.objects.link(sun)
 
     fill_data = bpy.data.lights.new("Fill", "AREA")
@@ -287,13 +318,17 @@ def build_shell(skin):
     wood = pbr_material("Wood", skin["wood"], tint=skin["tint"], scale=0.09)
     alu = pbr_material("Aluminium", "Metal009", tint=(0.9, 0.9, 0.9), scale=0.35, metallic=1.0, roughness_bias=0.15)
     glass = unlit_material("Glass", (0.0051, 0.0032, 0.0022))  # #120d09 in linear
+    well_floor = unlit_material("WellFloor", (0.012, 0.008, 0.005))
     dark = flat_material("Dark", (0.14, 0.09, 0.06), roughness=0.7)
+
+    # The device lies on a counter: its drop shadow is part of the sprite.
+    shadow_catcher(40, z=-0.01)
 
     # Aluminium chassis with the wood top inset into it (a 15 px metal band frames the wood);
     # both are rings around the LCD window, so the recess is real geometry.
     window = (0, LCD_CENTRE_Y)
     chassis = rounded_ring_mesh("Chassis", BODY[:2], BODY_RADIUS, LCD, LCD_RADIUS, BODY[2] - 0.08, window)
-    bevel(chassis, 0.08, segments=4)
+    bevel(chassis, 0.12, segments=5)
     smooth(chassis)
     if skin["glow"] > 0:
         chassis.data.materials.append(flat_material("NeonTube", (0.45, 0.22, 0.9), roughness=0.3, emission=1.2 * skin["glow"]))
@@ -315,21 +350,39 @@ def build_shell(skin):
     lcd.location = (0, LCD_CENTRE_Y, BODY[2] - 0.30)
     lcd.data.materials.append(glass)
 
-    # Speaker grille (bottom right) and the label plate (bottom left), like v1.
-    for i, (x, y) in enumerate([(1700, 960), (1734, 960), (1768, 960), (1717, 988), (1751, 988), (1785, 988)]):
+    # Button wells: a dark hole a hair wider than the cap sprite (button_*.png, r 0.849), so a
+    # thin shadow ring shows around the cap and it reads as sunk into the wood.
+    for k, (x, y) in enumerate(BUTTONS):
+        floor = cylinder(f"WellFloor{k}", BUTTON_RADIUS + 0.07, 0.02)
+        floor.location = (x, y, BODY[2] + 0.005)
+        floor.data.materials.append(well_floor)
+
+    # Lever slot: aluminium rail sunk flush, dark channel under it for the knob to ride in.
+    rail = rounded_ring_mesh("Rail", LEVER_SLOT, LEVER_SLOT[1] / 2, (LEVER_SLOT[0] - 0.36, 0.22), 0.11, 0.05)
+    rail.location = (LEVER[0], LEVER[1], BODY[2])
+    bevel(rail, 0.02, segments=3)
+    smooth(rail)
+    rail.data.materials.append(alu)
+    channel = rounded_rect_mesh("Channel", LEVER_SLOT[0] - 0.30, 0.30, 0.15, 0.02)
+    channel.location = (LEVER[0], LEVER[1], BODY[2] - 0.12)
+    channel.data.materials.append(well_floor)
+
+    # Speaker grille (bottom right) and the label plate (bottom left).
+    for i, (x, y) in enumerate([(9.4, -3.9), (9.74, -3.9), (10.08, -3.9), (9.57, -4.18), (9.91, -4.18), (10.25, -4.18)]):
         hole = cylinder(f"Hole{i}", 0.07, 0.02)
-        hole.location = ((x - 960) / 100, (540 - y) / 100, BODY[2] + 0.005)
+        hole.location = (x, y, BODY[2] + 0.005)
         hole.data.materials.append(glass)
     plate = rounded_rect_mesh("Plate", 2.5, 0.62, 0.14, 0.03)
-    plate.location = ((150 + 125 - 960) / 100, (540 - 967) / 100, BODY[2])
+    plate.location = (-8.9, -4.05, BODY[2])
     plate.data.materials.append(dark)
 
 
 def build_button(pressed):
+    shadow_catcher(20)
     alu = pbr_material("Aluminium", "Metal009", tint=(0.9, 0.9, 0.9), scale=0.35, metallic=1.0, roughness_bias=0.15)
     # Pressed = lit: the game swaps to this sprite for 100 ms as touch feedback (GDD 4).
     face = (flat_material("Face", (0.72, 0.66, 0.55), roughness=0.55) if not pressed
-            else flat_material("Lit", (1.0, 0.62, 0.22), roughness=0.5, emission=0.7))
+            else flat_material("Lit", (0.9, 0.36, 0.06), roughness=0.6, emission=0.35))
     rim = cylinder("Rim", 2.64, 0.5)
     bevel(rim, 0.12, segments=6)
     smooth(rim)
@@ -340,19 +393,8 @@ def build_button(pressed):
     cap.data.materials.append(face)
 
 
-def build_lever_track():
-    alu = pbr_material("Aluminium", "Metal009", tint=(0.9, 0.9, 0.9), scale=0.35, metallic=1.0, roughness_bias=0.15)
-    dark = unlit_material("Slot", (0.012, 0.007, 0.004))
-    rail = rounded_ring_mesh("Rail", (10.4, 1.76), 0.88, (9.4, 0.8), 0.4, 0.3)
-    bevel(rail, 0.10, segments=6)
-    smooth(rail)
-    rail.data.materials.append(alu)
-    floor = rounded_rect_mesh("SlotFloor", 9.6, 1.0, 0.5, 0.02)
-    floor.location.z = 0.10
-    floor.data.materials.append(dark)
-
-
 def build_lever_knob():
+    shadow_catcher(20)
     alu = pbr_material("Aluminium", "Metal009", tint=(0.9, 0.9, 0.9), scale=0.35, metallic=1.0, roughness_bias=0.15)
     face = flat_material("Face", (0.72, 0.66, 0.55), roughness=0.55)
     rim = cylinder("Rim", 1.36, 0.5)
@@ -380,7 +422,7 @@ def main():
     parser.add_argument("--samples", type=int, default=128)
     parser.add_argument("--engine", default="CYCLES")
     parser.add_argument("--out", default=os.path.join(ROOT, "Assets", "Art", "device"))
-    parser.add_argument("--parts", default="shell,buttons,lever")
+    parser.add_argument("--parts", default="shell,buttons,knob")
     args = parser.parse_args(argv)
     os.makedirs(args.out, exist_ok=True)
     parts = args.parts.split(",")
@@ -388,7 +430,7 @@ def main():
     if "shell" in parts:
         skins = list(SKINS) if args.skin == "all" else [args.skin]
         for name in skins:
-            reset_scene(1920, 1080, CANVAS[0], args.samples, args.engine)
+            reset_scene(2400, 1080, CANVAS[0], args.samples, args.engine)
             build_shell(SKINS[name])
             suffix = "" if name == "walnut" else f"_{name}"
             render(os.path.join(args.out, f"device_shell{suffix}.png"))
@@ -399,10 +441,7 @@ def main():
             build_button(pressed)
             render(os.path.join(args.out, "button_pressed.png" if pressed else "button_normal.png"))
 
-    if "lever" in parts:
-        reset_scene(1040, 176, 10.4, args.samples, args.engine)
-        build_lever_track()
-        render(os.path.join(args.out, "lever_track.png"))
+    if "knob" in parts:
         reset_scene(304, 304, 3.04, args.samples, args.engine)
         build_lever_knob()
         render(os.path.join(args.out, "lever_knob.png"))

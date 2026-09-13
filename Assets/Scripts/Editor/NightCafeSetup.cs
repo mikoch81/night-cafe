@@ -123,6 +123,7 @@ namespace NightCafe.EditorTools
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
                 importer.textureCompression = TextureImporterCompression.Uncompressed; // editor/default
+                importer.maxTextureSize = 4096; // device_shell is 2400 px wide
 
                 TextureImporterSettings settings = new();
                 importer.ReadTextureSettings(settings);
@@ -144,7 +145,7 @@ namespace NightCafe.EditorTools
                 android.overridden = true;
                 android.format = TextureImporterFormat.ASTC_6x6;
                 android.compressionQuality = 100;
-                android.maxTextureSize = 2048;
+                android.maxTextureSize = 4096; // device_shell is 2400 px wide
                 importer.SetPlatformTextureSettings(android);
 
                 importer.SaveAndReimport();

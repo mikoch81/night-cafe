@@ -8,34 +8,25 @@ namespace NightCafe.Tests
         const float Tolerance = 0.001f;
 
         [Test]
-        public void FillsWidthOnTheTestPhone()
+        public void HeightGovernsOnThePhone()
         {
-            // 2424x1080
-            Assert.AreEqual(4.188f, DeviceLayout.OrthographicSizeFor(2424f / 1080f), Tolerance);
+            // 2424x1080: the device is 20:9, so its height plus the margin sets the view.
+            Assert.AreEqual(5.05f, DeviceLayout.OrthographicSizeFor(2424f / 1080f), Tolerance);
+            Assert.AreEqual(5.05f, DeviceLayout.OrthographicSizeFor(3.00f), Tolerance);
         }
 
         [Test]
-        public void ClampsSoTheCameraNeverLooksPastTheWood()
+        public void WidthGovernsOnTallerScreens()
         {
-            Assert.AreEqual(DeviceLayout.ShellContentHalfHeight,
-                DeviceLayout.OrthographicSizeFor(16f / 9f), Tolerance, "16:9 would need 5.29");
-
-            Assert.AreEqual(DeviceLayout.ShellContentHalfHeight,
-                DeviceLayout.OrthographicSizeFor(1.60f), Tolerance, "4:3-ish would need 5.88");
+            Assert.AreEqual(11.25f / (16f / 9f), DeviceLayout.OrthographicSizeFor(16f / 9f), Tolerance);
+            Assert.AreEqual(11.25f / 1.60f, DeviceLayout.OrthographicSizeFor(1.60f), Tolerance);
         }
 
         [Test]
-        public void ClampsSoTheLcdTopStaysOnScreenOnVeryWidePhones()
-        {
-            Assert.AreEqual(4.10f, DeviceLayout.OrthographicSizeFor(2.40f), Tolerance);
-            Assert.AreEqual(4.10f, DeviceLayout.OrthographicSizeFor(3.00f), Tolerance);
-        }
-
-        [Test]
-        public void LcdStaysFullyVisibleAcrossEveryPlausibleAspect()
+        public void WholeDeviceStaysVisibleAcrossEveryPlausibleAspect()
         {
             for (float aspect = 1.30f; aspect <= 3.00f; aspect += 0.01f)
-                Assert.IsTrue(DeviceLayout.LcdFullyVisible(aspect), $"cropped at aspect {aspect:0.00}");
+                Assert.IsTrue(DeviceLayout.DeviceFullyVisible(aspect), $"cropped at aspect {aspect:0.00}");
         }
 
         [Test]
@@ -58,8 +49,8 @@ namespace NightCafe.Tests
         [Test]
         public void ScreenOffsetPutsTheGlassOverTheCutout()
         {
-            // Cutout centre is at canvas y 492 of 1080, i.e. 0.48 world units above centre.
-            Assert.AreEqual(0.48f, DeviceLayout.ScreenOffsetY, 0.0001f);
+            // Cutout centre is 35 px above the canvas centre (tools/shell_render.py LCD_CENTRE_Y).
+            Assert.AreEqual(0.35f, DeviceLayout.ScreenOffsetY, 0.0001f);
         }
     }
 }

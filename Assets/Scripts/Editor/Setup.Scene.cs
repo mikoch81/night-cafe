@@ -143,10 +143,8 @@ namespace NightCafe.EditorTools
             shellRenderer.sprite = LoadSprite("Assets/Art/device/device_shell.png");
             SetSorting(shellRenderer, Core.SortingLayers.DeviceShell, 0);
 
+            // The slot is modelled into device_shell.png; this transform only anchors the hit test.
             var track = Child("LeverTrack", device, config.leverTrack, config.leverTrackScale);
-            var trackRenderer = track.AddComponent<SpriteRenderer>();
-            trackRenderer.sprite = LoadSprite("Assets/Art/device/lever_track.png");
-            SetSorting(trackRenderer, Core.SortingLayers.DeviceShell, 10);
 
             var knob = Child("LeverKnob", device, config.leverKnob, config.leverKnobScale);
             var knobRenderer = knob.AddComponent<SpriteRenderer>();
