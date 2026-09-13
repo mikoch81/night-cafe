@@ -1,37 +1,40 @@
 using NightCafe.Core;
-using NightCafe.Services;
 using UnityEngine;
 
 namespace NightCafe.Config
 {
     /// <summary>
-    /// Layout of the Bréve Deck shell: where the virtual buttons and the mode lever sit,
-    /// and how the LCD screen is nested inside the shell cutout. Defaults are measured
-    /// from the art, and live here so they can be nudged without editing code.
+    /// The Bréve Deck as a physical object: how its buttons travel, how the lever slides, how
+    /// the camera looks at it. The geometry itself comes from tools/shell_model.py; the numbers
+    /// here are the ones worth nudging without rebuilding the model.
     /// </summary>
     [CreateAssetMenu(menuName = "NightCafe/Device Config", fileName = "DeviceConfig")]
     public sealed class DeviceConfig : ScriptableObject
     {
-        [Header("Screen nesting (GDD 5.1 ScreenGlass)")]
-        public float screenScale = DeviceLayout.ScreenScale;
-        public float screenOffsetY = DeviceLayout.ScreenOffsetY;
+        [Header("Camera")]
+        [Tooltip("Vertical field of view of the device camera; the framing distance follows from it.")]
+        public float cameraFov = 24f;
 
-        [Header("Virtual buttons (GDD 4) - right side; left mirrors X")]
-        public Vector2 buttonUp = new(8.2f, 1.75f);
-        public Vector2 buttonDown = new(8.2f, -0.87f);
-        public float buttonScale = 0.3216f;
+        [Tooltip("Pitch towards the device in degrees - a little from above, like a handheld on a counter.")]
+        public float cameraTiltDegrees = 10f;
 
-        [Tooltip("How long a button stays lit after a press, in seconds.")]
-        public float buttonLitDuration = 0.10f;
+        [Header("Virtual buttons (GDD 4)")]
+        [Tooltip("How far a cap sinks on a press, in device units.")]
+        public float capTravel = 0.08f;
+
+        [Tooltip("Seconds for the cap to go down, then to come back up.")]
+        public float capPressSeconds = 0.04f;
+        public float capReleaseSeconds = 0.09f;
+
+        [Tooltip("The backlit cap fades out over this many seconds after the press.")]
+        public float capLitFadeSeconds = 0.18f;
 
         [Header("Mode lever (GDD 5.1: A on the left, B on the right)")]
-        public Vector2 leverTrack = new(0f, -4.1f);
-        public Vector2 leverKnob = new(-0.64f, -4.1f);
-        public float leverTrackScale = 0.2961f;
-        public float leverKnobScale = 0.2897f;
+        [Tooltip("Knob offset from the slot centre; mode A sits at -x, mode B at +x.")]
+        public float leverKnobX = 0.9f;
 
-        [Tooltip("Tap area around the track that flips the mode on the title screen.")]
-        public Vector2 leverHitSize = new(3.6f, 1.3f);
+        [Tooltip("Seconds the knob takes to slide across, with a little overshoot.")]
+        public float leverSlideSeconds = 0.12f;
 
         [Header("Attract mode (GDD 6)")]
         [Tooltip("Seconds of an untouched title screen before the demo starts.")]
@@ -58,13 +61,8 @@ namespace NightCafe.Config
         [Tooltip("Tap area of the clock in LCD units, like the title toggles")]
         public Vector2 clockHitSize = new(6f, 1.6f);
 
-        [Header("Shell")]
-        public float shellScale = 1f;
-
-        public Vector2 ButtonPosition(LanePosition lane)
-        {
-            Vector2 right = lane.IsUp() ? buttonUp : buttonDown;
-            return lane.IsLeft() ? new Vector2(-right.x, right.y) : right;
-        }
+        [Header("LCD render texture")]
+        [Tooltip("Pixels along the screen's height; width follows the 1272:892 proportion.")]
+        public int lcdTextureHeight = 1122;
     }
 }

@@ -21,23 +21,22 @@ namespace NightCafe.UI
 
         SettingsService _settings;
         ProfileService _profile;
-        Camera _camera;
 
-        public void Initialise(SettingsService settings, ProfileService profile, Camera worldCamera)
+        public void Initialise(SettingsService settings, ProfileService profile)
         {
             _settings = settings;
             _profile = profile;
-            _camera = worldCamera;
             Render();
         }
 
-        /// <summary>Returns true when the tap hit a toggle, so the caller does not also start a round.</summary>
-        public bool TryHandleTap(Vector2 screenPosition)
+        /// <summary>
+        /// Returns true when the tap hit a toggle, so the caller does not also start a round.
+        /// `world` is the tap already mapped into the LCD scene (LcdPointer).
+        /// </summary>
+        public bool TryHandleTap(Vector3 world)
         {
-            if (_settings == null || _camera == null || !gameObject.activeInHierarchy)
+            if (_settings == null || !gameObject.activeInHierarchy)
                 return false;
-
-            Vector3 world = _camera.ScreenToWorldPoint(screenPosition);
 
             if (Hits(soundLabel, world))
             {
@@ -110,9 +109,8 @@ namespace NightCafe.UI
 
         /// <summary>
         /// hitSize is authored in the labels' local (LCD) units, the same units the scene
-        /// generator lays them out in. The labels sit under ScreenRoot, scaled to fit the
-        /// cutout, so the box has to shrink with them - a world-unit box wider than the
-        /// world-unit spacing made neighbouring toggles overlap and routed taps to the wrong one.
+        /// generator lays them out in; the box follows the labels' scale so it can never be
+        /// wider than their spacing (which once routed taps to the wrong toggle).
         /// </summary>
         public static Bounds HitBounds(Vector3 centre, Vector3 lossyScale, Vector2 hitSize) =>
             new(centre, new Vector3(

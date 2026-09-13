@@ -43,7 +43,7 @@ namespace NightCafe.Core
         [SerializeField] ClockWidget clock;
         [SerializeField] TitleToggleView titleToggles;
         [SerializeField] AudioService audioService;
-        [SerializeField] Camera worldCamera;
+        [SerializeField] LcdPointer pointer;
 
         [Header("Platform")]
         [SerializeField] int targetFrameRate = 60;
@@ -106,7 +106,7 @@ namespace NightCafe.Core
 
             barista.Initialise(laneConfig);
             audioService.Initialise(_settings);
-            titleToggles.Initialise(_settings, _profile, worldCamera);
+            titleToggles.Initialise(_settings, _profile);
             cat.CrossingStarted += OnCatCrossingStarted;
 
             laneInput.Pressed += OnPressed;
@@ -323,16 +323,21 @@ namespace NightCafe.Core
         /// <summary>Toggles and the lever take the tap before it can start a round.</summary>
         bool TitleScreenConsumed(in Press press)
         {
-            if (!press.HasScreenPosition)
+            if (!press.HasScreenPosition || pointer == null)
                 return false;
 
-            if (titleToggles.TryHandleTap(press.ScreenPosition))
-                return true;
+            // On the glass: the tap becomes a point in the LCD scene for the toggles and the clock.
+            if (pointer.TryLcdPoint(press.ScreenPosition, out Vector3 lcdPoint))
+            {
+                if (titleToggles.TryHandleTap(lcdPoint))
+                    return true;
 
-            if (clock != null && clock.TryHandleTap(worldCamera.ScreenToWorldPoint(press.ScreenPosition)))
-                return true;
+                if (clock != null && clock.TryHandleTap(lcdPoint))
+                    return true;
+            }
 
-            if (deviceShell.LeverHit(worldCamera.ScreenToWorldPoint(press.ScreenPosition)))
+            // On the body: the lever is real geometry, so it is hit-tested in 3D.
+            if (deviceShell.LeverHit(pointer.ScreenRay(press.ScreenPosition)))
             {
                 FlipMode();
                 return true;

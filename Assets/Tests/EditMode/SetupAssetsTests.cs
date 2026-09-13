@@ -51,6 +51,34 @@ namespace NightCafe.Tests
         }
 
         [Test]
+        public void DeviceModelIsWiredForUnity()
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/device/breve_deck.fbx");
+            Assert.IsNotNull(model, "run tools/shell_model.py");
+            foreach (string part in new[] { "Body", "Screen", "Glass", "Cap_LU", "Cap_LD", "Cap_RU", "Cap_RD", "LeverRail", "LeverKnob" })
+                Assert.IsNotNull(model.transform.Find(part), $"{part} missing from the model");
+
+            var importer = (ModelImporter)AssetImporter.GetAtPath("Assets/Art/device/breve_deck.fbx");
+            Assert.IsFalse(importer.useFileScale, "model units must be Unity units");
+            Assert.IsTrue(importer.isReadable, "the screen face collider needs readable UVs");
+
+            foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art/device/textures" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var texture = (TextureImporter)AssetImporter.GetAtPath(path);
+                bool normal = path.Contains("Normal");
+                Assert.AreEqual(normal ? TextureImporterType.NormalMap : TextureImporterType.Default, texture.textureType, path);
+                Assert.AreEqual(TextureImporterFormat.ASTC_6x6, texture.GetPlatformTextureSettings("Android").format, path);
+            }
+
+            var pipeline = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset>("Assets/Settings/UniversalRP.asset");
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.Universal.UniversalRendererData>("Assets/Settings/UniversalRenderer.asset"),
+                "the 3D renderer asset is missing");
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/Settings/LcdRT.renderTexture"));
+            Assert.IsNotNull(pipeline);
+        }
+
+        [Test]
         public void SegmentAtlasPacksEveryLcdSprite()
         {
             var atlas = AssetDatabase.LoadAssetAtPath<UnityEngine.U2D.SpriteAtlas>("Assets/Settings/Segments.spriteatlasv2");
@@ -65,8 +93,8 @@ namespace NightCafe.Tests
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (AssetImporter.GetAtPath(path) is not TextureImporter importer)
-                    continue;
+                if (path.StartsWith("Assets/Art/device/textures") || AssetImporter.GetAtPath(path) is not TextureImporter importer)
+                    continue; // material maps for the 3D shell are covered by DeviceModelIsWiredForUnity
 
                 TextureImporterPlatformSettings android = importer.GetPlatformTextureSettings("Android");
                 Assert.IsTrue(android.overridden, $"{path}: no Android override");

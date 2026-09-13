@@ -5,131 +5,183 @@ using UnityEngine;
 namespace NightCafe.UI
 {
     /// <summary>
-    /// The shell hardware: four virtual buttons that light on a press (GDD 4, 1:1 feedback),
-    /// the A/B mode lever (GDD 5.1) and the skin tint (GDD 6).
+    /// The shell hardware, now real geometry: four button caps that sink and light on a press
+    /// (GDD 4, 1:1 feedback), the A/B mode lever whose knob slides between the ends (GDD 5.1),
+    /// and the finish (GDD 6). Caps and knob move along their own local axes, so the device
+    /// root may tilt freely (parallax) without breaking the motion.
     /// </summary>
     public sealed class DeviceShellView : MonoBehaviour
     {
         [Header("Buttons")]
-        [SerializeField] SpriteRenderer[] buttons = new SpriteRenderer[LanePositionExtensions.Count];
-        [SerializeField] Sprite normal;
-        [SerializeField] Sprite pressed;
-        [SerializeField] float litDuration = 0.10f;
+        [SerializeField] Transform[] caps = new Transform[LanePositionExtensions.Count];
+        [SerializeField] Renderer[] capRenderers = new Renderer[LanePositionExtensions.Count];
+        [SerializeField] float capTravel = 0.08f;
+        [SerializeField] float pressSeconds = 0.04f;
+        [SerializeField] float releaseSeconds = 0.09f;
+        [SerializeField] float litFadeSeconds = 0.18f;
+        [SerializeField] Color litColor = new(1f, 0.55f, 0.15f);
 
         [Header("Mode lever")]
-        [SerializeField] Transform leverTrack;
         [SerializeField] Transform leverKnob;
-        [Tooltip("Knob X for Mode A; Mode B mirrors it.")]
-        [SerializeField] float leverKnobX = -0.64f;
-        [SerializeField] Vector2 leverHitSize = new(3.6f, 1.3f);
+        [SerializeField] Collider leverCollider;
+        [Tooltip("Knob offset from the slot centre; mode A is -x, mode B +x.")]
+        [SerializeField] float leverKnobX = 0.9f;
+        [SerializeField] float leverSlideSeconds = 0.12f;
 
-        [Header("Skin")]
-        [SerializeField] SpriteRenderer shell;
-        [SerializeField] Camera worldCamera;
-        [SerializeField] Color woodBackground = new(0.329f, 0.188f, 0.102f);
-        [Tooltip("Rendered shell per skin id; a skin without one falls back to tinting the default sprite")]
-        [SerializeField] SkinShell[] skinShells = System.Array.Empty<SkinShell>();
+        [Header("Finish")]
+        [SerializeField] Camera deviceCamera;
 
-        [System.Serializable]
-        public struct SkinShell
+        static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
+        readonly float[] _pressAge = new float[LanePositionExtensions.Count];
+        readonly bool[] _pressing = new bool[LanePositionExtensions.Count];
+        Vector3[] _capRest;
+        Vector3[] _capDown;   // "into the device" (world +Z at rest) in each cap's parent space
+        MaterialPropertyBlock _block;
+
+        Vector3 _knobCentre;  // slot centre in the knob's parent space
+        Vector3 _knobRight;   // unit vector along the slot
+        float _knobFrom, _knobTo, _knobAge;
+        bool _knobInitialised;
+
+        void Awake()
         {
-            public string id;
-            public Sprite shell;
-        }
+            _block = new MaterialPropertyBlock();
+            _capRest = new Vector3[caps.Length];
+            _capDown = new Vector3[caps.Length];
+            for (int i = 0; i < caps.Length; i++)
+            {
+                if (caps[i] == null)
+                    continue;
 
-        readonly float[] _timers = new float[LanePositionExtensions.Count];
+                // Directions are taken from the world axes while the device is at rest and kept
+                // in parent space, so a tilting root (parallax) carries them along.
+                _capRest[i] = caps[i].localPosition;
+                Transform parent = caps[i].parent;
+                _capDown[i] = parent != null ? parent.InverseTransformDirection(Vector3.forward).normalized : Vector3.forward;
+            }
+
+            if (leverKnob != null)
+            {
+                Transform parent = leverKnob.parent;
+                _knobRight = parent != null ? parent.InverseTransformDirection(Vector3.right).normalized : Vector3.right;
+                // The model exports the knob at the mode A end (screen left), so the slot centre
+                // is one leverKnobX to the right.
+                _knobCentre = leverKnob.localPosition + _knobRight * leverKnobX;
+                _knobFrom = _knobTo = -leverKnobX;
+                _knobAge = leverSlideSeconds;
+                _knobInitialised = true;
+            }
+        }
 
         public void Press(LanePosition position)
         {
             int index = (int)position;
-            if (index < 0 || index >= buttons.Length || buttons[index] == null)
+            if (index < 0 || index >= caps.Length || caps[index] == null)
                 return;
 
-            buttons[index].sprite = pressed;
-            _timers[index] = litDuration;
+            _pressing[index] = true;
+            _pressAge[index] = 0f;
         }
 
         public void ResetAll()
         {
-            for (int i = 0; i < buttons.Length; i++)
+            for (int i = 0; i < caps.Length; i++)
             {
-                _timers[i] = 0f;
-                if (buttons[i] != null)
-                    buttons[i].sprite = normal;
+                _pressing[i] = false;
+                _pressAge[i] = 0f;
+                ApplyCap(i, 0f, 0f);
             }
         }
 
-        /// <summary>Slides the knob to the A or B end of its track.</summary>
+        /// <summary>Slides the knob to the A or B end of its slot.</summary>
         public void SetMode(GameMode mode)
         {
-            if (leverKnob == null)
+            if (!_knobInitialised)
                 return;
 
-            Vector3 position = leverKnob.localPosition;
-            position.x = mode == GameMode.A ? leverKnobX : -leverKnobX;
-            leverKnob.localPosition = position;
+            float target = mode == GameMode.A ? -leverKnobX : leverKnobX;
+            if (Mathf.Approximately(target, _knobTo))
+                return;
+
+            _knobFrom = KnobX();
+            _knobTo = target;
+            _knobAge = 0f;
         }
 
-        /// <summary>True when a world-space tap landed on the lever track.</summary>
-        public bool LeverHit(Vector3 worldPoint)
-        {
-            if (leverTrack == null)
-                return false;
+        /// <summary>True when a ray from the device camera lands on the lever.</summary>
+        public bool LeverHit(Ray ray) =>
+            leverCollider != null && leverCollider.Raycast(ray, out _, 200f);
 
-            Vector3 centre = leverTrack.position;
-            var bounds = new Bounds(centre, new Vector3(leverHitSize.x, leverHitSize.y, 10f));
-            return bounds.Contains(new Vector3(worldPoint.x, worldPoint.y, centre.z));
-        }
-
-        /// <summary>
-        /// Tints the wood and the camera clear colour together, so the finish continues
-        /// past the sprite edge on phones wider than the shell art.
-        /// </summary>
+        /// <summary>The counter under the device takes the skin's background; materials come in M4.5 step 2.</summary>
         public void ApplySkin(in Skin skin)
         {
-            if (shell != null)
-            {
-                Sprite rendered = FindShell(skin.Id);
-                if (rendered != null)
-                {
-                    shell.sprite = rendered;
-                    shell.color = Color.white;
-                }
-                else
-                {
-                    Sprite fallback = FindShell(SkinCatalog.DefaultId);
-                    if (fallback != null)
-                        shell.sprite = fallback;
-                    shell.color = skin.ShellTint;
-                }
-            }
-
-            if (worldCamera != null)
-                worldCamera.backgroundColor = FindShell(skin.Id) != null ? skin.Background : woodBackground * skin.ShellTint;
-        }
-
-        Sprite FindShell(string id)
-        {
-            for (int i = 0; i < skinShells.Length; i++)
-            {
-                if (skinShells[i].id == id)
-                    return skinShells[i].shell;
-            }
-
-            return null;
+            if (deviceCamera != null)
+                deviceCamera.backgroundColor = skin.Background;
         }
 
         void Update()
         {
-            for (int i = 0; i < _timers.Length; i++)
+            float dt = Time.deltaTime;
+
+            for (int i = 0; i < caps.Length; i++)
             {
-                if (_timers[i] <= 0f)
+                if (!_pressing[i])
                     continue;
 
-                _timers[i] -= Time.deltaTime;
-                if (_timers[i] <= 0f && buttons[i] != null)
-                    buttons[i].sprite = normal;
+                _pressAge[i] += dt;
+                float age = _pressAge[i];
+                float depth;
+                if (age < pressSeconds)
+                    depth = age / Mathf.Max(0.001f, pressSeconds);
+                else if (age < pressSeconds + releaseSeconds)
+                    depth = 1f - (age - pressSeconds) / Mathf.Max(0.001f, releaseSeconds);
+                else
+                    depth = 0f;
+
+                float lit = 1f - Mathf.Clamp01((age - pressSeconds) / Mathf.Max(0.001f, litFadeSeconds));
+                ApplyCap(i, depth, lit);
+
+                if (depth <= 0f && lit <= 0f)
+                    _pressing[i] = false;
             }
+
+            if (_knobInitialised && _knobAge < leverSlideSeconds)
+            {
+                _knobAge += dt;
+                float t = Mathf.Clamp01(_knobAge / Mathf.Max(0.001f, leverSlideSeconds));
+                leverKnob.localPosition = _knobCentre + _knobRight * Mathf.LerpUnclamped(_knobFrom, _knobTo, EaseOutBack(t));
+            }
+        }
+
+        void ApplyCap(int i, float depth, float lit)
+        {
+            if (caps[i] == null)
+                return;
+
+            caps[i].localPosition = _capRest[i] + _capDown[i] * (capTravel * depth);
+
+            if (capRenderers[i] == null)
+                return;
+
+            capRenderers[i].GetPropertyBlock(_block);
+            _block.SetColor(EmissionColorId, litColor * lit);
+            capRenderers[i].SetPropertyBlock(_block);
+        }
+
+        float KnobX()
+        {
+            float t = Mathf.Clamp01(_knobAge / Mathf.Max(0.001f, leverSlideSeconds));
+            return Mathf.LerpUnclamped(_knobFrom, _knobTo, EaseOutBack(t));
+        }
+
+        /// <summary>A physical switch overshoots its end stop a touch before settling.</summary>
+        static float EaseOutBack(float t)
+        {
+            const float c1 = 1.70158f;
+            const float c3 = c1 + 1f;
+            float u = t - 1f;
+            return 1f + c3 * u * u * u + c1 * u * u;
         }
     }
 }

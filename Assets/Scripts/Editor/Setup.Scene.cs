@@ -30,12 +30,17 @@ namespace NightCafe.EditorTools
             var cupPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CupPrefabPath)
                 .GetComponent<CupController>();
             var volumeProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumeProfilePath);
+            var lcdTexture = AssetDatabase.LoadAssetAtPath<RenderTexture>(LcdRenderTexturePath);
 
-            Camera camera = BuildCamera(volumeProfile);
-            DeviceShellView deviceShell = BuildDevice(deviceConfig, camera);
+            // Two cameras: the LCD scene renders into a texture, the device camera looks at the model.
+            Camera lcdCamera = BuildLcdCamera(volumeProfile, lcdTexture);
+            Camera deviceCamera = BuildDeviceCamera(deviceConfig, UniversalRendererIndex);
+            BuildLighting();
+            (DeviceShellView deviceShell, MeshCollider screenFace) = BuildDevice(deviceConfig, deviceCamera, lcdTexture);
 
-            Transform screenRoot = Child("ScreenRoot", null,
-                new Vector2(0f, deviceConfig.screenOffsetY), deviceConfig.screenScale).transform;
+            // The 2D scene sits at the origin at scale 1: LCD units are world units, and the LCD
+            // camera frames screen_bg exactly.
+            Transform screenRoot = Child("ScreenRoot", null).transform;
 
             BuildScreenArt(screenRoot, laneConfig);
 
@@ -50,10 +55,13 @@ namespace NightCafe.EditorTools
             GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
             (HudView hud, TitleToggleView toggles, ClockWidget clock) = BuildHud(screenRoot, monoFont);
 
+            SetLayerRecursively(screenRoot.gameObject, LayerMask.NameToLayer(LcdLayerName));
+
             var context = new GameObject("GameContext");
             var spawner = context.AddComponent<LaneSpawner>();
             var laneInput = context.AddComponent<LaneInput>();
             AudioService audioService = BuildAudio(context, audioConfig);
+            LcdPointer pointer = BuildPointer(context, deviceCamera, lcdCamera, screenFace);
             var loop = context.AddComponent<GameLoopController>();
 
             SetSerialized(spawner, so =>
@@ -88,7 +96,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("neonCat").objectReferenceValue = neonCat;
                 so.FindProperty("titleToggles").objectReferenceValue = toggles;
                 so.FindProperty("audioService").objectReferenceValue = audioService;
-                so.FindProperty("worldCamera").objectReferenceValue = camera;
+                so.FindProperty("pointer").objectReferenceValue = pointer;
 
                 SerializedProperty fxArray = so.FindProperty("brokenCupFx");
                 fxArray.arraySize = brokenFx.Length;
@@ -102,106 +110,6 @@ namespace NightCafe.EditorTools
             string sampleScene = SceneDir + "/SampleScene.unity";
             if (File.Exists(sampleScene))
                 AssetDatabase.DeleteAsset(sampleScene);
-        }
-
-        static Camera BuildCamera(VolumeProfile profile)
-        {
-            var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
-            var camera = cameraGo.AddComponent<Camera>();
-            camera.orthographic = true;
-            camera.orthographicSize = 4.278f; // CameraFramer recomputes this for the real aspect
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = WoodBackground;
-            camera.transform.position = new Vector3(0f, 0f, -10f);
-            cameraGo.AddComponent<AudioListener>();
-            cameraGo.AddComponent<CameraFramer>();
-
-            var cameraData = cameraGo.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
-            if (cameraData == null)
-                cameraData = cameraGo.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
-
-            cameraData.renderPostProcessing = true;
-            cameraData.antialiasing = UnityEngine.Rendering.Universal.AntialiasingMode.None;
-
-            var volumeGo = new GameObject("GlobalVolume");
-            var volume = volumeGo.AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.priority = 0f;
-            // sharedProfile is the serialised reference; Volume.profile is a runtime clone that
-            // never reaches the saved scene, which is how M2 shipped without any bloom at all.
-            volume.sharedProfile = profile;
-
-            return camera;
-        }
-
-        static DeviceShellView BuildDevice(DeviceConfig config, Camera camera)
-        {
-            Transform device = Child("Device", null).transform;
-
-            var shell = Child("Shell", device, Vector2.zero, config.shellScale);
-            var shellRenderer = shell.AddComponent<SpriteRenderer>();
-            shellRenderer.sprite = LoadSprite("Assets/Art/device/device_shell.png");
-            SetSorting(shellRenderer, Core.SortingLayers.DeviceShell, 0);
-
-            // The slot is modelled into device_shell.png; this transform only anchors the hit test.
-            var track = Child("LeverTrack", device, config.leverTrack, config.leverTrackScale);
-
-            var knob = Child("LeverKnob", device, config.leverKnob, config.leverKnobScale);
-            var knobRenderer = knob.AddComponent<SpriteRenderer>();
-            knobRenderer.sprite = LoadSprite("Assets/Art/device/lever_knob.png");
-            SetSorting(knobRenderer, Core.SortingLayers.DeviceShell, 20);
-
-            Transform buttonRoot = Child("Buttons", device).transform;
-            Sprite normal = LoadSprite("Assets/Art/device/button_normal.png");
-            Sprite pressed = LoadSprite("Assets/Art/device/button_pressed.png");
-
-            var renderers = new SpriteRenderer[LanePositionExtensions.Count];
-            foreach (LanePosition lane in Enum.GetValues(typeof(LanePosition)))
-            {
-                var button = Child($"Button_{lane}", buttonRoot, config.ButtonPosition(lane), config.buttonScale);
-                var renderer = button.AddComponent<SpriteRenderer>();
-                renderer.sprite = normal;
-                SetSorting(renderer, Core.SortingLayers.DeviceShell, 30);
-                renderers[(int)lane] = renderer;
-            }
-
-            var view = buttonRoot.gameObject.AddComponent<DeviceShellView>();
-            SetSerialized(view, so =>
-            {
-                so.FindProperty("normal").objectReferenceValue = normal;
-                so.FindProperty("pressed").objectReferenceValue = pressed;
-                so.FindProperty("litDuration").floatValue = config.buttonLitDuration;
-                so.FindProperty("leverTrack").objectReferenceValue = track.transform;
-                so.FindProperty("leverKnob").objectReferenceValue = knob.transform;
-                so.FindProperty("leverKnobX").floatValue = config.leverKnob.x;
-                so.FindProperty("leverHitSize").vector2Value = config.leverHitSize;
-                so.FindProperty("shell").objectReferenceValue = shellRenderer;
-                so.FindProperty("worldCamera").objectReferenceValue = camera;
-                so.FindProperty("woodBackground").colorValue = WoodBackground;
-
-                // One rendered shell per skin (tools/shell_render.py); missing ones just tint.
-                SerializedProperty skins = so.FindProperty("skinShells");
-                skins.arraySize = 0;
-                foreach (Skin skin in SkinCatalog.All)
-                {
-                    string suffix = SkinCatalog.IsDefault(skin.Id) ? "" : "_" + skin.Id;
-                    var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Art/device/device_shell{suffix}.png");
-                    if (sprite == null)
-                        continue;
-
-                    skins.arraySize++;
-                    SerializedProperty entry = skins.GetArrayElementAtIndex(skins.arraySize - 1);
-                    entry.FindPropertyRelative("id").stringValue = skin.Id;
-                    entry.FindPropertyRelative("shell").objectReferenceValue = sprite;
-                }
-
-                SerializedProperty array = so.FindProperty("buttons");
-                array.arraySize = renderers.Length;
-                for (int i = 0; i < renderers.Length; i++)
-                    array.GetArrayElementAtIndex(i).objectReferenceValue = renderers[i];
-            });
-
-            return view;
         }
 
         static void BuildScreenArt(Transform screenRoot, LaneConfig laneConfig)

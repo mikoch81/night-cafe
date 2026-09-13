@@ -37,6 +37,7 @@ namespace NightCafe.EditorTools
         static Color InactiveAmber;
         static Color GlassBlack;
         static PaletteConfig Palette;
+        static int UniversalRendererIndex;
 
         /// <summary>
         /// Imports the TextMeshPro essential resources and exits once the import finishes.
@@ -74,9 +75,13 @@ namespace NightCafe.EditorTools
         public static void BuildAll()
         {
             EnsureSortingLayers(); // before any renderer exists
+            EnsureLayers();
             LoadPalette();
             ConfigureSpriteImporters();
+            ConfigureDeviceTextures();
+            ConfigureModelImporter();
             ConfigureAudioImporters();
+            UniversalRendererIndex = EnsureUniversalRenderer();
 
             TMP_FontAsset monoFont = EnsureMonoFont();
             Segment14Font = EnsureSegmentFont(Segment14FontPath, Segment14FontAssetPath, "DSEG14Classic-Regular", Segment14Charset);
@@ -87,6 +92,7 @@ namespace NightCafe.EditorTools
             AudioConfig audioConfig = CreateAudioConfig();
             CreateVolumeProfile();
             CreateSpriteAtlas();
+            EnsureLcdRenderTexture(deviceConfig);
             CreateCupPrefab(laneConfig);
 
             BuildGameScene(modeConfigs, laneConfig, deviceConfig, audioConfig, monoFont);
@@ -114,8 +120,8 @@ namespace NightCafe.EditorTools
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (AssetImporter.GetAtPath(path) is not TextureImporter importer)
-                    continue;
+                if (path.StartsWith(DeviceTextureDir) || AssetImporter.GetAtPath(path) is not TextureImporter importer)
+                    continue; // the device's material maps are configured by ConfigureDeviceTextures
 
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;

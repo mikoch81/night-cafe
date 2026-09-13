@@ -1,15 +1,15 @@
 fileFormatVersion: 2
-guid: dfdc8614d60c26147a0ec3a044df5eea
+guid: 054ed66cca56f17ec9c4f268072e5ac3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7149653285192686076
-    second: device_shell_onyx_0
+      213: 6579450539598785511
+    second: Wood027_Color_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -37,27 +37,27 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
-    aniso: 1
+    filterMode: 2
+    aniso: 4
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
-  alphaIsTransparency: 1
+  alphaIsTransparency: 0
   spriteTessellationDetail: -1
-  textureType: 8
+  textureType: 0
   textureShape: 1
   singleChannelComponent: 0
   flipbookRows: 1
@@ -72,10 +72,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -98,7 +98,7 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
-    maxTextureSize: 4096
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: 50
     textureCompression: 1
@@ -126,12 +126,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: device_shell_onyx_0
+      name: Wood027_Color_0
       rect:
         serializedVersion: 2
-        x: 18
-        y: 28
-        width: 1884
+        x: 0
+        y: 0
+        width: 1024
         height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 406a2e4b73457cc90800000000000000
-      internalID: -7149653285192686076
+      spriteID: 7eba9060867ee4b50800000000000000
+      internalID: 6579450539598785511
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      device_shell_onyx_0: -7149653285192686076
+      Wood027_Color_0: 6579450539598785511
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
