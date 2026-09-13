@@ -67,7 +67,7 @@ NuPogodiModern/
 **M3.5 — hardening (po przeglądzie kodu, 2026-09-12):** ✅
 - Bloom faktycznie w buildzie (`sharedProfile` + sub-asset), ASTC na Androida, bilinear, jeden event wejścia + mysz w edytorze, lockout po game over, timing kubków/spawnera niezależny od FPS, atomowy zapis profilu, `ModeConfigAssetsTests` pilnuje zgodności assetów z GDD, `PaletteConfig`, wejście Android = klasyczny `Activity`, `RoundStateMachine` z testami.
 
-**M4 — Art v2 „Neo-LCD dopracowany":**
+**M4 — Art v2 „Neo-LCD dopracowany":** (w toku, stan 2026-09-13 niżej)
 - Kierunek: GDD §5.2 zostaje (jednokolorowe bursztynowe segmenty), ale lepsze sylwetki i prawdziwy look LCD. Tylko darmowe narzędzia; Claude generuje (`tools/gen_art.py` → SVG → PNG @4x przez Inkscape CLI), Michał ocenia arkusze porównawcze.
 - Zakres: arkusz kierunku (3 warianty baristy/kota), font 14-segmentowy DSEG (OFL) do licznika i zegara, shader `LcdSegment` (Shader Graph: glow, ghosting, szkło), `SpriteAtlas`, obudowa v2 (tekstura drewna, ramka), pochylenie kubka ±14°, oddech (barista wyciera ręce, neon mruga), animacja 999 → kot z neonów, minutnik parzenia.
 - Referencje AI wyłącznie lokalnie (ComfyUI + FLUX/SDXL na RTX 4060) i tylko jako inspiracja / grafiki sklepowe — do gry idą wektory.
@@ -77,7 +77,15 @@ NuPogodiModern/
 
 Po każdym milestone: commit + push, krótki raport co działa/czego brakuje.
 
-## Stan (2026-09-12)
+## Stan (2026-09-13)
+
+M4 w większości zrobione i sprawdzone na Pixelu (10/10 zimnych startów, 59 fps): `tools/gen_art.py`
+generuje wszystkie sprite'y LCD w stylu A (segmentowy, wybór Michała) z detalami z C; DSEG7/DSEG14
+w liczniku, BEST, trybie i zegarze; shader `NightCafe/LcdGlass` (winieta + odblask); obudowa
+renderowana w Blenderze (`tools/shell_render.py`, 4 skiny jako osobne sprite'y, tekstury CC0 w
+`art/textures`); pochylenie kubka ±14°; oddech (wycieranie rąk + mruganie neonu); animacja 999 →
+neonowy kot; minutnik parzenia (tap w zegar na tytule). Referencje z Midjourney w `docs/references`.
+Do zrobienia w M4: `SpriteAtlas`, ocena Michała (skala baristy, skin neon), ewentualne poprawki.
 
 M1–M3.5 zrobione i przetestowane na Pixelu 10. Sterowanie w edytorze: W/S (lewe tory), ↑/↓ (prawe), Spacja/Enter (start), **mysz** = tap (działa też na wajchę i toggle'e na tytule). Edytor może być otwarty podczas pracy z CLI — pakiet `com.unity.pipeline` + `unity cmd` (testy, `menu NightCafe/Build Scene Setup`, `build`).
 

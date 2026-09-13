@@ -20,7 +20,9 @@ Moja rekomendacja: **A** dla wszystkiego, co jest na ekranie LCD (barista, kot, 
 głowice), z 2–3 detalami z C tam, gdzie się mieszczą (kubek z parą na spodku, strzępy mopa).
 Do ikony i grafiki sklepowej — C.
 
-Można też mieszać: np. „A, ale kot z C". Decyzja wraca jako komentarz do tego pliku lub słownie.
+**Decyzja (2026-09-13): A z detalami z C — wg rekomendacji.** Zrobione: wszystkie sprite'y,
+barista dodatkowo z proporcjami wg `references/02_barista_a.png` (duża głowa, płaska czapka,
+fartuch do kolan, taca).
 
 ## Co się dzieje po wyborze
 
