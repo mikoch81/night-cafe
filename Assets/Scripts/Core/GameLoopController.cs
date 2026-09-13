@@ -330,7 +330,8 @@ namespace NightCafe.Core
             if (press.Lane.HasValue)
                 deviceShell.Press(press.Lane.Value);
 
-            bool consumed = _flow.TitleUiActive && TitleScreenConsumed(press);
+            // The toggles hide during the demo, but the lever is still there to be flipped.
+            bool consumed = (_flow.TitleUiActive || _flow.IsDemo) && TitleScreenConsumed(press);
             Apply(_flow.Press(Time.time, consumed));
 
             if (_flow.AcceptsLaneMoves && press.Lane.HasValue)

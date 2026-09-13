@@ -4,7 +4,7 @@
     python3 tools/cut_sheet.py art/midjourney/13_miro_sheet.png Assets/Art/screen_v3 --prefix miro \
         --names up down catch miss wipe --floor 1265
     python3 tools/cut_sheet.py art/midjourney/14_sable_sheet.png Assets/Art/screen_v3 --prefix sable \
-        --names skip a b --split 540 1078
+        --names skip a b --split 540 1078 --reverse-tone "#dcc39a"
     python3 tools/cut_sheet.py art/midjourney/15_machine.png Assets/Art/screen_v3 --prefix machine --names head --fuzz 5
 
 Steps: the ground scribble below `--floor` is painted over with the background colour, the
@@ -141,6 +141,23 @@ def write_pose(cut, group, min_area, pad, out, tmp):
         "-bordercolor", "none", "-border", str(pad), "PNG32:" + out)
 
 
+def reverse_tone(path, colour, tmp, outline="#2b1d13", outline_px=3):
+    """Inverts the sprite's tones under `colour` and rims it with a thin dark outline: the
+    sheet's black cat becomes a sand-coloured one with dark strokes that reads on a dark floor.
+    Straight alpha throughout - the colour work happens with the alpha switched off."""
+    alpha = os.path.join(tmp, "alpha.png")
+    toned = os.path.join(tmp, "toned.png")
+    run("magick", path, "-alpha", "extract", alpha)
+    run("magick", path, "-alpha", "off", "-colorspace", "gray", "-negate", "-colorspace", "sRGB",
+        "(", "+clone", "-fill", colour, "-colorize", "100%", ")", "-compose", "Multiply", "-composite",
+        alpha, "-alpha", "off", "-compose", "CopyOpacity", "-composite", "PNG32:" + toned)
+    w, h = size_of(path)
+    rim = os.path.join(tmp, "rim.png")
+    run("magick", alpha, "-morphology", "Dilate", f"Disk:{outline_px}", rim)
+    run("magick", "-size", f"{w}x{h}", f"xc:{outline}", rim, "-alpha", "off", "-compose", "CopyOpacity", "-composite",
+        toned, "-compose", "Over", "-composite", "PNG32:" + path)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("sheet")
@@ -155,6 +172,7 @@ def main():
     ap.add_argument("--split", type=int, nargs="*", help="x positions separating the poses (blobs go by their centre)")
     ap.add_argument("--floor-keep", type=int, nargs="*", default=[], help="x1 x2 pairs left unpainted below the floor (a mop head)")
     ap.add_argument("--flip", nargs="*", default=[], help="pose names to mirror horizontally (a sheet that drew one pose facing the other way)")
+    ap.add_argument("--reverse-tone", metavar="COLOUR", help="invert every pose's tones under this colour and add a dark rim (a black cat on a dark floor becomes a sand one)")
     args = ap.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
@@ -173,6 +191,8 @@ def main():
             write_pose(cut, group, args.min_area, args.pad, out, tmp)
             if name in args.flip:
                 run("magick", out, "-flop", "PNG32:" + out)
+            if args.reverse_tone:
+                reverse_tone(out, args.reverse_tone, tmp)
             w, h = size_of(out)
             print(f"{out}: {w}x{h} ({len(group)} blobs)")
 

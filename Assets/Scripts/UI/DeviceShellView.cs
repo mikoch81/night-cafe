@@ -33,7 +33,9 @@ namespace NightCafe.UI
         [SerializeField] Renderer bodyRenderer;
         [SerializeField] int bodyTopSlot;
         [SerializeField] int bodyEdgeSlot = 1;
-        [Tooltip("Body materials per skin id: the wood top and the chamfer/edge band.")]
+        [Tooltip("The marks engraved into the top (brand, A/B): their inlay follows the skin, dark on light wood and light on dark.")]
+        [SerializeField] Renderer[] engravings = System.Array.Empty<Renderer>();
+        [Tooltip("Body materials per skin id: the wood top, the chamfer/edge band and the engraving inlay.")]
         [SerializeField] SkinMaterials[] skins = System.Array.Empty<SkinMaterials>();
 
         [System.Serializable]
@@ -42,6 +44,7 @@ namespace NightCafe.UI
             public string id;
             public Material top;
             public Material edge;
+            public Material inlay;
         }
 
         static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
@@ -74,17 +77,27 @@ namespace NightCafe.UI
                 _capDown[i] = parent != null ? parent.InverseTransformDirection(Vector3.forward).normalized : Vector3.forward;
             }
 
-            if (leverKnob != null)
-            {
-                Transform parent = leverKnob.parent;
-                _knobRight = parent != null ? parent.InverseTransformDirection(Vector3.right).normalized : Vector3.right;
-                // The model exports the knob at the mode A end (screen left), so the slot centre
-                // is one leverKnobX to the right.
-                _knobCentre = leverKnob.localPosition + _knobRight * leverKnobX;
-                _knobFrom = _knobTo = -leverKnobX;
-                _knobAge = leverSlideSeconds;
-                _knobInitialised = true;
-            }
+            InitialiseKnob();
+        }
+
+        /// <summary>
+        /// Lazy on purpose: the game loop applies the saved mode from its own Awake, and which
+        /// Awake runs first depends on scene order - a SetMode that arrived early used to be
+        /// dropped, leaving the knob at A while the HUD said B.
+        /// </summary>
+        void InitialiseKnob()
+        {
+            if (_knobInitialised || leverKnob == null)
+                return;
+
+            Transform parent = leverKnob.parent;
+            _knobRight = parent != null ? parent.InverseTransformDirection(Vector3.right).normalized : Vector3.right;
+            // The model exports the knob at the mode A end (screen left), so the slot centre
+            // is one leverKnobX to the right.
+            _knobCentre = leverKnob.localPosition + _knobRight * leverKnobX;
+            _knobFrom = _knobTo = -leverKnobX;
+            _knobAge = leverSlideSeconds;
+            _knobInitialised = true;
         }
 
         public void Press(LanePosition position)
@@ -110,6 +123,7 @@ namespace NightCafe.UI
         /// <summary>Slides the knob to the A or B end of its slot.</summary>
         public void SetMode(GameMode mode)
         {
+            InitialiseKnob();
             if (!_knobInitialised)
                 return;
 
@@ -149,6 +163,14 @@ namespace NightCafe.UI
             if (skins[index].top != null) materials[bodyTopSlot] = skins[index].top;
             if (skins[index].edge != null) materials[bodyEdgeSlot] = skins[index].edge;
             bodyRenderer.sharedMaterials = materials;
+
+            if (skins[index].inlay == null)
+                return;
+            foreach (Renderer engraving in engravings)
+            {
+                if (engraving != null)
+                    engraving.sharedMaterial = skins[index].inlay;
+            }
         }
 
         void Update()

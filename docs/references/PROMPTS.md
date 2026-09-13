@@ -188,4 +188,39 @@ outlines, warm palette of cream, amber and dark brown, simple readable shape --a
 Kubki (4 kolory), rozbity kubek, plamy, tablica zamówienia, półka toru i drabinka to wektory w tej
 samej kresce (`tools/gen_art_v3.py`) — kolory kubków co do heksa z GDD §3. Wynik 2026-09-13:
 11, 13, 14 (drugi arkusz, koty 2 i 3), 15 użyte; 12 (plank) wyszedł jako deska w perspektywie i został
-zastąpiony wektorem. Oryginały w `art/midjourney/`.
+zastąpiony wektorem. Oryginały w `art/midjourney/`. Kot z 14 był czarny i ginął na ciemnej podłodze;
+`cut_sheet.py --reverse-tone "#dcc39a"` odwraca mu tony (piaskowy z ciemną kreską, cienki ciemny kontur).
+
+## Plan B na rekwizyty (2026-09-14): kubki i półka z Midjourney
+
+Jeśli wektorowe kubki i półki (`tools/gen_art_v3.py`) dalej wyglądają słabo obok malowanego tła.
+Te same zasady co wyżej: model 8.1, Style reference 09_ink_a, `--sw 60`, Upscale Subtle, PNG do
+`art/midjourney/`. Wycinanie: `tools/cut_sheet.py` (kolory zamówień z GDD §3 przypinam po wycięciu
+w ImageMagick, jeśli Midjourney nie trafi w odcień).
+
+### 16 — Zestaw kubków, 4 kolory zamówień + rozbity (styl: 09_ink_a)
+
+Jeden rząd, ta sama forma i wielkość, uszko w prawo; kolory po nazwach, bo Midjourney nie czyta heksów.
+Cięcie: `--prefix cup --names espresso caramel latte decaf broken --fuzz 6`.
+
+```
+five identical small ceramic coffee cups in one row, side view with the handle on the right,
+isolated on a plain white background, from left to right: a honey amber cup, a peach orange cup,
+a pale cream cup, a lilac purple cup, and the same cup shattered into three pieces lying on the
+ground; ink line illustration with flat colour fills, thick confident black outlines, soft paper
+grain, small glossy highlight on each cup, evenly spaced, same size --ar 5:2 --sw 60 --style raw
+--no text, labels, numbers, saucer, spoon, steam, coffee, background, shadow, gradients, photo, 3d
+```
+
+### 17 — Półka toru, widok wprost (styl: 08_gouache_c)
+
+Prompt 12 dał deskę w perspektywie. Tu wprost i płasko, oba końce ucięte prosto, żeby dało się ją
+rozciągać jako sprite dziewięciokrotny (importer: `spriteBorder` 96 px po bokach).
+
+```
+a long straight wooden café bar shelf seen exactly from the front at eye level, perfectly
+horizontal and flat with no perspective, both ends cut square, a thin brass strip along the front
+edge, isolated on a plain white background, gouache with visible brush strokes and paper texture,
+warm walnut brown with amber highlights, nothing on the shelf --ar 5:1 --sw 60 --style raw
+--no text, cups, objects, background, shadow, angle, perspective, photo, 3d
+```

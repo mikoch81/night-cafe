@@ -95,10 +95,20 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   slotu (`moveSeconds` 0.12 s, `PlayerPositionController` — slot logiczny zmienia się natychmiast,
   GDD §4); półki z fototeksturą drewna (ambientCG Wood027, CC0, `-paint`) pod kreską, grubsze (0.6);
   kubki z gradientem, ziarnem papieru i „drżącym" konturem (filtry SVG w `gen_art_v3.py`).
-- Do zrobienia: (1) ocena Michała na telefonie po poprawkach; (2) ekran tytułowy/game over w nowej
-  kresce; (3) jeśli kubki/półki nadal „słabe": Midjourney prompt na zestaw kubków (`--sref 09_ink_a`,
-  4 kolory do przebarwienia) i półkę „exactly front view, orthographic"; (4) RETRO sprawdzić po
-  przełączeniu (toggle na tytule, odblokowanie razem z Jesionem).
+- Runda 2 (2026-09-14, uwagi: „wajcha nie działa", kot niewidoczny, marka niewidoczna, plan B):
+  wajcha działała (adb tap), ale (a) po 8 s tytuł przechodzi w demo, a tam każdy tap startował rundę —
+  teraz `RoundStateMachine.Press` w demo z `consumedByTitleUi` wraca do tytułu (wajcha działa w demo);
+  (b) toggle ART/RETRO przy zablokowanym Jesionie milczał — teraz mruga „LOCKED" 1,4 s
+  (`TitleToggleView.lockedHintSeconds`); na Pixelu Michała Jesion odblokowany ręcznie w
+  `profile.json` (adb), żeby mógł obejrzeć RETRO. Kot: `cut_sheet.py --reverse-tone "#dcc39a"`
+  (piaskowy, ciemna kreska, kontur 3 px; czarny oryginał ginął na podłodze). Marka i litery A/B:
+  `shell_model.py engrave()` wycina tekst booleanem w blacie (0,12) i kładzie inlay 0,06 (`Brand`,
+  `LabelA/B`); `DeviceShellView.engravings` + `SkinMaterials.inlay` — krem na ciemnych skinach,
+  atrament na Jesionie; `sharpen()` (sharp od 40°) chroni cieniowanie blatu przy ściankach graweru.
+  Plan B spisany: prompty 16 (zestaw kubków) i 17 (półka wprost) w `docs/references/PROMPTS.md`.
+- Do zrobienia: (1) ocena Michała na telefonie po rundzie 2; (2) ekran tytułowy/game over w nowej
+  kresce; (3) plan B, gdy Michał wygeneruje 16/17: cięcie `cut_sheet.py --prefix cup --names espresso
+  caramel latte decaf broken`, kolory GDD §3 dopiąć w ImageMagick, półka jako sliced (border 96).
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
 **M5 — release candidate:**

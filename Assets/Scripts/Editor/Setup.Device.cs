@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NightCafe.Config;
 using NightCafe.Core;
@@ -146,7 +147,12 @@ namespace NightCafe.EditorTools
 
             texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
-            texture.useMipMap = false;
+            // Assigning useMipMap on a created texture is an error even when nothing changes.
+            if (texture.useMipMap)
+            {
+                texture.Release();
+                texture.useMipMap = false;
+            }
             EditorUtility.SetDirty(texture);
             return texture;
         }
@@ -459,10 +465,14 @@ namespace NightCafe.EditorTools
             neonTube.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
             neonTube.SetColor("_EmissionColor", new Color(0.5f, 0.2f, 1.0f) * 3.0f);
             EditorUtility.SetDirty(neonTube);
-            var skinMaterials = new (string id, Material top, Material edge)[]
+            // The engraved marks (tools/shell_model.py cuts them into the top) are filled with an
+            // inlay that contrasts with the wood: cream on the dark finishes, ink on the pale ash.
+            Material inlayCream = LitMaterial("Inlay_Cream", new Color(0.90f, 0.82f, 0.64f), 0f, 0.35f);
+            Material inlayInk = LitMaterial("Inlay_Ink", new Color(0.07f, 0.055f, 0.045f), 0f, 0.3f);
+            var skinMaterials = new (string id, Material top, Material edge, Material inlay)[]
             {
-                (SkinCatalog.DefaultId, wood, alu), (SkinCatalog.AshId, ash, alu),
-                (SkinCatalog.OnyxId, onyx, alu), (SkinCatalog.NeonId, neonWood, neonTube),
+                (SkinCatalog.DefaultId, wood, alu, inlayCream), (SkinCatalog.AshId, ash, alu, inlayInk),
+                (SkinCatalog.OnyxId, onyx, alu, inlayCream), (SkinCatalog.NeonId, neonWood, neonTube, inlayCream),
             };
             Material dark = LitMaterial("Dark", new Color(0.05f, 0.04f, 0.035f), 0f, 0.3f);
             Material cap = CapMaterial();
@@ -476,6 +486,7 @@ namespace NightCafe.EditorTools
             Transform knob = null;
             Collider lever = null;
             MeshCollider screenFace = null;
+            var engravings = new List<Renderer>();
 
             foreach (Transform part in instance.GetComponentsInChildren<Transform>(true))
             {
@@ -508,8 +519,13 @@ namespace NightCafe.EditorTools
                     renderer.sharedMaterial = screen;
                 else if (name == "Glass")
                     renderer.sharedMaterial = glass;
+                else if (name == "Brand" || name == "LabelA" || name == "LabelB")
+                {
+                    renderer.sharedMaterial = inlayCream;
+                    engravings.Add(renderer);
+                }
                 else
-                    renderer.sharedMaterial = dark; // wells, slot floor, grille, labels, brand
+                    renderer.sharedMaterial = dark; // wells, slot floor, grille
 
                 renderer.shadowCastingMode = name is "Screen" or "Glass"
                     ? ShadowCastingMode.Off
@@ -563,6 +579,11 @@ namespace NightCafe.EditorTools
                 so.FindProperty("bodyTopSlot").intValue = bodyTopSlot;
                 so.FindProperty("bodyEdgeSlot").intValue = bodyEdgeSlot;
 
+                SerializedProperty engravingArray = so.FindProperty("engravings");
+                engravingArray.arraySize = engravings.Count;
+                for (int i = 0; i < engravings.Count; i++)
+                    engravingArray.GetArrayElementAtIndex(i).objectReferenceValue = engravings[i];
+
                 SerializedProperty skinArray = so.FindProperty("skins");
                 skinArray.arraySize = skinMaterials.Length;
                 for (int i = 0; i < skinMaterials.Length; i++)
@@ -571,6 +592,7 @@ namespace NightCafe.EditorTools
                     entry.FindPropertyRelative("id").stringValue = skinMaterials[i].id;
                     entry.FindPropertyRelative("top").objectReferenceValue = skinMaterials[i].top;
                     entry.FindPropertyRelative("edge").objectReferenceValue = skinMaterials[i].edge;
+                    entry.FindPropertyRelative("inlay").objectReferenceValue = skinMaterials[i].inlay;
                 }
             });
 

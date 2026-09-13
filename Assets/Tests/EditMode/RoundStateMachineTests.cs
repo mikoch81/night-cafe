@@ -80,8 +80,17 @@ namespace NightCafe.Tests
             RoundStateMachine machine = Machine();
             machine.EnteredDemo(108f);
 
-            Assert.AreEqual(RoundTransition.StartRound, machine.Press(110f, consumedByTitleUi: true),
-                "the title widgets are not on screen during the demo, so nothing can consume the press");
+            Assert.AreEqual(RoundTransition.StartRound, machine.Press(110f, consumedByTitleUi: false));
+        }
+
+        [Test]
+        public void FlippingTheLeverDuringTheDemoHandsBackTheTitleInsteadOfStartingARound()
+        {
+            RoundStateMachine machine = Machine();
+            machine.EnteredDemo(108f);
+
+            Assert.AreEqual(RoundTransition.EnterTitle, machine.Press(110f, consumedByTitleUi: true),
+                "the lever is real hardware under the finger even while the pilot plays");
         }
 
         [Test]

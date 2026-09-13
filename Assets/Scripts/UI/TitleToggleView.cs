@@ -19,10 +19,13 @@ namespace NightCafe.UI
         [SerializeField] Vector2 hitSize = new(2.4f, 0.9f);
         [SerializeField] Color onColor = new(1f, 0.788f, 0.4f);
         [SerializeField] Color offColor = new(0.227f, 0.173f, 0.094f);
+        [Tooltip("How long the screen toggle reads LOCKED after a tap that could not switch it.")]
+        [SerializeField] float lockedHintSeconds = 1.4f;
 
         SettingsService _settings;
         ProfileService _profile;
         bool _artAvailable;
+        float _lockedHintUntil;
 
         /// <param name="artAvailable">False while the painted style has no assets yet: the screen
         /// toggle then reads RETRO and ignores taps, so the label never lies about what is shown.</param>
@@ -80,11 +83,22 @@ namespace NightCafe.UI
             {
                 if (_artAvailable && (RetroUnlocked || _settings.RetroScreen))
                     _settings.ToggleRetroScreen();
+                else if (_artAvailable)
+                    _lockedHintUntil = Time.unscaledTime + lockedHintSeconds; // a silent toggle reads as broken
                 Render();
                 return true;
             }
 
             return false;
+        }
+
+        void Update()
+        {
+            if (_lockedHintUntil > 0f && Time.unscaledTime >= _lockedHintUntil)
+            {
+                _lockedHintUntil = 0f;
+                Render();
+            }
         }
 
         public void Render()
@@ -107,8 +121,9 @@ namespace NightCafe.UI
             {
                 // The label names what is on screen; it dims only when there is nothing to switch to.
                 bool retro = !_artAvailable || _settings.RetroScreen;
-                screenLabel.text = retro ? "RETRO" : "ART";
-                screenLabel.color = _artAvailable ? onColor : offColor;
+                bool locked = _lockedHintUntil > 0f && Time.unscaledTime < _lockedHintUntil;
+                screenLabel.text = locked ? "LOCKED" : retro ? "RETRO" : "ART";
+                screenLabel.color = _artAvailable && !locked ? onColor : offColor;
             }
         }
 

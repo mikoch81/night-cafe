@@ -85,11 +85,13 @@ namespace NightCafe.Core
             return RoundTransition.None;
         }
 
-        /// <param name="consumedByTitleUi">The press landed on a toggle or the lever (only evaluated on the title).</param>
+        /// <param name="consumedByTitleUi">The press landed on a toggle or the lever (evaluated on the title
+        /// and during the demo, where the lever is still real hardware under the finger).</param>
         public RoundTransition Press(float now, bool consumedByTitleUi)
         {
+            // A tap that flipped the lever mid-demo wants the title back, not a round in the new mode.
             if (IsDemo)
-                return RoundTransition.StartRound;
+                return consumedByTitleUi ? RoundTransition.EnterTitle : RoundTransition.StartRound;
 
             switch (State)
             {

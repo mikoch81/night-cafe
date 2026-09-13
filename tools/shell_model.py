@@ -15,7 +15,8 @@ Parts (object names are the contract with the setup):
   Cap_LU/LD/RU/RD   button caps (r 0.6) with a domed top, resting in aluminium collars
   Collar_*    the collars
   LeverRail   aluminium slot for the mode switch, LeverKnob the sliding knob
-  LabelA/B    engraved mode letters, Brand the maker's mark, Grille the speaker holes
+  LabelA/B    mode letters, Brand the maker's mark - both cut into the wood (boolean) and
+              filled with an inlay mesh whose top sits below the surface; Grille the speaker holes
 """
 
 import math
@@ -52,6 +53,8 @@ KNOB = 0.9, 0.9, 0.35
 KNOB_X = 0.9                     # DeviceConfig.leverKnobX (mode A = -x)
 BRAND = (-8.5, -4.85)
 GRILLE = (9.6, -4.85)
+ENGRAVE_DEPTH = 0.12             # the marks are cut this deep into the top ...
+INLAY_HEIGHT = 0.06              # ... and filled to here, so a lip of wood shades the letters
 
 TOP = BODY[2]
 
@@ -245,6 +248,36 @@ def text_mesh(name, body, size, location, extrude=0.02):
     return obj
 
 
+def engrave(body, name, text, size, location, depth=ENGRAVE_DEPTH, inlay=INLAY_HEIGHT):
+    """Cuts `text` into the body's top face and lays an inlay mesh on the floor of the cut, its
+    top `depth - inlay` below the wood: an engraved, filled mark rather than letters glued on.
+    The inlay keeps `name`, so the setup can give it a colour per skin."""
+    # A text curve extrudes symmetrically about its plane, so the cutter spans TOP +- depth.
+    cutter = text_mesh(f"{name}_Cutter", text, size, location, extrude=depth)
+    mod = body.modifiers.new("Engrave", "BOOLEAN")
+    mod.operation = "DIFFERENCE"
+    mod.solver = "EXACT"
+    mod.object = cutter
+    for other in bpy.context.selected_objects:
+        other.select_set(False)
+    body.select_set(True)
+    bpy.context.view_layer.objects.active = body
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.data.objects.remove(cutter, do_unlink=True)
+
+    fill = text_mesh(name, text, size, location, extrude=inlay / 2)
+    fill.location.z = TOP - depth + inlay / 2
+    return fill
+
+
+def sharpen(obj, angle_degrees=40.0):
+    """Smooth shading across the 90-degree walls of an engraving would smear the top face's
+    normals around every letter; edges sharper than `angle_degrees` split their normals instead.
+    The bevels (11 and 22.5 degrees per segment) stay smooth."""
+    obj.data.shade_smooth()
+    obj.data.set_sharp_from_angle(angle=math.radians(angle_degrees))
+
+
 # ---------------------------------------------------------------- the device
 
 def build():
@@ -280,11 +313,12 @@ def build():
     knob = rounded_slab("LeverKnob", KNOB[0], KNOB[1], 0.18, KNOB[2] + 0.2, z=TOP - 0.2)
     bevel_top(knob, 0.12, segments=6)
     knob.location = (LEVER[0] - KNOB_X, LEVER[1], 0)
-    text_mesh("LabelA", "A", 0.5, (LEVER[0] - LEVER_RAIL[0] / 2 - 0.45, LEVER[1]))
-    text_mesh("LabelB", "B", 0.5, (LEVER[0] + LEVER_RAIL[0] / 2 + 0.45, LEVER[1]))
+    engrave(body, "LabelA", "A", 0.5, (LEVER[0] - LEVER_RAIL[0] / 2 - 0.45, LEVER[1]))
+    engrave(body, "LabelB", "B", 0.5, (LEVER[0] + LEVER_RAIL[0] / 2 + 0.45, LEVER[1]))
 
-    # Maker's mark and speaker grille.
-    text_mesh("Brand", "BRÉVE DECK", 0.42, BRAND)
+    # Maker's mark, cut into the wood like the letters, and the speaker grille.
+    engrave(body, "Brand", "BRÉVE DECK", 0.42, BRAND)
+    sharpen(body)
     bm = bmesh.new()
     for row in range(3):
         for col in range(6):

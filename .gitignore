@@ -56,3 +56,4 @@ __pycache__/
 
 # written by the Performance Testing package during test runs
 Assets/Resources/PerformanceTest*
+Assets/Resources.meta
