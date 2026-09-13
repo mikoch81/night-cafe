@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""Vector props for the painted screen (GDD 5.2, ScreenStyle "ART"): the cups in the four
-order colours, the broken cup, the stain, the order board, the shelf plank and the footstool.
+"""Vector props for the painted screen (GDD 5.2, ScreenStyle "ART"): the stain, the order board,
+the footstool and the scoreboard. The cups, the broken cup and the shelf plank were vectors too
+until Michał's Midjourney sheets (prompts 16/17) replaced them; those builders stay as a fallback
+(`legacy_sprites`, rendered only by name).
 
     python3 tools/gen_art_v3.py            # everything -> Assets/Art/screen_v3
     python3 tools/gen_art_v3.py cup_latte plank
@@ -218,12 +220,22 @@ def step():
 def sprites():
     colours = order_colours()
     table = {
-        "cup_broken": (lambda: cup_broken(colours[0]), 52, 40, SCALE),
         "stain": (stain, 60, 34, SCALE),
         "order_panel": (order_panel, 130, 52, SCALE),
-        "plank": (plank, 240, 30, 4),   # 960x120 px = 0.6 units thick at 200 PPU, no squash in the sliced renderer
         "step": (step, 60, 200, SCALE),
         "scoreboard": (scoreboard, 110, 36, SCALE),
+    }
+    return table
+
+
+def legacy_sprites():
+    """The cups, the broken cup and the shelf plank now come from Midjourney (prompts 16 and 17,
+    cut with tools/cut_sheet.py); these vector versions are kept as a fallback and render only
+    when named explicitly, so a plain run never overwrites the painted files."""
+    colours = order_colours()
+    table = {
+        "cup_broken": (lambda: cup_broken(colours[0]), 52, 40, SCALE),
+        "plank": (plank, 240, 30, 4),   # 960x120 px = 0.6 units thick at 200 PPU, no squash in the sliced renderer
     }
     for name, colour in zip(ORDER_NAMES, colours):
         table[f"cup_{name}"] = ((lambda c: lambda: cup(c))(colour), 52, 34, SCALE)
@@ -284,8 +296,9 @@ def main():
     table = sprites()
     tool = renderer()
     os.makedirs(SVG_DIR, exist_ok=True)
+    legacy = legacy_sprites()
     for name in args.only or sorted(table):
-        builder, w, h, scale = table[name]
+        builder, w, h, scale = table[name] if name in table else legacy[name]
         svg_path = os.path.join(SVG_DIR, f"{name}.svg")
         with open(svg_path, "w", encoding="utf-8") as f:
             f.write(builder())

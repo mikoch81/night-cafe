@@ -34,7 +34,7 @@ namespace NightCafe.Config
             { "cat_a", Cat },
             { "cat_b", Cat },
             { "cup", new Vector2(0.5000f, 0.6029f) },
-            { "cup_broken", new Vector2(0.5000f, 0.5094f) },
+            { "cup_broken", new Vector2(0.5000f, 0.5000f) },
             { "machine_head", new Vector2(0.4783f, 0.5476f) },
             { "stain", new Vector2(0.4375f, 0.3934f) }
         };
@@ -55,11 +55,11 @@ namespace NightCafe.Config
             { "sable_a", new Vector2(0.4300f, 0.0700f) },
             { "sable_b", new Vector2(0.4500f, 0.0700f) },
             { "machine_head", new Vector2(0.6200f, 0.3200f) },
-            { "cup_espresso", new Vector2(0.5000f, 0.6029f) },
-            { "cup_caramel", new Vector2(0.5000f, 0.6029f) },
-            { "cup_latte", new Vector2(0.5000f, 0.6029f) },
-            { "cup_decaf", new Vector2(0.5000f, 0.6029f) },
-            { "cup_broken", new Vector2(0.5000f, 0.5094f) },
+            { "cup_espresso", new Vector2(0.5000f, 0.0300f) },
+            { "cup_caramel", new Vector2(0.5000f, 0.0300f) },
+            { "cup_latte", new Vector2(0.5000f, 0.0300f) },
+            { "cup_decaf", new Vector2(0.5000f, 0.0300f) },
+            { "cup_broken", new Vector2(0.5000f, 0.5000f) },
             { "stain", new Vector2(0.4375f, 0.3934f) },
             { "step", new Vector2(0.5000f, 0.9550f) }
         };

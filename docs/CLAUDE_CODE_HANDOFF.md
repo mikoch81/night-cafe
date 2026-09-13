@@ -106,9 +106,14 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   `LabelA/B`); `DeviceShellView.engravings` + `SkinMaterials.inlay` — krem na ciemnych skinach,
   atrament na Jesionie; `sharpen()` (sharp od 40°) chroni cieniowanie blatu przy ściankach graweru.
   Plan B spisany: prompty 16 (zestaw kubków) i 17 (półka wprost) w `docs/references/PROMPTS.md`.
-- Do zrobienia: (1) ocena Michała na telefonie po rundzie 2; (2) ekran tytułowy/game over w nowej
-  kresce; (3) plan B, gdy Michał wygeneruje 16/17: cięcie `cut_sheet.py --prefix cup --names espresso
-  caramel latte decaf broken`, kolory GDD §3 dopiąć w ImageMagick, półka jako sliced (border 96).
+- Runda 3 (2026-09-14): drewno zniknęło z obudowy po grawerze — warstwa UV z bmesh nazywała się
+  „Float2", boolean dodał „UVMap" z tekstu, a eksporter FBX wziął tę drugą; `shell_model.py` ma teraz
+  jedną warstwę `UV_LAYER = "UVMap"` (`uv_layer_of`) i `engrave()` rzuca błąd, gdy jest ich więcej.
+  Plan B wykonany: kubki (4 kolory + rozbity) i półka wprost z Midjourney (prompty 16/17, cięcie
+  opisane w PROMPTS.md: `--split`, `--unshadow`, `--scale`); pivot kubków na stopce (0.5/0.03),
+  `OrderPanelView` centruje kubek po `sprite.bounds`; wektorowe wersje w `gen_art_v3.legacy_sprites`.
+- Do zrobienia: (1) ocena Michała na telefonie po rundzie 3; (2) ekran tytułowy/game over w nowej
+  kresce; (3) M5.
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
 **M5 — release candidate:**

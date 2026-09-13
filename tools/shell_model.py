@@ -99,11 +99,22 @@ def finish(bm, name, materials=1):
     return obj
 
 
+UV_LAYER = "UVMap"
+
+
+def uv_layer_of(bm):
+    """One UV layer, always called UVMap. bmesh's verify() names a fresh layer "Float2", and a
+    text curve converted to a mesh brings its own "UVMap"; a boolean between the two then leaves
+    the body with both, and the FBX exporter writes the second one - empty for the body, which
+    is how the wood once vanished from the phone."""
+    return bm.loops.layers.uv.get(UV_LAYER) or bm.loops.layers.uv.new(UV_LAYER)
+
+
 def box_uv(bm, scale=4.0):
     """Planar projection per face along its dominant normal axis - what Blender's box mapping did
     in the shader, baked into real UVs so Unity can use the same textures. `scale` = texture
     repeat length in units (4 cm of wood grain per tile)."""
-    uv_layer = bm.loops.layers.uv.verify()
+    uv_layer = uv_layer_of(bm)
     for face in bm.faces:
         n = face.normal
         ax, ay, az = abs(n.x), abs(n.y), abs(n.z)
@@ -141,7 +152,7 @@ def rounded_face(name, width, height, radius, centre=(0, 0), z=0.0):
     face.normal_update()
     if face.normal.z < 0:
         face.normal_flip()
-    uv_layer = bm.loops.layers.uv.verify()
+    uv_layer = uv_layer_of(bm)
     for loop in face.loops:
         p = loop.vert.co
         loop[uv_layer].uv = ((p.x - centre[0]) / width + 0.5, (p.y - centre[1]) / height + 0.5)
@@ -264,6 +275,9 @@ def engrave(body, name, text, size, location, depth=ENGRAVE_DEPTH, inlay=INLAY_H
     bpy.context.view_layer.objects.active = body
     bpy.ops.object.modifier_apply(modifier=mod.name)
     bpy.data.objects.remove(cutter, do_unlink=True)
+    layers = [layer.name for layer in body.data.uv_layers]
+    if layers != [UV_LAYER]:
+        raise RuntimeError(f"{body.name} has UV layers {layers}; the exporter would pick the wrong one")
 
     fill = text_mesh(name, text, size, location, extrude=inlay / 2)
     fill.location.z = TOP - depth + inlay / 2

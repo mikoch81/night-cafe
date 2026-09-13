@@ -224,3 +224,17 @@ edge, isolated on a plain white background, gouache with visible brush strokes a
 warm walnut brown with amber highlights, nothing on the shelf --ar 5:1 --sw 60 --style raw
 --no text, cups, objects, background, shadow, angle, perspective, photo, 3d
 ```
+
+Wynik 2026-09-14: oba użyte (`art/midjourney/16_cups.png`, `17_shelf.png`). Cięcie:
+
+```
+python3 tools/cut_sheet.py art/midjourney/16_cups.png Assets/Art/screen_v3 --prefix cup \
+    --names espresso caramel latte decaf broken --split 740 1350 1960 2600 --fuzz 8 --unshadow --scale 0.4875
+python3 tools/cut_sheet.py art/midjourney/17_shelf.png Assets/Art/screen_v3 --names plank --fuzz 8 --pad 0 --scale 0.2632
+```
+
+`--unshadow` zdejmuje szary fotograficzny cień spod kubków (tuszowy czarny zostaje — kubek jedzie po
+półce, więc cień na desce ma sens), `--split` bo pierwsza skorupa rozbitego kubka leży bliżej kubka
+decaf. Kubki mają pivot na stopce (`SpriteAnchors` 0.5/0.03), bo półka wprost nie ma widocznego
+blatu i kubek musi stać na jej górnej krawędzi; panel zamówienia centruje sprite po jego granicach.
+Wektorowe kubki i półka zostały w `gen_art_v3.py` jako `legacy_sprites` (renderowane tylko po nazwie).

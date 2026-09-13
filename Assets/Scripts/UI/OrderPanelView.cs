@@ -19,6 +19,7 @@ namespace NightCafe.UI
         Color _swatchColor = Color.white;
         Sprite _swatchSprite;      // the white pixel the scene was built with
         Vector3 _swatchScale;
+        Vector3 _swatchHome;       // where the scene put the swatch's centre
         Sprite[] _cupSprites;      // painted style: a cup per colour instead of a swatch
         Vector2 _cupScale = new(0.55f, 0.55f);
 
@@ -28,6 +29,7 @@ namespace NightCafe.UI
             {
                 _swatchSprite = swatch.sprite;
                 _swatchScale = swatch.transform.localScale;
+                _swatchHome = swatch.transform.localPosition;
             }
         }
 
@@ -54,14 +56,20 @@ namespace NightCafe.UI
                 bool painted = _cupSprites != null && colourIndex >= 0 && colourIndex < _cupSprites.Length && _cupSprites[colourIndex] != null;
                 if (painted)
                 {
-                    swatch.sprite = _cupSprites[colourIndex];
+                    Sprite cup = _cupSprites[colourIndex];
+                    swatch.sprite = cup;
                     swatch.transform.localScale = new Vector3(_cupScale.x, _cupScale.y, 1f);
+                    // The gameplay cups pivot on their foot (they stand on the shelf); in the
+                    // panel the cup's picture is centred where the swatch was, whatever the pivot.
+                    Vector3 centre = cup.bounds.center;
+                    swatch.transform.localPosition = _swatchHome - new Vector3(centre.x * _cupScale.x, centre.y * _cupScale.y, 0f);
                     _swatchColor = Color.white;
                 }
                 else if (_swatchSprite != null)
                 {
                     swatch.sprite = _swatchSprite;
                     swatch.transform.localScale = _swatchScale;
+                    swatch.transform.localPosition = _swatchHome;
                 }
                 swatch.color = Color.white; // pops white for a frame, then settles on the colour
             }

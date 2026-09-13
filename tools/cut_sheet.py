@@ -158,11 +158,24 @@ def reverse_tone(path, colour, tmp, outline="#2b1d13", outline_px=3):
         toned, "-compose", "Over", "-composite", "PNG32:" + path)
 
 
+def unshadow(path, pad):
+    """Drops the soft grey shadow a sheet paints under each object (low saturation, mid
+    lightness) and re-trims. Ink (dark) and highlights (near white) are untouched, and so is a
+    drawn black cast shadow - that one is part of the line work."""
+    run("magick", path, "-channel", "A",
+        "-fx", "(saturation<0.14 && lightness>0.45 && lightness<0.93) ? 0 : a", "+channel",
+        "-trim", "+repage", "-bordercolor", "none", "-border", str(pad), "PNG32:" + path)
+
+
+def rescale(path, scale):
+    run("magick", path, "-resize", f"{scale * 100:.4f}%", "PNG32:" + path)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("sheet")
     ap.add_argument("outdir")
-    ap.add_argument("--prefix", required=True)
+    ap.add_argument("--prefix", default="", help="output files are <prefix>_<name>.png (or <name>.png without one)")
     ap.add_argument("--names", nargs="+", required=True, help="one per pose, left to right")
     ap.add_argument("--fuzz", type=float, default=10.0, help="background colour tolerance, percent")
     ap.add_argument("--pad", type=int, default=8, help="transparent padding around each sprite")
@@ -173,6 +186,8 @@ def main():
     ap.add_argument("--floor-keep", type=int, nargs="*", default=[], help="x1 x2 pairs left unpainted below the floor (a mop head)")
     ap.add_argument("--flip", nargs="*", default=[], help="pose names to mirror horizontally (a sheet that drew one pose facing the other way)")
     ap.add_argument("--reverse-tone", metavar="COLOUR", help="invert every pose's tones under this colour and add a dark rim (a black cat on a dark floor becomes a sand one)")
+    ap.add_argument("--unshadow", action="store_true", help="drop the soft grey shadow painted under each object (drawn black shadows stay)")
+    ap.add_argument("--scale", type=float, help="resize every pose by this factor, so the poses keep their relative sizes")
     args = ap.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
@@ -187,12 +202,16 @@ def main():
             if not group:
                 print(f"{name}: no blobs, skipped")
                 continue
-            out = os.path.join(args.outdir, f"{args.prefix}_{name}.png")
+            out = os.path.join(args.outdir, f"{args.prefix}_{name}.png" if args.prefix else f"{name}.png")
             write_pose(cut, group, args.min_area, args.pad, out, tmp)
             if name in args.flip:
                 run("magick", out, "-flop", "PNG32:" + out)
             if args.reverse_tone:
                 reverse_tone(out, args.reverse_tone, tmp)
+            if args.unshadow:
+                unshadow(out, args.pad)
+            if args.scale:
+                rescale(out, args.scale)
             w, h = size_of(out)
             print(f"{out}: {w}x{h} ({len(group)} blobs)")
 
