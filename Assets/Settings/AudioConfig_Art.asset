@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a144e8ca03b29ad64b8e1785c4eb445a, type: 3}
+  m_Name: AudioConfig_Art
+  m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.AudioConfig
+  catchBlip: {fileID: 8300000, guid: 169152b5490b9214a818dfb484a73c5f, type: 3}
+  comboArpeggio: {fileID: 8300000, guid: 39c4927e1d7010345aef1c49013f5396, type: 3}
+  missClink: {fileID: 8300000, guid: 37a4610d972b092458c738c5ff27c6c6, type: 3}
+  catMeow: {fileID: 8300000, guid: e9e2089eea31b484ab10c263448c800e, type: 3}
+  gameOver: {fileID: 8300000, guid: d8d7d827c54ae8a4d82d2c9ff765a94f, type: 3}
+  brewAlarm: {fileID: 8300000, guid: 85a643706974e13438d09512b06647d0, type: 3}
+  leverClick: {fileID: 8300000, guid: 5dd5e084b6046cb40a6b635b92a13fe5, type: 3}
+  lofiLoop: {fileID: 8300000, guid: cca789ca7fc09b84b8b82f6053eaef44, type: 3}
+  musicOffsetDb: -18
+  ambience: {fileID: 8300000, guid: a50c926f6f1072340b1da74b633d1eda, type: 3}
+  ambienceOffsetDb: -20
+  sfxVolume: 1
+  meowChance: 0.3
+  catchHapticMs: 15
+  missHapticMs: 60
+  gameOverHapticMs: 80
+  gameOverHapticPulses: 3
+  gameOverHapticGapMs: 60

@@ -50,6 +50,24 @@ namespace NightCafe.Tests
         }
 
         [Test]
+        public void EachStyleBringsItsOwnSoundSet()
+        {
+            var retro = AssetDatabase.LoadAssetAtPath<ScreenStyle>(RetroPath);
+            var art = AssetDatabase.LoadAssetAtPath<ScreenStyle>(ArtPath);
+            Assert.IsNotNull(retro); Assert.IsNotNull(art);
+
+            Assert.IsNull(retro.sounds, "RETRO plays the scene's base set, the chiptune");
+            Assert.IsNotNull(art.sounds, "ART has the recorded set");
+            Assert.AreNotEqual(AssetDatabase.GetAssetPath(art.sounds), "Assets/Settings/AudioConfig.asset");
+
+            foreach (GameSfx sfx in System.Enum.GetValues(typeof(GameSfx)))
+                Assert.IsNotNull(art.sounds.Clip(sfx), $"ART clip missing for {sfx} - run tools/prep_audio.py");
+            Assert.IsNotNull(art.sounds.lofiLoop, "ART lo-fi loop");
+            Assert.IsNotNull(art.sounds.ambience, "ART room tone");
+            Assert.That(art.sounds.lofiLoop.length, Is.InRange(60f, 90f), "GDD 5.3: a 60-90 s loop");
+        }
+
+        [Test]
         public void RetroScreenSettingPersistsAndDefaultsToThePaintedLook()
         {
             var store = new InMemorySettingsStore();

@@ -141,6 +141,18 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   się (`ScreenStyle.cupsRideStraightRail/cupWobble 3°/cupWobbleHz 7/cupBob 0.03`, RETRO zera);
   kubki i rozbity kubek 70 % (`cupScale`, `brokenCupScale`), kubek w panelu zamówienia bez zmian.
   Ocena Michała: „jest ok".
+- Runda 5 — dźwięk (2026-09-14): chiptune z `gen_audio.py` pasował do RETRO, nie do dioramy.
+  Michał wygenerował (płatne plany, prawa komercyjne — `art/audio/LICENSE.md`): loop lo-fi w Suno,
+  SFX i deszcz w ElevenLabs; surowe pliki w `art/audio/raw/` (LFS), prompty w PROMPTS.md.
+  `tools/prep_audio.py` (numpy/scipy/soundfile/pyloudnorm) tnie je do `Assets/Audio/Art/`:
+  SFX −3 dBFS z korektą per dźwięk (po odsłuchu: złapanie −5, stłuczka −9, kot −6, klik −1),
+  loop szukany po siatce beatów (tempo z autokorelacji, szew oceniany po obwiedni onsetów +
+  paśmie <2 kHz, długość doprecyzowana co 5 ms) → 19 taktów = 64.2 s, crossfade 80 ms, −14 LUFS;
+  ambient = 4 warianty deszczu sklejone crossfade'ami w 36 s pętlę, −16 LUFS.
+  Dźwięk jest częścią skinu: `ScreenStyle.sounds` → `AudioConfig_Art`, RETRO = bazowy `AudioConfig`
+  (chiptune); `AudioService.SetSoundSet` przełącza klipy razem z ekranem, poziomy i haptyka zostają
+  w bazowym configu. Trzecie źródło `AmbienceSource` (`AudioConfig.ambience`, `ambienceOffsetDb` −23)
+  pod toggle'em „~" razem z muzyką; muzyka −18 dB (GDD). ART muzyka zostaje stereo, reszta mono.
 - Do zrobienia: (1) ekran tytułowy/game over w nowej kresce; (2) M5.
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 

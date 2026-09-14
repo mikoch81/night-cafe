@@ -24,6 +24,8 @@ namespace NightCafe.EditorTools
         const string LaneConfigPath = SettingsDir + "/LaneConfig.asset";
         const string DeviceConfigPath = SettingsDir + "/DeviceConfig.asset";
         const string AudioConfigPath = SettingsDir + "/AudioConfig.asset";
+        const string ArtAudioDir = AudioDir + "/Art";
+        const string ArtAudioConfigPath = SettingsDir + "/AudioConfig_Art.asset";
         const string VolumeProfilePath = SettingsDir + "/NightCafeVolume.asset";
         const string CupPrefabPath = PrefabDir + "/Cup.prefab";
         const string GameScenePath = SceneDir + "/Game.unity";
@@ -91,7 +93,8 @@ namespace NightCafe.EditorTools
             LaneConfig laneConfig = CreateLaneConfig();
             DeviceConfig deviceConfig = CreateDeviceConfig();
             AudioConfig audioConfig = CreateAudioConfig();
-            CreateScreenStyles();
+            AudioConfig artAudioConfig = CreateArtAudioConfig();
+            CreateScreenStyles(artAudioConfig);
             CreateVolumeProfile();
             CreateSpriteAtlas();
             EnsureLcdRenderTexture(deviceConfig);

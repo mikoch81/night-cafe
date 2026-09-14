@@ -149,19 +149,45 @@ namespace NightCafe.EditorTools
             return config;
         }
 
-        static AudioClip LoadClip(string name)
+        static AudioClip LoadClip(string name, string dir = AudioDir, string tool = "tools/gen_audio.py")
         {
-            string path = $"{AudioDir}/{name}.wav";
+            string path = $"{dir}/{name}.wav";
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
             if (clip == null)
-                Debug.LogWarning($"[NightCafe] Missing audio clip: {path} - run tools/gen_audio.py");
+                Debug.LogWarning($"[NightCafe] Missing audio clip: {path} - run {tool}");
 
             return clip;
         }
 
         /// <summary>
+        /// The painted style's recordings (Assets/Audio/Art, cut by tools/prep_audio.py): the
+        /// same slots plus the rain-and-café room tone. The service reads levels and haptics
+        /// from the base config, so only the clips matter here.
+        /// </summary>
+        static AudioConfig CreateArtAudioConfig()
+        {
+            var config = LoadOrCreate<AudioConfig>(ArtAudioConfigPath);
+            const string tool = "tools/prep_audio.py";
+
+            config.catchBlip = LoadClip("sfx_catch", ArtAudioDir, tool);
+            config.comboArpeggio = LoadClip("sfx_combo", ArtAudioDir, tool);
+            config.missClink = LoadClip("sfx_miss", ArtAudioDir, tool);
+            config.catMeow = LoadClip("sfx_cat", ArtAudioDir, tool);
+            config.gameOver = LoadClip("sfx_gameover", ArtAudioDir, tool);
+            config.brewAlarm = LoadClip("sfx_brew_alarm", ArtAudioDir, tool);
+            config.leverClick = LoadClip("sfx_click", ArtAudioDir, tool);
+            config.lofiLoop = LoadClip("music_lofi_loop", ArtAudioDir, tool);
+            config.ambience = LoadClip("ambience_rain_cafe", ArtAudioDir, tool);
+
+            EditorUtility.SetDirty(config);
+            return config;
+        }
+
+        /// <summary>
         /// SFX stay decompressed in memory (they are tiny and must fire without latency);
-        /// the minute-long music bed streams as Vorbis so it does not sit in RAM as PCM.
+        /// the minute-long beds - music and the room tone - stream as Vorbis so they do not
+        /// sit in RAM as PCM. Everything is mono except the ART music, which keeps its stereo
+        /// for headphones.
         /// </summary>
         static void ConfigureAudioImporters()
         {
@@ -174,16 +200,18 @@ namespace NightCafe.EditorTools
                 if (AssetImporter.GetAtPath(path) is not AudioImporter importer)
                     continue;
 
-                bool isMusic = Path.GetFileNameWithoutExtension(path).StartsWith("music");
+                string file = Path.GetFileNameWithoutExtension(path);
+                bool isBed = file.StartsWith("music") || file.StartsWith("ambience");
+                bool stereo = file.StartsWith("music") && path.StartsWith(ArtAudioDir);
 
                 var settings = importer.defaultSampleSettings;
-                settings.loadType = isMusic ? AudioClipLoadType.Streaming : AudioClipLoadType.DecompressOnLoad;
-                settings.compressionFormat = isMusic ? AudioCompressionFormat.Vorbis : AudioCompressionFormat.PCM;
-                settings.quality = isMusic ? 0.5f : 1f;
+                settings.loadType = isBed ? AudioClipLoadType.Streaming : AudioClipLoadType.DecompressOnLoad;
+                settings.compressionFormat = isBed ? AudioCompressionFormat.Vorbis : AudioCompressionFormat.PCM;
+                settings.quality = isBed ? 0.5f : 1f;
 
                 importer.defaultSampleSettings = settings;
-                importer.forceToMono = true;
-                importer.loadInBackground = isMusic;
+                importer.forceToMono = !stereo;
+                importer.loadInBackground = isBed;
                 importer.SaveAndReimport();
             }
         }

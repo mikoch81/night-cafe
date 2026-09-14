@@ -129,6 +129,8 @@ namespace NightCafe.Core
         {
             if (styleApplier != null)
                 styleApplier.Apply(EffectiveStyle);
+            if (audioService != null)
+                audioService.SetSoundSet(EffectiveStyle != null ? EffectiveStyle.sounds : null);
             ApplyGhosts();
         }
 

@@ -238,3 +238,20 @@ półce, więc cień na desce ma sens), `--split` bo pierwsza skorupa rozbitego 
 decaf. Kubki mają pivot na stopce (`SpriteAnchors` 0.5/0.03), bo półka wprost nie ma widocznego
 blatu i kubek musi stać na jej górnej krawędzi; panel zamówienia centruje sprite po jego granicach.
 Wektorowe kubki i półka zostały w `gen_art_v3.py` jako `legacy_sprites` (renderowane tylko po nazwie).
+
+## Dźwięk (2026-09-14): Suno + ElevenLabs Sound Effects
+
+Wygenerowane przez Michała na płatnych planach (prawa komercyjne, `art/audio/LICENSE.md`). Surowe pliki w
+`art/audio/raw/`, obróbka `tools/prep_audio.py` → `Assets/Audio/Art/`.
+
+| Plik | Serwis | Prompt |
+|---|---|---|
+| `lofi_loop.wav` | Suno | Instrumental lo-fi hip hop, 72 BPM, warm Rhodes electric piano chords, soft brushed drums, muted upright bass, vinyl crackle, rainy night café mood, calm and cozy, no vocals, no melody lead, seamless loopable, consistent throughout |
+| `ambience_rain_cafe*.wav` (4 warianty) | ElevenLabs | Gentle steady rain against a café window at night, distant quiet murmur of a few customers, occasional soft clink of cups, no music, seamless loop |
+| `sfx_catch.wav` | ElevenLabs | Single soft ceramic coffee cup set down on a wooden tray, short, gentle, close-miked |
+| `sfx_miss.wav` | ElevenLabs | Ceramic coffee cup falling and shattering on a wooden floor, single break, short |
+| `sfx_combo.wav` | ElevenLabs | Three ascending warm Rhodes electric piano notes, short pleasant arpeggio, lo-fi |
+| `sfx_cat.wav` | ElevenLabs | Single short soft cat meow, small cat, friendly |
+| `sfx_gameover.wav` | ElevenLabs | Small brass bell above a café door rings once as the door closes, then quiet |
+| `sfx_brew_alarm.wav` | ElevenLabs | Kitchen timer ding, single bright ceramic-like bell, short |
+| `sfx_click.wav` | ElevenLabs | Small metal toggle switch click, single, crisp, close |

@@ -33,6 +33,7 @@ MonoBehaviour:
   cupWobble: 3
   cupWobbleHz: 7
   cupBob: 0.03
+  sounds: {fileID: 11400000, guid: c3fd08124a5fdb24bb5b29a6837b6892, type: 2}
   baristaUp: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
   baristaDown: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
   baristaCatch: {fileID: 21300000, guid: d6c8e9ce708ccc6868408c8a1c0f9f31, type: 3}

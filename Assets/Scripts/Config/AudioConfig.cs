@@ -14,8 +14,9 @@ namespace NightCafe.Config
     }
 
     /// <summary>
-    /// Clips and levels (GDD 5.3). Every sound is synthesised by tools/gen_audio.py, so the
-    /// licence is unambiguous.
+    /// Clips and levels (GDD 5.3). One per screen style: the RETRO set is synthesised by
+    /// tools/gen_audio.py, the ART set is cut by tools/prep_audio.py from generated recordings
+    /// (art/audio/LICENSE.md). Haptics are read from the scene's base config only.
     /// </summary>
     [CreateAssetMenu(menuName = "NightCafe/Audio Config", fileName = "AudioConfig")]
     public sealed class AudioConfig : ScriptableObject
@@ -34,6 +35,12 @@ namespace NightCafe.Config
 
         [Tooltip("Music level relative to the SFX, in decibels (GDD 5.3 asks for -18).")]
         public float musicOffsetDb = -18f;
+
+        [Tooltip("Room tone under the music (rain on the window, the café); follows the music toggle. Empty = none.")]
+        public AudioClip ambience;
+
+        [Tooltip("Ambience level relative to the SFX, in decibels.")]
+        public float ambienceOffsetDb = -23f;
 
         [Range(0f, 1f)] public float sfxVolume = 1f;
 

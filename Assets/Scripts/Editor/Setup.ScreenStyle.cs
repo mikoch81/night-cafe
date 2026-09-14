@@ -40,9 +40,10 @@ namespace NightCafe.EditorTools
         /// there - until then the loop keeps showing RETRO, and missing ART slots borrow the
         /// RETRO sprite so a half-delivered set can still be previewed by hand.
         /// </summary>
-        static void CreateScreenStyles()
+        static void CreateScreenStyles(AudioConfig artSounds)
         {
             var retro = ResetToDefaults<ScreenStyle>(RetroStylePath);
+            retro.sounds = null;                         // the scene's base set: the chiptune from gen_audio.py
             retro.id = "retro";
             retro.label = "RETRO";
             retro.monochrome = true;
@@ -135,6 +136,8 @@ namespace NightCafe.EditorTools
             art.plankHeight = 0.6f;
             art.plankOffset = new Vector2(0f, -0.27f);   // cups rest on the top face
             art.orderCupScale = new Vector2(0.6f, 0.6f);
+            // Ceramic, rain and a real lo-fi record for the diorama; the chiptune stays with RETRO.
+            art.sounds = artSounds;
             art.complete = complete;
             EditorUtility.SetDirty(art);
 

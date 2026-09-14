@@ -436,12 +436,19 @@ namespace NightCafe.EditorTools
             musicSource.loop = true;
             musicSource.spatialBlend = 0f;
 
+            var ambienceGo = Child("AmbienceSource", context.transform);
+            var ambienceSource = ambienceGo.AddComponent<AudioSource>();
+            ambienceSource.playOnAwake = false;
+            ambienceSource.loop = true;
+            ambienceSource.spatialBlend = 0f;
+
             var service = context.AddComponent<AudioService>();
             SetSerialized(service, so =>
             {
                 so.FindProperty("config").objectReferenceValue = config;
                 so.FindProperty("sfxSource").objectReferenceValue = sfxSource;
                 so.FindProperty("musicSource").objectReferenceValue = musicSource;
+                so.FindProperty("ambienceSource").objectReferenceValue = ambienceSource;
             });
 
             return service;

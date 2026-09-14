@@ -57,6 +57,10 @@ namespace NightCafe.Config
         [Tooltip("How high a sliding cup hops between rocks, in LCD units.")]
         public float cupBob = 0f;
 
+        [Header("Sound")]
+        [Tooltip("The style's sound set: clips only, levels and haptics stay with the scene's AudioConfig. Empty = the scene's set.")]
+        public AudioConfig sounds;
+
         [Header("Actors")]
         public Sprite baristaUp;
         public Sprite baristaDown;

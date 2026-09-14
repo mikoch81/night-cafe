@@ -21,6 +21,8 @@ MonoBehaviour:
   leverClick: {fileID: 8300000, guid: e3d67df9af0808fe6a2591f97e834bb3, type: 3}
   lofiLoop: {fileID: 8300000, guid: 83c9d7c7a60d22780ac31f721786fa3b, type: 3}
   musicOffsetDb: -18
+  ambience: {fileID: 0}
+  ambienceOffsetDb: -23
   sfxVolume: 1
   meowChance: 0.3
   catchHapticMs: 15
