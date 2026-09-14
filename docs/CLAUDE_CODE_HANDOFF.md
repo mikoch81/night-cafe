@@ -11,9 +11,23 @@ Tworzymy grę mobilną **Night Café** (Unity, Android, landscape) — opis i ws
 
 ## Środowisko
 
-- Katalog projektu: `/home/mkej/Projekty/NuPogodiModern/` (utwórz).
-- Unity: **6 LTS lub 2022.3 LTS**, moduł Android (sprawdź `unityhub`/instalację; jeśli brak — poinstruuj Michała, sam nie instaluj Unity).
-- Telefon Android podłączony po USB — buildy testowe: `adb devices`, `adb install -r build/NightCafe.apk`.
+**Od 2026-09-14 projekt żyje na PC z Windows 11: `C:\NIGHT\night-cafe`** (wcześniej Linux,
+`/home/mkej/Projekty/NuPogodiModern/`; stąd shebangi `#!/usr/bin/env python3` w `tools/`).
+
+- Unity **6000.5.5f1** (`C:\Program Files\Unity\Hub\Editor\6000.5.5f1`, moduł Android z OpenJDK/SDK/NDK).
+  Nie otwieraj projektu innymi wersjami z Huba (są 6000.0 i 6000.4).
+- CLI `unity` (1.0.0-beta.6, pakiet `com.unity.pipeline`) rozmawia z otwartym edytorem: `unity status`,
+  `unity cmd console_status`, `unity cmd run_tests editor` (tryb pozycyjnie: editor|playmode|all),
+  `unity cmd menu "NightCafe/Build Scene Setup"`, `unity cmd menu "NightCafe/Build Android APK"`,
+  `unity cmd capture_game_view --camera LcdCamera --save_path Temp/x.png` (zapisuje pod `Assets/Temp/` —
+  usuń przed commitem), `unity cmd eval --code '...'` (np. wymuszony reimport FBX).
+- Python: `py -3.12` (samo `python` to zaślepka ze Sklepu Windows). Blender 5.2 przez winget:
+  `"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b -P tools/shell_model.py`.
+  Inkscape jeszcze nie zainstalowany (potrzebny do `gen_art*.py`).
+- Telefon Android po USB — `adb` z `C:\Tools\Sdk\platform-tools`: `adb devices`,
+  `adb install -r build/NightCafe.apk`. Debug keystore jest inny niż na Linuksie — pierwsza instalacja
+  z nowego komputera wymaga `adb uninstall com.mikoch81.nightcafe`.
+- Git: driver `unityyamlmerge` wskazuje na `UnityYAMLMerge.exe` z 6000.5.5f1 (ustawione w `git config`).
 - GitHub: konto **mikoch81**. Utwórz repo `gh repo create mikoch81/night-cafe --private --source . --push` po pierwszym commicie. `.gitignore` = standardowy Unity (Library/, Temp/, Logs/, obj/, Build/, UserSettings/). Git LFS dla `*.png` w `Assets/Art/`.
 
 ## Struktura projektu (docelowa)
@@ -112,8 +126,22 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   Plan B wykonany: kubki (4 kolory + rozbity) i półka wprost z Midjourney (prompty 16/17, cięcie
   opisane w PROMPTS.md: `--split`, `--unshadow`, `--scale`); pivot kubków na stopce (0.5/0.03),
   `OrderPanelView` centruje kubek po `sprite.bounds`; wektorowe wersje w `gen_art_v3.legacy_sprites`.
-- Do zrobienia: (1) ocena Michała na telefonie po rundzie 3; (2) ekran tytułowy/game over w nowej
-  kresce; (3) M5.
+- Runda 4 (2026-09-14, pierwsza na Windows; uwagi: iskry na krawędziach, „za bardzo pochylone",
+  napis mniej kontrastowy i grubszy, kubki latają nad rampą): (a) iskry = aliasing spekularny
+  aluminium bez MSAA → URP `m_MSAA: 4` (setup ustawia zawsze, nie tylko przy tworzeniu renderera);
+  (b) pochylenie kamery 14° → 8°, światło kluczowe od strony gracza (`(0.35, 0.50, 0.80)`): przednia
+  ścianka oświetlona, cień pada za korpus; (c) w cieniu na blacie prześwitywały litery graweru —
+  shadow caster wycinał ścianki booleana → `ShadowCastingMode.TwoSided` na częściach obudowy;
+  (d) **faza aluminiowa nigdy nie istniała** (0.004 zamiast 0.35): `bevel_top` bevelował też płaskie
+  promieniowe krawędzie pierścienia blatu i `clamp_overlap` zbijał ją do zera; teraz tylko krawędzie
+  blat↔ścianka, `CHAMFER = 0.25` (0.35 wyglądało jak chromowana rura); (e) grawer: DejaVu Sans Bold
+  (`art/fonts/`, licencja DejaVu; `curve.offset` psuł booleana i gubił glify), inlay jasny orzech
+  matowy zamiast kremu; (f) kubki w ART jadą po prostej desce K1→K5 (`CupController.FootFor`;
+  tor ma załamanie pod szynę RETRO i w środku wisiał 0.22 nad deską), stoją pod kątem deski i kołyszą
+  się (`ScreenStyle.cupsRideStraightRail/cupWobble 3°/cupWobbleHz 7/cupBob 0.03`, RETRO zera);
+  kubki i rozbity kubek 70 % (`cupScale`, `brokenCupScale`), kubek w panelu zamówienia bez zmian.
+  Ocena Michała: „jest ok".
+- Do zrobienia: (1) ekran tytułowy/game over w nowej kresce; (2) M5.
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
 **M5 — release candidate:**
