@@ -16,7 +16,7 @@ namespace NightCafe.Config
         public float cameraFov = 24f;
 
         [Tooltip("Pitch towards the device in degrees, looking from the player's side, so the front wall shows below the body.")]
-        public float cameraTiltDegrees = 14f;
+        public float cameraTiltDegrees = 8f;
 
         [Tooltip("Parallax: how far the viewpoint swings (degrees) as the phone tilts; 0 disables it.")]
         public float parallaxDegrees = 3f;

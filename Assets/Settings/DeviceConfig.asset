@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DeviceConfig
   m_EditorClassIdentifier: NightCafe.Runtime::NightCafe.Config.DeviceConfig
   cameraFov: 24
-  cameraTiltDegrees: 14
+  cameraTiltDegrees: 8
   parallaxDegrees: 3
   capTravel: 0.08
   capPressSeconds: 0.04

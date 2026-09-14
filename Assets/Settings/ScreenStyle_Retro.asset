@@ -29,6 +29,10 @@ MonoBehaviour:
   moveSeconds: 0
   catBob: 0
   catTilt: 0
+  cupsRideStraightRail: 0
+  cupWobble: 0
+  cupWobbleHz: 6
+  cupBob: 0
   baristaUp: {fileID: 21300000, guid: a8bc899f3f27a03199c8b8c842fe853b, type: 3}
   baristaDown: {fileID: 21300000, guid: 7b43f13c36fd2ec758166887b519f79d, type: 3}
   baristaCatch: {fileID: 21300000, guid: 7658c59a6018a4beba98b2859afe52e8, type: 3}

@@ -32,9 +32,10 @@ namespace NightCafe.Services
         /// <summary>
         /// Camera pitch towards the device, degrees. The camera sits on the near side (the bottom
         /// edge of the screen, where the player is) and looks a little down, so the front wall
-        /// and the shadow under it show below the body - a handheld lying on the counter.
+        /// shows below the body - a handheld lying on the counter. 14 made the slab look
+        /// tipped up at the player; 8 keeps the wall visible without the lean.
         /// </summary>
-        public const float CameraTiltDegrees = 14f;
+        public const float CameraTiltDegrees = 8f;
 
         /// <summary>
         /// Camera position relative to the slab centre for a tilt and a distance: on the near

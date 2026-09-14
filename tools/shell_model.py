@@ -37,7 +37,7 @@ TEXTURE_DST = os.path.join(OUT_DIR, "textures")
 # ---- dimensions (DeviceLayout.cs mirrors BODY / LCD, DeviceConfig.cs the button and lever spots)
 BODY = 22.0, 11.0, 1.8           # a slab thick enough to read as an object, not a sheet
 BODY_RADIUS = 0.86
-CHAMFER = 0.35                   # aluminium chamfer around the wood top
+CHAMFER = 0.25                   # aluminium chamfer around the wood top (0.35 read as a chrome pipe)
 BOTTOM_RADIUS = 0.30             # rounded underside edge, so the wall is a shaped band
 LCD = 13.2, 9.26                 # 1272:892, the screen_bg proportion
 LCD_RADIUS = 0.30
@@ -193,11 +193,17 @@ def disc(name, radius, depth, z=0.0, segments=64):
 
 
 def bevel_top(obj, offset, segments=6, z_min=None):
-    """Bevels the edges whose both ends sit on the object's top plane (or above z_min)."""
+    """Bevels the edges where the object's top plane (or the plane at z_min) meets a wall.
+    Only the crease edges: the body's top is a ring of quads, and beveling the flat radial edges
+    between them too made clamp_overlap shrink the whole chamfer to nothing (0.004 instead of
+    0.35 - the aluminium rim never showed)."""
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     top = max(v.co.z for v in bm.verts) if z_min is None else z_min
-    edges = [e for e in bm.edges if all(v.co.z >= top - 1e-4 for v in e.verts)]
+    edges = [e for e in bm.edges
+             if all(v.co.z >= top - 1e-4 for v in e.verts)
+             and len(e.link_faces) == 2
+             and e.link_faces[0].normal.dot(e.link_faces[1].normal) < 0.999]
     bmesh.ops.bevel(bm, geom=edges, offset=offset, segments=segments, profile=0.5, affect="EDGES",
                     clamp_overlap=True)  # the corner arcs are short segments; unclamped they tear
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
@@ -231,11 +237,25 @@ def assign_by_normal(obj, up_slot, side_slot, threshold=0.999):
         poly.material_index = up_slot if poly.normal.z > threshold else side_slot
 
 
+# The engraved letters are cut with a bold face: Blender's stock font has hairline strokes that
+# read as scratched-on, a heavy stroke reads as routed out. (A curve outline offset would do
+# the same in principle, but its self-overlapping outlines break the boolean and drop glyphs.)
+FONT_PATH = os.path.join(ROOT, "art", "fonts", "DejaVuSans-Bold.ttf")
+
+
+def engraving_font():
+    for font in bpy.data.fonts:
+        if font.filepath == FONT_PATH:
+            return font
+    return bpy.data.fonts.load(FONT_PATH)
+
+
 def text_mesh(name, body, size, location, extrude=0.02):
     curve = bpy.data.curves.new(name, type="FONT")
     curve.body = body
     curve.size = size
     curve.extrude = extrude
+    curve.font = engraving_font()
     curve.align_x = "CENTER"
     curve.align_y = "CENTER"
     obj = bpy.data.objects.new(name, curve)

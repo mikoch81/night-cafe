@@ -102,20 +102,30 @@ namespace NightCafe.EditorTools
             }
 
             var so = new SerializedObject(pipeline);
-            SerializedProperty list = so.FindProperty("m_RendererDataList");
-            for (int i = 0; i < list.arraySize; i++)
-            {
-                if (list.GetArrayElementAtIndex(i).objectReferenceValue == renderer)
-                    return i;
-            }
-
-            list.InsertArrayElementAtIndex(list.arraySize);
-            list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = renderer;
             so.FindProperty("m_MainLightShadowsSupported").boolValue = true;
             so.FindProperty("m_SoftShadowsSupported").boolValue = true;
+            // MSAA 4x: without it the aluminium chamfer sparkles as the camera drifts - a rounded
+            // metal edge a pixel wide with a bright studio in its specular is the textbook case.
+            so.FindProperty("m_MSAA").intValue = 4;
+
+            SerializedProperty list = so.FindProperty("m_RendererDataList");
+            int index = -1;
+            for (int i = 0; i < list.arraySize && index < 0; i++)
+            {
+                if (list.GetArrayElementAtIndex(i).objectReferenceValue == renderer)
+                    index = i;
+            }
+
+            if (index < 0)
+            {
+                list.InsertArrayElementAtIndex(list.arraySize);
+                index = list.arraySize - 1;
+                list.GetArrayElementAtIndex(index).objectReferenceValue = renderer;
+            }
+
             so.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
-            return list.arraySize - 1;
+            return index;
         }
 
         /// <summary>The LCD scene renders into this; the screen face shows it. sRGB so the amber matches.</summary>
@@ -392,8 +402,10 @@ namespace NightCafe.EditorTools
             light.shadows = LightShadows.Soft;
             light.shadowStrength = 0.75f;
             light.cullingMask = 1 << deviceLayer;
-            // Into the device (+Z), from the upper left of the view.
-            lightGo.transform.rotation = Quaternion.LookRotation(new Vector3(0.35f, -0.45f, 0.82f));
+            // Into the device (+Z), from the upper left and from the player's side (-y), like a
+            // lamp over the counter: the front wall catches it and reads as the slab's thickness,
+            // and the body's shadow falls behind it, a dark rim along the far edge.
+            lightGo.transform.rotation = Quaternion.LookRotation(new Vector3(0.35f, 0.50f, 0.80f));
 
             // Environment: the studio HDRI lights the device softly and is what its metal and
             // glass reflect. The camera never shows the sky itself (the counter fills the view).
@@ -466,8 +478,9 @@ namespace NightCafe.EditorTools
             neonTube.SetColor("_EmissionColor", new Color(0.5f, 0.2f, 1.0f) * 3.0f);
             EditorUtility.SetDirty(neonTube);
             // The engraved marks (tools/shell_model.py cuts them into the top) are filled with an
-            // inlay that contrasts with the wood: cream on the dark finishes, ink on the pale ash.
-            Material inlayCream = LitMaterial("Inlay_Cream", new Color(0.90f, 0.82f, 0.64f), 0f, 0.35f);
+            // inlay a step lighter than the wood - a stained fill, not a sticker: pale tan on the
+            // dark finishes, ink on the pale ash. Matte, so it never catches the studio.
+            Material inlayCream = LitMaterial("Inlay_Cream", new Color(0.62f, 0.50f, 0.36f), 0f, 0.18f);
             Material inlayInk = LitMaterial("Inlay_Ink", new Color(0.07f, 0.055f, 0.045f), 0f, 0.3f);
             var skinMaterials = new (string id, Material top, Material edge, Material inlay)[]
             {
@@ -527,9 +540,12 @@ namespace NightCafe.EditorTools
                 else
                     renderer.sharedMaterial = dark; // wells, slot floor, grille
 
+                // Two-sided: the boolean engraving leaves the cut's walls facing inwards, and a
+                // back-face-culled shadow pass let the key light through the letters onto the
+                // counter, where "BREVE DECK" showed in the body's shadow.
                 renderer.shadowCastingMode = name is "Screen" or "Glass"
                     ? ShadowCastingMode.Off
-                    : ShadowCastingMode.On;
+                    : ShadowCastingMode.TwoSided;
 
                 if (name.StartsWith("Cap_") && TryLaneFromSuffix(name.Substring(4), out LanePosition lane))
                 {

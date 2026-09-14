@@ -48,6 +48,14 @@ namespace NightCafe.Config
         public float catBob = 0f;
         [Tooltip("Degrees the cat rocks while walking.")]
         public float catTilt = 0f;
+        [Tooltip("Cups ride the straight line from K1 to K5 - the plank - instead of the lane's bent step path, and lean with its slope. RETRO keeps the painted rail's bend and LaneConfig.cupTiltDegrees.")]
+        public bool cupsRideStraightRail = false;
+        [Tooltip("Degrees a sliding cup rocks about its foot; 0 = rigid.")]
+        public float cupWobble = 0f;
+        [Tooltip("Rocks per second.")]
+        public float cupWobbleHz = 6f;
+        [Tooltip("How high a sliding cup hops between rocks, in LCD units.")]
+        public float cupBob = 0f;
 
         [Header("Actors")]
         public Sprite baristaUp;

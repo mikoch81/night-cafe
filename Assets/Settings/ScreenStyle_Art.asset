@@ -29,6 +29,10 @@ MonoBehaviour:
   moveSeconds: 0.12
   catBob: 0.08
   catTilt: 4
+  cupsRideStraightRail: 1
+  cupWobble: 3
+  cupWobbleHz: 7
+  cupBob: 0.03
   baristaUp: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
   baristaDown: {fileID: 21300000, guid: 73bec1b03a6907befb156730866d5dfd, type: 3}
   baristaCatch: {fileID: 21300000, guid: d6c8e9ce708ccc6868408c8a1c0f9f31, type: 3}
@@ -50,8 +54,8 @@ MonoBehaviour:
   letterFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
   textFont: {fileID: 11400000, guid: 2e156656e16167ef9b6ccbe28f27bd88, type: 2}
   baristaScale: 0.96
-  cupScale: 1
+  cupScale: 0.7
   catScale: 2
   stainScale: 1
   machineHeadScale: 0.34
-  brokenCupScale: 1
+  brokenCupScale: 0.7

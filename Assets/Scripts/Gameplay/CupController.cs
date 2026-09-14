@@ -41,6 +41,9 @@ namespace NightCafe.Gameplay
         float _stepDuration;
         float _elapsed;
         bool _running;
+        float _restAngle;      // lean at rest: the rail's slope, or the LCD's fixed tilt
+        float _wobblePhase;    // per launch, so a rack of cups does not rock in unison
+        float _travelled;      // seconds sliding, drives the wobble
 
         public int Lane { get; private set; }
 
@@ -69,17 +72,67 @@ namespace NightCafe.Gameplay
             _stepDuration = Mathf.Max(0.0001f, stepTimeProvider());
             _running = true;
 
-            transform.localPosition = _steps[0];
             if (CupSkin.Style != null && spriteRenderer != null)
             {
                 spriteRenderer.sprite = CupSkin.Style.CupFor(0);
                 spriteRenderer.color = CupSkin.DefaultTint;
                 transform.localScale = Vector3.one * CupSkin.Scale;
             }
-            // Lean into the slide: a cup travelling left tips its top to the left, and vice versa.
-            float direction = _steps[_steps.Count - 1].x < _steps[0].x ? 1f : -1f;
-            transform.localRotation = Quaternion.Euler(0f, 0f, direction * tiltDegrees);
+
+            Vector2 first = _steps[0], last = _steps[_steps.Count - 1];
+            if (RidesStraightRail)
+            {
+                // On the plank the cup stands square to the board, whichever way it slides.
+                _restAngle = Mathf.Atan2(last.y - first.y, last.x - first.x) * Mathf.Rad2Deg;
+                if (last.x < first.x)
+                    _restAngle += 180f;
+            }
+            else
+            {
+                // Lean into the slide: a cup travelling left tips its top to the left, and vice versa.
+                float direction = last.x < first.x ? 1f : -1f;
+                _restAngle = direction * tiltDegrees;
+            }
+
+            _wobblePhase = Serial * 1.7f;
+            _travelled = 0f;
+            Place(first);
             gameObject.SetActive(true);
+        }
+
+        static bool RidesStraightRail => CupSkin.Style != null && CupSkin.Style.cupsRideStraightRail;
+
+        /// <summary>
+        /// Where the cup's foot is drawn for a logical position on the step path. On a straight
+        /// rail the foot is dropped onto the K1-K5 line (K1 and K5 lie on it, so the ends and
+        /// the catch match the logic exactly); in between, the bent RETRO path would float it.
+        /// </summary>
+        public static Vector2 FootFor(Vector2 logical, Vector2 first, Vector2 last, bool straightRail)
+        {
+            if (!straightRail || Mathf.Approximately(first.x, last.x))
+                return logical;
+
+            float t = Mathf.InverseLerp(first.x, last.x, logical.x);
+            return new Vector2(logical.x, Mathf.Lerp(first.y, last.y, t));
+        }
+
+        void Place(Vector2 logical)
+        {
+            Vector2 foot = FootFor(logical, _steps[0], _steps[_steps.Count - 1], RidesStraightRail);
+            float angle = _restAngle;
+
+            Config.ScreenStyle style = CupSkin.Style;
+            if (style != null && _running && (style.cupWobble > 0f || style.cupBob > 0f))
+            {
+                // Rocking about the foot (the sprite pivot) plus a hop at every rock: a cup
+                // skittering down a board, not gliding. Starts and ends at rest.
+                float w = Mathf.Sin(_wobblePhase + _travelled * style.cupWobbleHz * 2f * Mathf.PI);
+                angle += w * style.cupWobble;
+                foot.y += Mathf.Abs(w) * style.cupBob;
+            }
+
+            transform.localPosition = foot;
+            transform.localRotation = Quaternion.Euler(0f, 0f, angle);
         }
 
         void Awake()
@@ -124,8 +177,9 @@ namespace NightCafe.Gameplay
                 return;
 
             _elapsed += Time.deltaTime;
+            _travelled += Time.deltaTime;
             float t = Mathf.Clamp01(_elapsed / _stepDuration);
-            transform.localPosition = Vector2.Lerp(_steps[StepIndex], _steps[StepIndex + 1], t);
+            Place(Vector2.Lerp(_steps[StepIndex], _steps[StepIndex + 1], t));
 
             if (t < 1f)
                 return;
@@ -139,6 +193,7 @@ namespace NightCafe.Gameplay
             if (StepIndex >= _steps.Count - 1)
             {
                 _running = false;
+                Place(_steps[StepIndex]); // settle: no wobble on the cup that is caught or drops
                 ReachedCatchPoint?.Invoke(this);
                 return;
             }

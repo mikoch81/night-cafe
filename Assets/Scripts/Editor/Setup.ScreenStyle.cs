@@ -110,6 +110,13 @@ namespace NightCafe.EditorTools
             art.moveSeconds = 0.12f;
             art.catBob = 0.08f;
             art.catTilt = 4f;
+            // The plank is one straight board from K1 to K5; the lane's bent steps (drawn for
+            // the RETRO rail) would float a cup 0.2 above it mid-way. Cups slide along the
+            // board instead, rocking as they go.
+            art.cupsRideStraightRail = true;
+            art.cupWobble = 3f;
+            art.cupWobbleHz = 7f;
+            art.cupBob = 0.03f;
             // Chalk-menu lettering (OFL): Cabin Sketch for the counter and headings, Patrick Hand for the rest.
             TMP_FontAsset handBold = EnsureSegmentFont(HandBoldFontPath, HandBoldFontAssetPath, "CabinSketch-Bold", HudCharset);
             TMP_FontAsset hand = EnsureSegmentFont(HandFontPath, HandFontAssetPath, "PatrickHand-Regular", HudCharset);
@@ -122,6 +129,8 @@ namespace NightCafe.EditorTools
             art.baristaScale = 0.96f;                    // ~2.5 units tall; the tray-down tray meets the rail end
             art.baristaOffset = new Vector2(0f, -0.4f);
             art.catScale = 2.0f;
+            art.cupScale = 0.7f;                         // the painted cups read big on the board (Michal, round 4)
+            art.brokenCupScale = 0.7f;                   // the shards match the cup; the order-panel cup keeps its own scale
             art.machineHeadScale = 0.34f;
             art.plankHeight = 0.6f;
             art.plankOffset = new Vector2(0f, -0.27f);   // cups rest on the top face
