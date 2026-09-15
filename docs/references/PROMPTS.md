@@ -287,7 +287,9 @@ Wynik 2026-09-15: oba użyte (`art/midjourney/18_title_props.png`, `19_sable_sle
 py -3.12 tools/cut_sheet.py art/midjourney/18_title_props.png Assets/Art/screen_v3     --names title_sign card_a card_b result_card clock_face --split 865 1540 2128 2664 --fuzz 8 --unshadow
 py -3.12 tools/clear_dial.py Assets/Art/screen_v3/clock_face.png      # zdejmuje narysowane wskazówki, zostawia kropki godzin
 py -3.12 tools/clear_marks.py Assets/Art/screen_v3/result_card.png    # zdejmuje linie z paragonu (przechodziły przez napisy)
-py -3.12 tools/lift_from_shelf.py art/midjourney/19_sable_sleep.png art/midjourney/19_sable_sleep_clean.png     --box 770 820 1400 1160 --box 1800 820 2460 1160 --ledge 1085   # koty leżą na półce: półka po kolorze na biało
+py -3.12 tools/lift_from_shelf.py art/midjourney/19_sable_sleep.png art/midjourney/19_sable_sleep_clean.png     --box 770 820 1400 1160 --box 1800 820 2460 1160 --ledge 1085     --erase 1355 1086 1385 1102 --erase 1795 1086 1848 1102 --erase-poly 763 1072 763 1165 858 1165
+    # koty leżą na półce: półka po kolorze na biało; --erase = kikuty kreski półki przy sylwetce,
+    # --erase-poly = nasada ogona kota A, który zwisał z półki (skos czyta się jak podwinięta pierś)
 py -3.12 tools/cut_sheet.py art/midjourney/19_sable_sleep_clean.png Assets/Art/screen_v3 --prefix sable     --names sleep_a sleep_b --split 1600 --fuzz 8 --reverse-tone "#dcc39a"
 ```
 
