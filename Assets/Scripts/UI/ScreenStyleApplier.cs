@@ -194,15 +194,15 @@ namespace NightCafe.UI
             if (togglesGroup != null) togglesGroup.localPosition = style.togglesPosition;
             if (resultGroup != null) resultGroup.localPosition = style.resultPosition;
 
-            Fit(titleSign, style.titleSign, style.titleSignWidth);
-            Fit(resultCard, style.resultCard, style.resultCardWidth);
+            FitSliced(titleSign, style.titleSign, style.titleSignSize);
+            FitSliced(resultCard, style.resultCard, style.resultCardSize);
 
             _toggleHomes ??= System.Array.ConvertAll(toggleLabels, l => l != null ? l.transform.localPosition : Vector3.zero);
             for (int i = 0; i < toggleLabels.Length; i++)
             {
                 Vector3 at = i < style.toggleOffsets.Length ? (Vector3)style.toggleOffsets[i] : _toggleHomes[i];
                 if (toggleLabels[i] != null)
-                    toggleLabels[i].transform.localPosition = at;
+                    toggleLabels[i].transform.localPosition = at + (Vector3)style.toggleLabelOffset;
                 if (i >= toggleCards.Length)
                     continue;
                 Sprite card = style.toggleCards.Length > 0 ? style.toggleCards[i % style.toggleCards.Length] : null;
@@ -242,6 +242,19 @@ namespace NightCafe.UI
             renderer.enabled = sprite != null;
             if (sprite != null && sprite.bounds.size.x > 0f)
                 renderer.transform.localScale = Vector3.one * (width / sprite.bounds.size.x);
+        }
+
+        /// <summary>A 9-sliced prop stretched to `size` LCD units (its borders keep their pixels), or hidden.</summary>
+        static void FitSliced(SpriteRenderer renderer, Sprite sprite, Vector2 size)
+        {
+            if (renderer == null)
+                return;
+
+            renderer.sprite = sprite;
+            renderer.enabled = sprite != null;
+            renderer.drawMode = SpriteDrawMode.Sliced;
+            renderer.size = size;
+            renderer.transform.localScale = Vector3.one;
         }
 
         void RememberFonts()

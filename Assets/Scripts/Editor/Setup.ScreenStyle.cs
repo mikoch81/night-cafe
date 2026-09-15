@@ -173,15 +173,15 @@ namespace NightCafe.EditorTools
             }
 
             art.titleSign = found["titleSign"];
-            art.titleSignWidth = 7.2f;
+            art.titleSignSize = new Vector2(7.2f, 2.7f);
             art.clockFace = found["clockFace"];
             art.clockFaceWidth = 1.9f;
             art.toggleCards = found["cardA"] != null
                 ? (found["cardB"] != null ? new[] { found["cardA"], found["cardB"] } : new[] { found["cardA"] })
                 : new Sprite[0];
-            art.toggleCardWidth = 2.2f;
+            art.toggleCardWidth = 1.9f;                  // the notes are portrait (587x723): 1.9 wide is 2.3 tall
             art.resultCard = found["resultCard"];
-            art.resultCardWidth = 6.5f;
+            art.resultCardSize = new Vector2(5.4f, 4.8f);
             art.catAsleepA = found["catAsleepA"];
             art.catAsleepB = found["catAsleepB"] ?? found["catAsleepA"];
             art.catAsleepX = 4.3f;
@@ -197,17 +197,19 @@ namespace NightCafe.EditorTools
             art.accentInk = new Color(0.73f, 0.27f, 0.18f);    // the red stamp
             art.gameOverDim = 0.72f;                           // lights down for the night
 
-            // Layout: sign and clock share the middle row; the notes stagger down the left wall
-            // (two rows: sound, haptics, ghosts / skin, screen) clear of Miro on the right.
-            art.titlePosition = new Vector2(-1.4f, 1.15f);
-            art.clockPosition = new Vector2(4.4f, 1.15f);
+            // Layout: sign and clock share the row under the score; the notes stagger down the
+            // left wall in two overlapping rows (sound, haptics, ghosts / skin, screen), clear of
+            // Miro wiping on the right. The lettering sits low on each note, under its pin.
+            art.titlePosition = new Vector2(-1.4f, 1.45f);
+            art.clockPosition = new Vector2(4.4f, 1.45f);
             art.brewTagOffset = new Vector2(0f, -1.2f);
             art.togglesPosition = Vector2.zero;
             art.toggleOffsets = new[]
             {
-                new Vector2(-4.6f, -1.15f), new Vector2(-2.3f, -1.15f), new Vector2(0f, -1.15f),
-                new Vector2(-3.45f, -2.55f), new Vector2(-1.15f, -2.55f),
+                new Vector2(-4.9f, -1.05f), new Vector2(-2.9f, -1.05f), new Vector2(-0.9f, -1.05f),
+                new Vector2(-3.9f, -3.05f), new Vector2(-1.9f, -3.05f),
             };
+            art.toggleLabelOffset = new Vector2(0f, -0.25f);
             art.resultPosition = new Vector2(0f, -0.3f);
         }
 

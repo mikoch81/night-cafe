@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using NightCafe.Config;
 using NightCafe.Gameplay;
@@ -120,6 +121,19 @@ namespace NightCafe.EditorTools
         /// note that importer.spritePivot alone is a no-op - the pivot only takes effect through
         /// TextureImporterSettings + SetTextureSettings.
         /// </summary>
+        /// <summary>
+        /// 9-sliced painted props (left, bottom, right, top in px): the shelf plank stretches
+        /// along a rail with 24 canvas px of end cap rendered at 4x; the chalk sign and the
+        /// receipt stretch behind lettering of any length, keeping their frame, string, torn top
+        /// and curled bottom.
+        /// </summary>
+        static readonly Dictionary<string, Vector4> PaintedBorders = new()
+        {
+            { "plank", new Vector4(96f, 0f, 96f, 0f) },
+            { "title_sign", new Vector4(80f, 80f, 80f, 80f) },
+            { "result_card", new Vector4(50f, 150f, 50f, 70f) },
+        };
+
         static void ConfigureSpriteImporters()
         {
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Art" }))
@@ -144,8 +158,7 @@ namespace NightCafe.EditorTools
 
                 bool painted = path.StartsWith(ScreenV3Dir + "/");
                 string spriteName = Path.GetFileNameWithoutExtension(path);
-                // The shelf plank is 9-sliced along the rails: 24 canvas px of end cap, rendered at 4x.
-                settings.spriteBorder = painted && spriteName == "plank" ? new Vector4(96f, 0f, 96f, 0f) : Vector4.zero;
+                settings.spriteBorder = painted && PaintedBorders.TryGetValue(spriteName, out Vector4 border) ? border : Vector4.zero;
                 if (SpriteAnchors.TryGet(spriteName, painted, out Vector2 pivot))
                 {
                     settings.spriteAlignment = (int)SpriteAlignment.Custom;

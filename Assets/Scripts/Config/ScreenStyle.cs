@@ -83,8 +83,8 @@ namespace NightCafe.Config
         [Header("Title and end of shift (ART props; RETRO leaves every sprite empty and keeps the amber text)")]
         [Tooltip("The chalk sign hung in the window behind the title lettering.")]
         public Sprite titleSign;
-        [Tooltip("Width of the sign in LCD units; the sprite is scaled to fit.")]
-        public float titleSignWidth = 8f;
+        [Tooltip("Size of the sign in LCD units; the sprite is 9-sliced to it (the frame keeps its pixels).")]
+        public Vector2 titleSignSize = new(8f, 2.8f);
         [Tooltip("An analogue dial behind the clock: with a face the digits give way to hands, and come back only while the brew timer counts.")]
         public Sprite clockFace;
         public float clockFaceWidth = 1.9f;
@@ -93,7 +93,8 @@ namespace NightCafe.Config
         public float toggleCardWidth = 2.2f;
         [Tooltip("The receipt laid on the counter with the shift's result.")]
         public Sprite resultCard;
-        public float resultCardWidth = 6.5f;
+        [Tooltip("Size of the receipt in LCD units; 9-sliced like the sign.")]
+        public Vector2 resultCardSize = new(6.5f, 4.6f);
         [Tooltip("Sablé asleep on the counter after the shift; two frames breathe slowly. Empty = no cat.")]
         public Sprite catAsleepA;
         public Sprite catAsleepB;
@@ -124,6 +125,8 @@ namespace NightCafe.Config
         public Vector2 togglesPosition = new(0f, -2.30f);
         [Tooltip("One per toggle (sound, haptics, ghosts, skin, screen), relative to togglesPosition; empty = the authored row.")]
         public Vector2[] toggleOffsets = new Vector2[0];
+        [Tooltip("Where the label sits on its card, relative to the card centre (a pinned note has its pin up top).")]
+        public Vector2 toggleLabelOffset = Vector2.zero;
         public Vector2 resultPosition = Vector2.zero;
 
         [Header("Type (null = keep the scene's font)")]

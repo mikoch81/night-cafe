@@ -166,7 +166,10 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   (`title_sign, clock_face, card_a, card_b, result_card, sable_sleep_a/b`) nie wchodzą do `ArtSprites`,
   więc ART jest `complete` bez nich — brakujący plik zostawia sam napis na obrazie. Prompty 18–19 w
   PROMPTS.md; na tym PC brak `magick` i `inkscape` (winget) — bez nich `cut_sheet.py` nie potnie arkuszy.
-- Do zrobienia: (1) pociąć 18–19, dobrać pivoty `sable_sleep_*` z alfy, zrzuty 4 stanów → ocena;
+  Arkusze 18–19 pocięte tego samego dnia (komendy w PROMPTS.md; nowe narzędzia `tools/clear_dial.py`,
+  `clear_marks.py`, `lift_from_shelf.py` — Pillow/numpy/scipy, bez ImageMagick); szyld i paragon są
+  dziewięciokrotne (`PaintedBorders`), tarcza bez narysowanych wskazówek, paragon bez linii.
+- Do zrobienia: (1) ocena Michała rundy 6 (tytuł, demo, game over, NEW BEST) i poprawki;
   (2) M5 (cel: Google Play — plan z 2026-09-15).
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 

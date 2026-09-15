@@ -279,6 +279,25 @@ ink line illustration with flat colour fills, thick black outlines, big readable
 --ar 2:1 --sw 60 --style raw --no text, labels, background, shading, photo, 3d, fur texture
 ```
 
+Wynik 2026-09-15: oba użyte (`art/midjourney/18_title_props.png`, `19_sable_sleep.png`). Cięcie
+(w tej powłoce `magick` i `inkscape` trzeba dodać do PATH: `C:\Program Files\ImageMagick-7.1.2-Q16-HDRI`,
+`C:\Program Files\Inkscapein`):
+
+```
+py -3.12 tools/cut_sheet.py art/midjourney/18_title_props.png Assets/Art/screen_v3     --names title_sign card_a card_b result_card clock_face --split 865 1540 2128 2664 --fuzz 8 --unshadow
+py -3.12 tools/clear_dial.py Assets/Art/screen_v3/clock_face.png      # zdejmuje narysowane wskazówki, zostawia kropki godzin
+py -3.12 tools/clear_marks.py Assets/Art/screen_v3/result_card.png    # zdejmuje linie z paragonu (przechodziły przez napisy)
+py -3.12 tools/lift_from_shelf.py art/midjourney/19_sable_sleep.png art/midjourney/19_sable_sleep_clean.png     --box 770 820 1400 1160 --box 1800 820 2460 1160 --ledge 1085   # koty leżą na półce: półka po kolorze na biało
+py -3.12 tools/cut_sheet.py art/midjourney/19_sable_sleep_clean.png Assets/Art/screen_v3 --prefix sable     --names sleep_a sleep_b --split 1600 --fuzz 8 --reverse-tone "#dcc39a"
+```
+
+Szyld miał sznurek na dwóch gwoździach — rozciągnięty dziewięciokrotnie robił się płaskim trójkątem, więc
+jest zdjęty (jasne piksele w górnych 110 rzędach + wszystko powyżej rzędu 72 poza kolumnami gwoździ →
+przezroczyste; Pillow, jednorazowo). Szyld i paragon są sprite'ami dziewięciokrotnymi
+(`NightCafeSetup.PaintedBorders`: 80 px ramki, paragon 50/150/50/70), rozciąganymi do
+`ScreenStyle.titleSignSize` / `resultCardSize`; karteczki i tarcza skalowane jednolicie (`toggleCardWidth`,
+`clockFaceWidth`). Ogon kota A zwisający z półki został ucięty (`--box` kończy się na blacie).
+
 ## Dźwięk (2026-09-14): Suno + ElevenLabs Sound Effects
 
 Wygenerowane przez Michała na płatnych planach (prawa komercyjne, `art/audio/LICENSE.md`). Surowe pliki w

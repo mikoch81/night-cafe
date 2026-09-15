@@ -51,16 +51,18 @@ MonoBehaviour:
   stain: {fileID: 21300000, guid: 11a3c1e7361cb56ef97cf77f79d622e2, type: 3}
   orderPanel: {fileID: 21300000, guid: 3f2276f0514ff0b819b3960b254ce154, type: 3}
   orderCupScale: {x: 0.6, y: 0.6}
-  titleSign: {fileID: 0}
-  titleSignWidth: 7.2
-  clockFace: {fileID: 0}
+  titleSign: {fileID: 21300000, guid: c167abcf73c4c0243ba64733cde082d3, type: 3}
+  titleSignSize: {x: 7.2, y: 2.7}
+  clockFace: {fileID: 21300000, guid: 6c6c1bc228d7c0f46aa321109ddf0818, type: 3}
   clockFaceWidth: 1.9
-  toggleCards: []
-  toggleCardWidth: 2.2
-  resultCard: {fileID: 0}
-  resultCardWidth: 6.5
-  catAsleepA: {fileID: 0}
-  catAsleepB: {fileID: 0}
+  toggleCards:
+  - {fileID: 21300000, guid: 4285902ab1b386946986aa322c7f9ce4, type: 3}
+  - {fileID: 21300000, guid: 3c008cf961135b441a40e73c48de9044, type: 3}
+  toggleCardWidth: 1.9
+  resultCard: {fileID: 21300000, guid: 5f4a1b3cce4e99047a8369e93343e8d5, type: 3}
+  resultCardSize: {x: 5.4, y: 4.8}
+  catAsleepA: {fileID: 21300000, guid: 191635fe56929c54093bd0a55d8622c8, type: 3}
+  catAsleepB: {fileID: 21300000, guid: 41f99d024b1c29248b29b38cbdb3620f, type: 3}
   catAsleepX: 4.3
   titleBaristaWipes: 1
   titleBaristaPosition: {x: 3.6, y: -3.67}
@@ -71,16 +73,17 @@ MonoBehaviour:
   cardInkFaded: {r: 0.63, g: 0.55, b: 0.45, a: 1}
   accentInk: {r: 0.73, g: 0.27, b: 0.18, a: 1}
   gameOverDim: 0.72
-  titlePosition: {x: -1.4, y: 1.15}
-  clockPosition: {x: 4.4, y: 1.15}
+  titlePosition: {x: -1.4, y: 1.45}
+  clockPosition: {x: 4.4, y: 1.45}
   brewTagOffset: {x: 0, y: -1.2}
   togglesPosition: {x: 0, y: 0}
   toggleOffsets:
-  - {x: -4.6, y: -1.15}
-  - {x: -2.3, y: -1.15}
-  - {x: 0, y: -1.15}
-  - {x: -3.45, y: -2.55}
-  - {x: -1.15, y: -2.55}
+  - {x: -4.9, y: -1.05}
+  - {x: -2.9, y: -1.05}
+  - {x: -0.9, y: -1.05}
+  - {x: -3.9, y: -3.05}
+  - {x: -1.9, y: -3.05}
+  toggleLabelOffset: {x: 0, y: -0.25}
   resultPosition: {x: 0, y: -0.3}
   digitFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
   letterFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
