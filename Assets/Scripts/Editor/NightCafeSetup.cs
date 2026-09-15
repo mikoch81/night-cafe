@@ -94,7 +94,7 @@ namespace NightCafe.EditorTools
             DeviceConfig deviceConfig = CreateDeviceConfig();
             AudioConfig audioConfig = CreateAudioConfig();
             AudioConfig artAudioConfig = CreateArtAudioConfig();
-            CreateScreenStyles(artAudioConfig);
+            CreateScreenStyles(artAudioConfig, laneConfig);
             CreateVolumeProfile();
             CreateSpriteAtlas();
             EnsureLcdRenderTexture(deviceConfig);

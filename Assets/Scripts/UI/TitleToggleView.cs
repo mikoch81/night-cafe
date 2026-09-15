@@ -37,6 +37,14 @@ namespace NightCafe.UI
             Render();
         }
 
+        /// <summary>Screen style: ink on the painted cards, amber on the LCD.</summary>
+        public void SetColors(Color on, Color off)
+        {
+            onColor = on;
+            offColor = off;
+            Render();
+        }
+
         /// <summary>RETRO is a reward like the shell skins (GDD 5.2a): it opens with the first one.</summary>
         public bool RetroUnlocked => _profile != null && _profile.IsUnlocked(SkinCatalog.AshId);
 

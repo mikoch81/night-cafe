@@ -21,8 +21,15 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text demoText;
         [SerializeField] float demoBlinkSeconds = 0.6f;
         [SerializeField] GameObject gameOverPanel;
-        [SerializeField] TMP_Text gameOverText;
+        [SerializeField] TMP_Text gameOverHeader;
+        [SerializeField] TMP_Text gameOverScore;
+        [SerializeField] TMP_Text gameOverRecord;
+        [SerializeField] TMP_Text gameOverFooter;
         [SerializeField] TMP_Text fpsText;
+
+        Color _recordColor = Color.white;
+        Color _accentColor = Color.white;
+        bool _colorsSet;
 
         float _fpsAccumulator;
         int _fpsFrames;
@@ -32,6 +39,10 @@ namespace NightCafe.UI
         {
             if (fpsText != null)
                 fpsText.gameObject.SetActive(Debug.isDebugBuild);
+
+            // Until a style says otherwise the record line keeps the colour it was authored in.
+            if (!_colorsSet && gameOverRecord != null)
+                _recordColor = _accentColor = gameOverRecord.color;
         }
 
         public void SetScore(int displayScore)
@@ -81,12 +92,30 @@ namespace NightCafe.UI
             SetPanel(demoPanel, false);
             SetPanel(gameOverPanel, true);
 
-            if (gameOverText == null)
-                return;
+            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin);
+            SetText(gameOverHeader, copy.Header);
+            SetText(gameOverScore, copy.Score);
+            SetText(gameOverRecord, copy.Record);
+            SetText(gameOverFooter, copy.Footer);
+            if (gameOverRecord != null)
+                gameOverRecord.color = copy.NewRecord ? _accentColor : _recordColor;
+        }
 
-            string record = newRecord ? "NEW BEST!" : $"BEST {bestDisplay:000}";
-            string unlock = string.IsNullOrEmpty(unlockedSkin) ? "" : $"\n{unlockedSkin} UNLOCKED";
-            gameOverText.text = $"END OF SHIFT\n{displayScore:000}\n{record}{unlock}\nTAP TO RESTART";
+        /// <summary>
+        /// Screen style: the record line's plain and celebratory colours (ink on the painted
+        /// receipt, amber on the LCD). Applied on the next ShowGameOver.
+        /// </summary>
+        public void SetRecordColors(Color plain, Color accent)
+        {
+            _recordColor = plain;
+            _accentColor = accent;
+            _colorsSet = true;
+        }
+
+        static void SetText(TMP_Text text, string value)
+        {
+            if (text != null)
+                text.text = value;
         }
 
         void Update()

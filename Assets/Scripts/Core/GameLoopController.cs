@@ -132,6 +132,10 @@ namespace NightCafe.Core
             if (audioService != null)
                 audioService.SetSoundSet(EffectiveStyle != null ? EffectiveStyle.sounds : null);
             ApplyGhosts();
+
+            // The applier parks Miro back on his lane slot; on the title he belongs at the counter.
+            if (_flow != null && State == GameState.Title)
+                PresentTitleBarista();
         }
 
         void Start()
@@ -375,10 +379,23 @@ namespace NightCafe.Core
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
             ResetRoundState();
-            barista.SetVisible(false);
+            PresentTitleBarista();
             hud.ShowTitle();
             titleToggles.Render();
             audioService.StartMusic();
+        }
+
+        /// <summary>
+        /// The LCD look hides Miro so the clock and title stay readable; the painted diorama
+        /// keeps him on, wiping the counter off to the side (ScreenStyle.titleBaristaWipes).
+        /// </summary>
+        void PresentTitleBarista()
+        {
+            ScreenStyle style = EffectiveStyle;
+            bool wipes = style != null && style.titleBaristaWipes;
+            if (wipes)
+                barista.WipeAt(style.titleBaristaPosition, style.titleBaristaFacesLeft, style.titleWipePeriod);
+            barista.SetVisible(wipes);
         }
 
         /// <summary>The pilot plays a real round with the effects and haptics muted; any press takes over.</summary>
@@ -461,7 +478,13 @@ namespace NightCafe.Core
 
             hud.SetBest(_profile.Best(_mode), _config.rolloverModulo);
             hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode) % _config.rolloverModulo, newRecord, unlockedName);
-            screenDim.Hold(gameOverDimAlpha);
+
+            // Lights down for the night; in the painted diorama Sablé curls up on the counter.
+            ScreenStyle style = EffectiveStyle;
+            float dim = style != null && style.gameOverDim > 0f ? style.gameOverDim : gameOverDimAlpha;
+            screenDim.Hold(dim);
+            if (style != null && style.catAsleepA != null)
+                cat.Sleep(style.catAsleepA, style.catAsleepB, style.catAsleepX);
             audioService.Play(GameSfx.GameOver);
             _haptics.Pattern(HapticPatterns.Pulses(
                 audioConfig.gameOverHapticPulses,

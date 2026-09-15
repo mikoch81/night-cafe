@@ -239,6 +239,46 @@ decaf. Kubki mają pivot na stopce (`SpriteAnchors` 0.5/0.03), bo półka wprost
 blatu i kubek musi stać na jej górnej krawędzi; panel zamówienia centruje sprite po jego granicach.
 Wektorowe kubki i półka zostały w `gen_art_v3.py` jako `legacy_sprites` (renderowane tylko po nazwie).
 
+## Tytuł i koniec zmiany (2026-09-15): rekwizyty ekranu tytułowego i game over
+
+Ekran tytułowy zostaje dioramą: kredowy szyld w oknie, toggle'e jako karteczki przypięte do ściany,
+zegar na tarczy, Miro wyciera ladę (istniejąca poza `miro_wipe.png`). Game over = „koniec zmiany":
+światła gasną, karta z wynikiem na ladzie, Sablé śpi. **Wszystkie rekwizyty bez napisów** — litery i
+cyfry pisze TMP (Cabin Sketch / Patrick Hand), bo Midjourney nie utrzyma pisowni ani zmiennych cyfr.
+Te same zasady co 13–17: model 8.1, Style reference 09_ink_a, `--sw 60`, Upscale Subtle, PNG do
+`art/midjourney/18_title_props.png` i `19_sable_sleep.png`. Cięcie: `tools/cut_sheet.py` (wymaga
+ImageMagick — `winget install ImageMagick.ImageMagick`).
+
+### 18 — Arkusz rekwizytów tytułu, 5 sztuk (styl: 09_ink_a)
+
+Jeden rząd, wszystkie **puste** (bez liter, cyfr, wskazówek). Cięcie: `--names title_sign card_a card_b
+result_card clock_face --fuzz 8 --unshadow` (podział `--split` dobiorę po obejrzeniu arkusza).
+
+```
+five café props in one row on a plain white background, evenly spaced, seen straight on: a small
+blank chalkboard sign hanging from a string on two nails with a thin wooden frame, a blank cream
+index card pinned to the wall with a red round push pin at the top, a second blank index card
+pinned slightly askew, a blank paper receipt lying flat with one folded corner, a small round
+wall clock with a cream face and no hands and no numbers; ink line illustration with flat colour
+fills, thick confident black outlines, soft paper grain, warm palette of cream, amber and dark
+brown --ar 5:2 --sw 60 --style raw --no text, letters, numbers, words, writing, chalk marks,
+clock hands, background, shadow, gradients, photo, 3d
+```
+
+### 19 — Sablé śpi, 2 klatki (styl: 09_ink_a, ten sam kot co 14)
+
+Ten sam kot co w 14 (użyj arkusza 14 jako **Use → Omni**, `--ow 80`), żeby był to wyraźnie ten sam
+zwierzak. Cięcie jak w 14: `--names sable_sleep_a sable_sleep_b --reverse-tone "#dcc39a"` (kot na
+ladzie jest ciemny, kreska musi być ciemna a sierść piaskowa).
+
+```
+two poses of the same small black cat curled up asleep on a wooden bar counter next to a mop
+leaning against the wall, side view, in one row on a plain white background: eyes closed with the
+tail wrapped around the body, and the same pose with the head tucked deeper and one ear folded,
+ink line illustration with flat colour fills, thick black outlines, big readable silhouette
+--ar 2:1 --sw 60 --style raw --no text, labels, background, shading, photo, 3d, fur texture
+```
+
 ## Dźwięk (2026-09-14): Suno + ElevenLabs Sound Effects
 
 Wygenerowane przez Michała na płatnych planach (prawa komercyjne, `art/audio/LICENSE.md`). Surowe pliki w

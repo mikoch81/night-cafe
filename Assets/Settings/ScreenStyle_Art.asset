@@ -51,6 +51,37 @@ MonoBehaviour:
   stain: {fileID: 21300000, guid: 11a3c1e7361cb56ef97cf77f79d622e2, type: 3}
   orderPanel: {fileID: 21300000, guid: 3f2276f0514ff0b819b3960b254ce154, type: 3}
   orderCupScale: {x: 0.6, y: 0.6}
+  titleSign: {fileID: 0}
+  titleSignWidth: 7.2
+  clockFace: {fileID: 0}
+  clockFaceWidth: 1.9
+  toggleCards: []
+  toggleCardWidth: 2.2
+  resultCard: {fileID: 0}
+  resultCardWidth: 6.5
+  catAsleepA: {fileID: 0}
+  catAsleepB: {fileID: 0}
+  catAsleepX: 4.3
+  titleBaristaWipes: 1
+  titleBaristaPosition: {x: 3.6, y: -3.67}
+  titleBaristaFacesLeft: 1
+  titleWipePeriod: 0.7
+  signInk: {r: 0.95, g: 0.91, b: 0.82, a: 1}
+  cardInk: {r: 0.23, g: 0.16, b: 0.11, a: 1}
+  cardInkFaded: {r: 0.63, g: 0.55, b: 0.45, a: 1}
+  accentInk: {r: 0.73, g: 0.27, b: 0.18, a: 1}
+  gameOverDim: 0.72
+  titlePosition: {x: -1.4, y: 1.15}
+  clockPosition: {x: 4.4, y: 1.15}
+  brewTagOffset: {x: 0, y: -1.2}
+  togglesPosition: {x: 0, y: 0}
+  toggleOffsets:
+  - {x: -4.6, y: -1.15}
+  - {x: -2.3, y: -1.15}
+  - {x: 0, y: -1.15}
+  - {x: -3.45, y: -2.55}
+  - {x: -1.15, y: -2.55}
+  resultPosition: {x: 0, y: -0.3}
   digitFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
   letterFont: {fileID: 11400000, guid: bbef14d31d2c82909b8006af5ee66ab1, type: 2}
   textFont: {fileID: 11400000, guid: 2e156656e16167ef9b6ccbe28f27bd88, type: 2}

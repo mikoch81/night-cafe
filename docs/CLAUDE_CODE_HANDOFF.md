@@ -153,7 +153,21 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   (chiptune); `AudioService.SetSoundSet` przełącza klipy razem z ekranem, poziomy i haptyka zostają
   w bazowym configu. Trzecie źródło `AmbienceSource` (`AudioConfig.ambience`, `ambienceOffsetDb` −23)
   pod toggle'em „~" razem z muzyką; muzyka −18 dB (GDD). ART muzyka zostaje stereo, reszta mono.
-- Do zrobienia: (1) ekran tytułowy/game over w nowej kresce; (2) M5.
+- Runda 6 — tytuł i koniec zmiany w kresce (2026-09-15, kod gotowy, czeka na arkusze 18–19): tytuł to
+  dalej diorama — kredowy szyld za napisem (`ScreenStyle.titleSign`), zegar analogowy (tarcza
+  `clockFace` + wskazówki z pikselowych quadów, `ClockWidget.SetDial`; cyfry wracają tylko jako minutnik
+  parzenia, w miejscu tarczy), toggle'e jako karteczki przypięte na lewej ścianie w dwóch rzędach
+  (`toggleOffsets`, karty `toggleCards`), Miro wyciera ladę po prawej (`titleBaristaWipes`,
+  `PlayerPositionController.WipeAt`). Game over: szkło ciemniejsze (`gameOverDim` 0.72), paragon z wynikiem
+  (`resultCard`; `HudView` ma cztery pola: nagłówek/licznik/rekord/stopka z `GameOverCopy.Build`, NEW BEST
+  w `accentInk`), Sablé śpi na ladzie (`catAsleepA/B`, `CatCrossingView.Sleep`). Litery na papierze mają
+  atrament (`cardInk`), na tablicy kredę (`signInk`); RETRO zostaje bursztynowe i w starym układzie
+  (domyślne wartości `ScreenStyle`). Rekwizyty są opcjonalne: `NightCafeSetup.ArtTitleSprites`
+  (`title_sign, clock_face, card_a, card_b, result_card, sable_sleep_a/b`) nie wchodzą do `ArtSprites`,
+  więc ART jest `complete` bez nich — brakujący plik zostawia sam napis na obrazie. Prompty 18–19 w
+  PROMPTS.md; na tym PC brak `magick` i `inkscape` (winget) — bez nich `cut_sheet.py` nie potnie arkuszy.
+- Do zrobienia: (1) pociąć 18–19, dobrać pivoty `sable_sleep_*` z alfy, zrzuty 4 stanów → ocena;
+  (2) M5 (cel: Google Play — plan z 2026-09-15).
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
 **M5 — release candidate:**

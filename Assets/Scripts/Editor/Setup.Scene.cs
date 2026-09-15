@@ -55,8 +55,9 @@ namespace NightCafe.EditorTools
             SpriteSequenceFx neonCat = BuildNeonCat(screenRoot, laneConfig);
             OrderPanelView orderPanel = BuildOrderPanel(screenRoot, laneConfig, monoFont);
             GameObject ghosts = BuildGhosts(screenRoot, laneConfig);
-            (HudView hud, TitleToggleView toggles, ClockWidget clock) = BuildHud(screenRoot, monoFont);
-            ScreenStyleApplier styleApplier = BuildStyleApplier(screenRoot, laneConfig, planks, steps, barista, cat, stains, brokenFx, orderPanel);
+            (HudView hud, TitleToggleView toggles, ClockWidget clock, TitleProps titleProps) = BuildHud(screenRoot, monoFont);
+            ScreenStyleApplier styleApplier = BuildStyleApplier(screenRoot, laneConfig, planks, steps, barista, cat, stains, brokenFx, orderPanel,
+                hud, toggles, clock, titleProps);
             var artStyle = AssetDatabase.LoadAssetAtPath<ScreenStyle>(ArtStylePath);
             var retroStyle = AssetDatabase.LoadAssetAtPath<ScreenStyle>(RetroStylePath);
 

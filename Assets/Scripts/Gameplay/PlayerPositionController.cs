@@ -26,6 +26,7 @@ namespace NightCafe.Gameplay
         float _poseTimer;
         float _wipeTimer;
         float _wipePeriod;
+        bool _idleWipe;     // title screen: wiping the counter with no lane slot
 
         public LanePosition Current { get; private set; } = LanePosition.LeftUp;
 
@@ -91,7 +92,26 @@ namespace NightCafe.Gameplay
         {
             _poseTimer = 0f;
             _wipeTimer = 0f;
+            _idleWipe = false;
             MoveTo(LanePosition.LeftUp);
+        }
+
+        /// <summary>
+        /// Title screen (painted style): Miro stands at `feet` off the lanes and wipes the
+        /// counter until the round starts (ResetToDefault). `period` = seconds per pose.
+        /// </summary>
+        public void WipeAt(Vector2 feet, bool faceLeft, float period)
+        {
+            _poseTimer = 0f;
+            _wipeTimer = 0f;
+            _moveTimer = 0f;
+            _idleWipe = true;
+            _wipePeriod = Mathf.Max(0.05f, period);
+            transform.localPosition = feet;
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * (faceLeft ? -1f : 1f);
+            transform.localScale = scale;
+            spriteRenderer.sprite = wipePose != null ? wipePose : trayDown;
         }
 
         /// <summary>Hidden on the title screen so the clock and title text stay readable.</summary>
@@ -102,6 +122,13 @@ namespace NightCafe.Gameplay
 
         void Update()
         {
+            if (_idleWipe)
+            {
+                bool wiping = Mathf.FloorToInt(Time.time / _wipePeriod) % 2 == 0;
+                spriteRenderer.sprite = wiping && wipePose != null ? wipePose : trayDown;
+                return;
+            }
+
             if (_moveTimer > 0f)
             {
                 _moveTimer -= Time.deltaTime;

@@ -29,6 +29,17 @@ namespace NightCafe.EditorTools
             ("step", "step.png"), ("scoreBoard", "scoreboard.png"),
         };
 
+        /// <summary>
+        /// Title and end-of-shift dressing (prompts 18-19). Optional: the style is complete
+        /// without them, an absent prop just leaves its lettering on the painting.
+        /// </summary>
+        public static readonly (string slot, string file)[] ArtTitleSprites =
+        {
+            ("titleSign", "title_sign.png"), ("clockFace", "clock_face.png"),
+            ("cardA", "card_a.png"), ("cardB", "card_b.png"), ("resultCard", "result_card.png"),
+            ("catAsleepA", "sable_sleep_a.png"), ("catAsleepB", "sable_sleep_b.png"),
+        };
+
         const string HandBoldFontPath = FontDir + "/CabinSketch-Bold.ttf";
         const string HandBoldFontAssetPath = FontDir + "/CabinSketch-Bold SDF.asset";
         const string HandFontPath = FontDir + "/PatrickHand-Regular.ttf";
@@ -40,7 +51,7 @@ namespace NightCafe.EditorTools
         /// there - until then the loop keeps showing RETRO, and missing ART slots borrow the
         /// RETRO sprite so a half-delivered set can still be previewed by hand.
         /// </summary>
-        static void CreateScreenStyles(AudioConfig artSounds)
+        static void CreateScreenStyles(AudioConfig artSounds, LaneConfig laneConfig)
         {
             var retro = ResetToDefaults<ScreenStyle>(RetroStylePath);
             retro.sounds = null;                         // the scene's base set: the chiptune from gen_audio.py
@@ -139,10 +150,65 @@ namespace NightCafe.EditorTools
             // Ceramic, rain and a real lo-fi record for the diorama; the chiptune stays with RETRO.
             art.sounds = artSounds;
             art.complete = complete;
+            ApplyArtTitleDressing(art, laneConfig);
             EditorUtility.SetDirty(art);
 
             if (!complete)
                 Debug.Log($"[NightCafe] ScreenStyle ART incomplete: {ScreenV3Dir} is missing files, RETRO stays on screen.");
+        }
+
+        /// <summary>
+        /// The painted title: a chalk sign and the clock's dial in the middle row, the settings
+        /// pinned as notes on the left wall and Miro wiping the counter on the right; at the end
+        /// of the shift the lights go down, the receipt lies on the counter and Sablé sleeps by
+        /// it. Every prop is optional - a missing file just leaves its lettering on the painting.
+        /// </summary>
+        static void ApplyArtTitleDressing(ScreenStyle art, LaneConfig laneConfig)
+        {
+            var found = new Dictionary<string, Sprite>();
+            foreach ((string slot, string file) in ArtTitleSprites)
+            {
+                string path = $"{ScreenV3Dir}/{file}";
+                found[slot] = File.Exists(path) ? AssetDatabase.LoadAssetAtPath<Sprite>(path) : null;
+            }
+
+            art.titleSign = found["titleSign"];
+            art.titleSignWidth = 7.2f;
+            art.clockFace = found["clockFace"];
+            art.clockFaceWidth = 1.9f;
+            art.toggleCards = found["cardA"] != null
+                ? (found["cardB"] != null ? new[] { found["cardA"], found["cardB"] } : new[] { found["cardA"] })
+                : new Sprite[0];
+            art.toggleCardWidth = 2.2f;
+            art.resultCard = found["resultCard"];
+            art.resultCardWidth = 6.5f;
+            art.catAsleepA = found["catAsleepA"];
+            art.catAsleepB = found["catAsleepB"] ?? found["catAsleepA"];
+            art.catAsleepX = 4.3f;
+
+            art.titleBaristaWipes = true;
+            art.titleBaristaPosition = new Vector2(3.6f, laneConfig.barLineY);
+            art.titleBaristaFacesLeft = true;
+            art.titleWipePeriod = 0.7f;
+
+            art.signInk = new Color(0.95f, 0.91f, 0.82f);      // chalk
+            art.cardInk = new Color(0.23f, 0.16f, 0.11f);      // ink on cream card
+            art.cardInkFaded = new Color(0.63f, 0.55f, 0.45f);
+            art.accentInk = new Color(0.73f, 0.27f, 0.18f);    // the red stamp
+            art.gameOverDim = 0.72f;                           // lights down for the night
+
+            // Layout: sign and clock share the middle row; the notes stagger down the left wall
+            // (two rows: sound, haptics, ghosts / skin, screen) clear of Miro on the right.
+            art.titlePosition = new Vector2(-1.4f, 1.15f);
+            art.clockPosition = new Vector2(4.4f, 1.15f);
+            art.brewTagOffset = new Vector2(0f, -1.2f);
+            art.togglesPosition = Vector2.zero;
+            art.toggleOffsets = new[]
+            {
+                new Vector2(-4.6f, -1.15f), new Vector2(-2.3f, -1.15f), new Vector2(0f, -1.15f),
+                new Vector2(-3.45f, -2.55f), new Vector2(-1.15f, -2.55f),
+            };
+            art.resultPosition = new Vector2(0f, -0.3f);
         }
 
         /// <summary>
@@ -206,7 +272,7 @@ namespace NightCafe.EditorTools
         /// <summary>Wires the applier to every styled renderer in the LCD scene.</summary>
         static ScreenStyleApplier BuildStyleApplier(Transform screenRoot, LaneConfig laneConfig, SpriteRenderer[] planks, SpriteRenderer[] steps,
             PlayerPositionController barista, CatCrossingView cat, StainStripView stains, TimedSpriteFx[] brokenFx,
-            OrderPanelView orderPanel)
+            OrderPanelView orderPanel, HudView hud, TitleToggleView toggles, ClockWidget clock, TitleProps titleProps)
         {
             var applier = screenRoot.gameObject.AddComponent<ScreenStyleApplier>();
             var heads = screenRoot.Find("MachineHeads").GetComponentsInChildren<SpriteRenderer>(true);
@@ -223,6 +289,7 @@ namespace NightCafe.EditorTools
                 {
                     case "ScoreText":
                     case "ClockText":
+                    case "GameOverScore":
                         digits.Add(text);
                         break;
                     case "BestText":
@@ -261,6 +328,21 @@ namespace NightCafe.EditorTools
                 Fill(so.FindProperty("digitTexts"), digits.ToArray());
                 Fill(so.FindProperty("letterTexts"), letters.ToArray());
                 Fill(so.FindProperty("bodyTexts"), body.ToArray());
+                so.FindProperty("hud").objectReferenceValue = hud;
+                so.FindProperty("toggles").objectReferenceValue = toggles;
+                so.FindProperty("clock").objectReferenceValue = clock;
+                so.FindProperty("titleGroup").objectReferenceValue = titleProps.titleGroup;
+                so.FindProperty("clockGroup").objectReferenceValue = titleProps.clockGroup;
+                so.FindProperty("togglesGroup").objectReferenceValue = titleProps.togglesGroup;
+                so.FindProperty("resultGroup").objectReferenceValue = titleProps.resultGroup;
+                so.FindProperty("brewTag").objectReferenceValue = titleProps.brewTag;
+                so.FindProperty("titleSign").objectReferenceValue = titleProps.titleSign;
+                Fill(so.FindProperty("toggleLabels"), titleProps.toggleLabels);
+                Fill(so.FindProperty("toggleCards"), titleProps.toggleCards);
+                so.FindProperty("demoBacking").objectReferenceValue = titleProps.demoBacking;
+                so.FindProperty("resultCard").objectReferenceValue = titleProps.resultCard;
+                Fill(so.FindProperty("signTexts"), titleProps.signTexts);
+                Fill(so.FindProperty("cardTexts"), titleProps.cardTexts);
                 so.FindProperty("baristaScale").floatValue = laneConfig.baristaScale;
                 so.FindProperty("catScale").floatValue = laneConfig.catScale;
                 so.FindProperty("stainScale").floatValue = laneConfig.stainScale;

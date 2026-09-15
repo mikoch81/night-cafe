@@ -19,9 +19,12 @@ namespace NightCafe.Gameplay
         [SerializeField] float startX = -6.6f;
         [SerializeField] float endX = 6.6f;
         [SerializeField] float y = -3.4f;
+        [SerializeField] float sleepFrameSeconds = 1.4f;
 
         float _elapsed;
         bool _running;
+        bool _sleeping;
+        Sprite _sleepA, _sleepB;
         float _bob;
         float _tilt;
 
@@ -37,6 +40,7 @@ namespace NightCafe.Gameplay
 
             _elapsed = 0f;
             _running = true;
+            _sleeping = false;
             spriteRenderer.enabled = true;
             Render();
             CrossingStarted?.Invoke();
@@ -45,11 +49,41 @@ namespace NightCafe.Gameplay
         public void Stop()
         {
             _running = false;
+            _sleeping = false;
+            transform.localRotation = Quaternion.identity;
             spriteRenderer.enabled = false;
+        }
+
+        /// <summary>
+        /// End of shift (painted style): Sablé curls up at `x` on the bar line and breathes -
+        /// two frames, slowly - until the next round's Stop. Interrupts a crossing.
+        /// </summary>
+        public void Sleep(Sprite frameA, Sprite frameB, float x)
+        {
+            _running = false;
+            _sleeping = true;
+            _elapsed = 0f;
+            _sleepA = frameA;
+            _sleepB = frameB != null ? frameB : frameA;
+            transform.localPosition = new Vector3(x, y, transform.localPosition.z);
+            transform.localRotation = Quaternion.identity;
+            spriteRenderer.sprite = _sleepA;
+            Color color = spriteRenderer.color;
+            color.a = 1f;
+            spriteRenderer.color = color;
+            spriteRenderer.enabled = true;
         }
 
         void Update()
         {
+            if (_sleeping)
+            {
+                _elapsed += Time.deltaTime;
+                bool inhale = Mathf.FloorToInt(_elapsed / sleepFrameSeconds) % 2 == 0;
+                spriteRenderer.sprite = inhale ? _sleepA : _sleepB;
+                return;
+            }
+
             if (!_running)
                 return;
 

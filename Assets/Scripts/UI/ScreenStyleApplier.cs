@@ -42,6 +42,26 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text[] letterTexts = new TMP_Text[0];
         [SerializeField] TMP_Text[] bodyTexts = new TMP_Text[0];
 
+        [Header("Title and end of shift")]
+        [SerializeField] HudView hud;
+        [SerializeField] TitleToggleView toggles;
+        [SerializeField] ClockWidget clock;
+        [SerializeField] Transform titleGroup;
+        [SerializeField] Transform clockGroup;
+        [SerializeField] Transform togglesGroup;
+        [SerializeField] Transform resultGroup;
+        [SerializeField] Transform brewTag;
+        [SerializeField] SpriteRenderer titleSign;
+        [Tooltip("Toggle labels and the cards under them, in the same order (sound, haptics, ghosts, skin, screen).")]
+        [SerializeField] TMP_Text[] toggleLabels = new TMP_Text[0];
+        [SerializeField] SpriteRenderer[] toggleCards = new SpriteRenderer[0];
+        [SerializeField] SpriteRenderer demoBacking;
+        [SerializeField] SpriteRenderer resultCard;
+        [Tooltip("Lettering that sits on the chalk sign (signInk in the painted style).")]
+        [SerializeField] TMP_Text[] signTexts = new TMP_Text[0];
+        [Tooltip("Lettering that sits on paper (cardInk in the painted style).")]
+        [SerializeField] TMP_Text[] cardTexts = new TMP_Text[0];
+
         [Header("Authored scales (LaneConfig), multiplied by the style")]
         [SerializeField] float baristaScale = 0.42f;
         [SerializeField] float catScale = 0.35f;
@@ -53,6 +73,7 @@ namespace NightCafe.UI
         TMP_FontAsset[] _digitDefaults, _letterDefaults, _bodyDefaults;
         Vector3[] _stepHomes;
         Vector3[] _plankHomes;
+        Vector3[] _toggleHomes;
 
         public ScreenStyle Current { get; private set; }
 
@@ -152,8 +173,75 @@ namespace NightCafe.UI
             ApplyFonts(letterTexts, _letterDefaults, style.letterFont);
             ApplyFonts(bodyTexts, _bodyDefaults, style.textFont);
 
+            ApplyTitleProps(style);
+
             if (lcdVolume != null)
                 lcdVolume.weight = style.bloom ? 1f : 0f;
+        }
+
+        /// <summary>
+        /// The title and end-of-shift dressing: a sign, cards and a receipt under the lettering
+        /// (hidden when the style has none), the clock's dial, the layout, and ink instead of
+        /// amber wherever the words land on paper. Without props everything reads as authored.
+        /// </summary>
+        void ApplyTitleProps(ScreenStyle style)
+        {
+            bool paper = style.titleSign != null || style.resultCard != null || style.toggleCards.Length > 0;
+
+            if (titleGroup != null) titleGroup.localPosition = style.titlePosition;
+            if (clockGroup != null) clockGroup.localPosition = style.clockPosition;
+            if (brewTag != null) brewTag.localPosition = style.brewTagOffset;
+            if (togglesGroup != null) togglesGroup.localPosition = style.togglesPosition;
+            if (resultGroup != null) resultGroup.localPosition = style.resultPosition;
+
+            Fit(titleSign, style.titleSign, style.titleSignWidth);
+            Fit(resultCard, style.resultCard, style.resultCardWidth);
+
+            _toggleHomes ??= System.Array.ConvertAll(toggleLabels, l => l != null ? l.transform.localPosition : Vector3.zero);
+            for (int i = 0; i < toggleLabels.Length; i++)
+            {
+                Vector3 at = i < style.toggleOffsets.Length ? (Vector3)style.toggleOffsets[i] : _toggleHomes[i];
+                if (toggleLabels[i] != null)
+                    toggleLabels[i].transform.localPosition = at;
+                if (i >= toggleCards.Length)
+                    continue;
+                Sprite card = style.toggleCards.Length > 0 ? style.toggleCards[i % style.toggleCards.Length] : null;
+                Fit(toggleCards[i], card, style.toggleCardWidth);
+                if (toggleCards[i] != null)
+                    toggleCards[i].transform.localPosition = at;
+            }
+
+            // The demo prompt has no prop of its own: a strip of dark glass keeps it legible over the painting.
+            if (demoBacking != null)
+                demoBacking.enabled = !style.monochrome;
+
+            if (clock != null)
+                clock.SetDial(style.clockFace, style.clockFaceWidth, style.cardInk);
+
+            Color signInk = style.titleSign != null ? style.signInk : activeAmber;
+            foreach (TMP_Text text in signTexts)
+                if (text != null) text.color = signInk;
+
+            Color cardInk = paper ? style.cardInk : activeAmber;
+            foreach (TMP_Text text in cardTexts)
+                if (text != null) text.color = cardInk;
+
+            if (toggles != null)
+                toggles.SetColors(paper ? style.cardInk : activeAmber, paper ? style.cardInkFaded : inactiveAmber);
+            if (hud != null)
+                hud.SetRecordColors(cardInk, paper ? style.accentInk : activeAmber);
+        }
+
+        /// <summary>Shows `sprite` scaled to `width` LCD units, or hides the renderer when there is none.</summary>
+        static void Fit(SpriteRenderer renderer, Sprite sprite, float width)
+        {
+            if (renderer == null)
+                return;
+
+            renderer.sprite = sprite;
+            renderer.enabled = sprite != null;
+            if (sprite != null && sprite.bounds.size.x > 0f)
+                renderer.transform.localScale = Vector3.one * (width / sprite.bounds.size.x);
         }
 
         void RememberFonts()

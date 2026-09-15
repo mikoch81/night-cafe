@@ -54,6 +54,8 @@ namespace NightCafe.Config
             { "miro_wipe", new Vector2(0.3810f, 0.0100f) },
             { "sable_a", new Vector2(0.4300f, 0.0700f) },
             { "sable_b", new Vector2(0.4500f, 0.0700f) },
+            { "sable_sleep_a", new Vector2(0.5000f, 0.0500f) }, // lies on the bar line; refine from the alpha once cut
+            { "sable_sleep_b", new Vector2(0.5000f, 0.0500f) },
             { "machine_head", new Vector2(0.6200f, 0.3200f) },
             { "cup_espresso", new Vector2(0.5000f, 0.0300f) },
             { "cup_caramel", new Vector2(0.5000f, 0.0300f) },

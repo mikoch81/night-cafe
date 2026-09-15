@@ -80,6 +80,52 @@ namespace NightCafe.Config
         [Tooltip("Scale of the cup drawn inside the order panel, relative to the panel (ART); RETRO paints a swatch instead.")]
         public Vector2 orderCupScale = new(0.55f, 0.55f);
 
+        [Header("Title and end of shift (ART props; RETRO leaves every sprite empty and keeps the amber text)")]
+        [Tooltip("The chalk sign hung in the window behind the title lettering.")]
+        public Sprite titleSign;
+        [Tooltip("Width of the sign in LCD units; the sprite is scaled to fit.")]
+        public float titleSignWidth = 8f;
+        [Tooltip("An analogue dial behind the clock: with a face the digits give way to hands, and come back only while the brew timer counts.")]
+        public Sprite clockFace;
+        public float clockFaceWidth = 1.9f;
+        [Tooltip("Index cards pinned under the settings toggles; variants alternate along the row.")]
+        public Sprite[] toggleCards = new Sprite[0];
+        public float toggleCardWidth = 2.2f;
+        [Tooltip("The receipt laid on the counter with the shift's result.")]
+        public Sprite resultCard;
+        public float resultCardWidth = 6.5f;
+        [Tooltip("Sablé asleep on the counter after the shift; two frames breathe slowly. Empty = no cat.")]
+        public Sprite catAsleepA;
+        public Sprite catAsleepB;
+        [Tooltip("Where the sleeping cat lies, in LCD units (y = the bar line).")]
+        public float catAsleepX = 4.3f;
+        [Tooltip("Miro wipes the counter on the title screen instead of hiding.")]
+        public bool titleBaristaWipes;
+        [Tooltip("Feet position of the wiping Miro (LCD units).")]
+        public Vector2 titleBaristaPosition = new(3.9f, -3.67f);
+        public bool titleBaristaFacesLeft = true;
+        public float titleWipePeriod = 0.7f;
+        [Tooltip("Lettering on the chalk sign.")]
+        public Color signInk = new(0.95f, 0.91f, 0.82f);
+        [Tooltip("Lettering on paper props: cards and the receipt.")]
+        public Color cardInk = new(0.23f, 0.16f, 0.11f);
+        [Tooltip("A switched-off toggle on its card.")]
+        public Color cardInkFaded = new(0.63f, 0.55f, 0.45f);
+        [Tooltip("NEW BEST and the unlock line on the receipt.")]
+        public Color accentInk = new(0.73f, 0.27f, 0.18f);
+        [Tooltip("How dark the glass goes at the end of the shift (0 = the loop's default).")]
+        [Range(0f, 1f)] public float gameOverDim = 0f;
+
+        [Header("Title layout (LCD units; defaults are the RETRO layout)")]
+        public Vector2 titlePosition = new(0f, -0.30f);
+        public Vector2 clockPosition = new(0f, 1.30f);
+        [Tooltip("BREW tag relative to the clock.")]
+        public Vector2 brewTagOffset = new(3.55f, 0.32f);
+        public Vector2 togglesPosition = new(0f, -2.30f);
+        [Tooltip("One per toggle (sound, haptics, ghosts, skin, screen), relative to togglesPosition; empty = the authored row.")]
+        public Vector2[] toggleOffsets = new Vector2[0];
+        public Vector2 resultPosition = Vector2.zero;
+
         [Header("Type (null = keep the scene's font)")]
         public TMP_FontAsset digitFont;
         public TMP_FontAsset letterFont;
