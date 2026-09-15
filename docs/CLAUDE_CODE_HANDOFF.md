@@ -182,12 +182,21 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   `tools/build_release.ps1` (headless, bez `com.unity.pipeline` — pakiet ma assembly runtime: interpreter IL
   i połączenie z playerem), `README.md`, `docs/privacy.md`, `docs/store/LISTING.md` (opisy PL/EN, ścieżka
   przez zamknięty test), `ReleaseSettingsTests`. Sprawdzone na Pixelu w buildzie dev: ikona, splash, 59 fps.
-- Do zrobienia: (1) Michał: keystore (`keytool`, komenda w rozmowie 2026-09-15) + `build/keystore.local.json`,
-  feature graphic z promptu 05, publiczny URL polityki prywatności (repo jest prywatne — GitHub Pages
-  wymaga publicznego repo albo osobnej strony); (2) `tools/build_release.ps1` przy zamkniętym edytorze →
-  `build/NightCafe.aab`; (3) zrzuty do sklepu **z buildu release** (dev build ma znak wodny „Development
-  Build" i licznik fps); (4) test na czystym telefonie (`adb uninstall`, 10 zimnych startów), GDD §7 na
-  finalnym buildzie, tag `v1.0.0`, upload na internal testing → zamknięty test (12 testerów / 14 dni) → produkcja.
+- Release 1.0.0 zbudowany 2026-09-15 wieczorem: keystore uploadu w `C:\NIGHT\keys` (PKCS12; `keytool
+  -keypasswd` na nim nie działa — hasło klucza sprawdzać przez `-certreq`), `tools/build_release.ps1` →
+  `build/NightCafe.aab` (47 MB; skrypt czeka na Unity.exe przez `Start-Process -Wait`, zapisuje manifest bez
+  BOM, przywraca `Packages/manifest.json` i `ProjectSettings.asset`). W bundlu nie ma `Unity.Pipeline*`
+  (`ScriptingAssemblies.json`). `AndroidManifestPostProcessor` zdejmuje `INTERNET` /
+  `ACCESS_LOCAL_NETWORK` / `ACCESS_NETWORK_STATE` z manifestu launchera (`tools:node="remove"`) — gra jest
+  offline, jak w `docs/privacy.md`; zostaje samo `VIBRATE`. Zainstalowany przez bundletool na wyczyszczonym
+  Pixelu (komendy w `docs/store/LISTING.md`): bez DEBUGGABLE, 10/10 zimnych startów. Feature graphic z
+  promptu 05 → `tools/feature_graphic.py` → `docs/store/feature_graphic.png` (własny neon zamiast liter z
+  generatora, kadr bez handhelda o obcym kształcie). Repo jest publiczne → polityka pod
+  `https://github.com/mikoch81/night-cafe/blob/master/docs/privacy.md`. Tag `v1.0.0`.
+- Do zrobienia: (1) zrzuty do sklepu z prawdziwej rundy na buildzie release (Michał gra, `adb exec-out
+  screencap`); (2) Play Console: internal testing z `build/NightCafe.aab`, Data safety „nie zbiera",
+  kwestionariusz ratingu, zamknięty test (12 testerów / 14 dni) → produkcja; każdy kolejny upload wymaga
+  wyższego `AndroidBundleVersionCode`.
 
 Po każdym milestone: commit + push, krótki raport co działa/czego brakuje.
 

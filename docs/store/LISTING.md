@@ -67,6 +67,24 @@ GitHub Pages from the repo's `docs/` folder is enough (Settings → Pages → De
 `master` / `/docs`); the URL is then `https://mikoch81.github.io/night-cafe/privacy` — the repo
 is private, so either make it public or host `privacy.md` as a public Gist / page elsewhere.
 
+## Installing the AAB on a phone (what the store will ship)
+
+```
+JAVA="C:/Program Files/Unity/Hub/Editor/6000.5.5f1/Editor/Data/PlaybackEngines/AndroidPlayer/OpenJDK/bin/java.exe"
+BT="C:/Program Files/Unity/Hub/Editor/6000.5.5f1/Editor/Data/PlaybackEngines/AndroidPlayer/Tools/bundletool-all-1.17.2.jar"
+"$JAVA" -jar "$BT" build-apks --bundle=build/NightCafe.aab --output=build/NightCafe.apks --connected-device \
+    --adb=C:/Tools/Sdk/platform-tools/adb.exe --ks=<jks> --ks-pass=pass:<pw> --ks-key-alias=nightcafe --key-pass=pass:<pw>
+adb uninstall com.mikoch81.nightcafe          # a sideloaded debug build has another signature
+"$JAVA" -jar "$BT" install-apks --apks=build/NightCafe.apks --adb=C:/Tools/Sdk/platform-tools/adb.exe
+```
+
+Verified 2026-09-15 on the Pixel: `flags` without DEBUGGABLE, requested permissions = `VIBRATE` only,
+10/10 cold starts. logcat shows `ClassNotFoundException: ...play.core.assetpacks.AssetPackManager` on
+start — Unity probing for Play Asset Delivery, which this bundle does not use; harmless.
+
+Screenshots: play a real round on the release build and capture with `adb exec-out screencap -p`
+(the dev build carries a "Development Build" watermark and the fps counter).
+
 ## Path to production (new developer account)
 
 1. Internal testing: upload `build/NightCafe.aab`, add your own account as a tester, install

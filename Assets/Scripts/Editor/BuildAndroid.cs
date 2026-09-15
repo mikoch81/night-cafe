@@ -62,11 +62,14 @@ namespace NightCafe.EditorTools
             }
             finally
             {
-                PlayerSettings.Android.useCustomKeystore = customKeystore;
-                PlayerSettings.Android.keystoreName = "";
+                // Names first, the switch last: with the switch on, an empty name is rewritten
+                // as a project-relative one and the switch stays on in the saved settings.
                 PlayerSettings.Android.keystorePass = "";
-                PlayerSettings.Android.keyaliasName = "";
                 PlayerSettings.Android.keyaliasPass = "";
+                PlayerSettings.Android.keyaliasName = "";
+                PlayerSettings.Android.keystoreName = "";
+                PlayerSettings.Android.useCustomKeystore = customKeystore;
+                AssetDatabase.SaveAssets();
             }
         }
 
