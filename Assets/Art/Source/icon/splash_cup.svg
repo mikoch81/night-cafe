@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="58%" r="45%">
+      <stop offset="0" stop-color="#ffc966" stop-opacity="0.55"/>
+      <stop offset="0.6" stop-color="#ffc966" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#ffc966" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="216.00" cy="232.00" r="150.00" fill="url(#g)"/>
+  <g stroke="#2b1d13" stroke-width="11.00" stroke-linejoin="round" stroke-linecap="round" fill="none">
+    <!-- saucer -->
+    <path d="M 112.00 298.00 Q 216.00 330.00 320.00 298.00" fill="#ffc966"/>
+    <!-- handle -->
+    <path d="M 286.00 196.00 C 348.00 186.00 348.00 262.00 286.00 268.00" stroke-width="24.00" stroke="#2b1d13"/>
+    <path d="M 286.00 196.00 C 348.00 186.00 348.00 262.00 286.00 268.00" stroke-width="7.00" stroke="#ffc966"/>
+    <!-- body -->
+    <path d="M 136.00 172.00 L 154.00 286.00 Q 216.00 304.00 278.00 286.00 L 296.00 172.00 Z" fill="#ffc966"/>
+    <!-- rim -->
+    <ellipse cx="216.00" cy="172.00" rx="80.00" ry="16.00" fill="#f6ead2"/>
+    <ellipse cx="216.00" cy="174.00" rx="62.00" ry="9.00" fill="#2b1d13" stroke="none"/>
+    <!-- steam -->
+    <path d="M 190.00 140.00 c -14 -18 14 -30 0 -50 c -10 -14 6 -22 2 -34" stroke="#ffd27a" stroke-width="9.00"/>
+    <path d="M 240.00 136.00 c -14 -18 14 -30 0 -50 c -10 -14 6 -22 2 -34" stroke="#ffd27a" stroke-width="9.00"/>
+  </g>
+</svg>

@@ -1,3 +1,4 @@
+using NightCafe.EditorTools;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -95,6 +96,8 @@ namespace NightCafe.Tests
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (path.StartsWith("Assets/Art/device/") || AssetImporter.GetAtPath(path) is not TextureImporter importer)
                     continue; // the 3D shell's maps and HDRI are covered by DeviceModelIsWiredForUnity
+                if (path.StartsWith(NightCafeSetup.IconDir + "/"))
+                    continue; // launcher icons and the splash logo go to the OS uncompressed (ReleaseSettingsTests)
 
                 TextureImporterPlatformSettings android = importer.GetPlatformTextureSettings("Android");
                 Assert.IsTrue(android.overridden, $"{path}: no Android override");

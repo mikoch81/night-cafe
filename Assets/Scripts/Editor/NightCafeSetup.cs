@@ -4,6 +4,7 @@ using NightCafe.Config;
 using NightCafe.Gameplay;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEngine;
 
@@ -141,6 +142,11 @@ namespace NightCafe.EditorTools
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (path.StartsWith("Assets/Art/device/") || AssetImporter.GetAtPath(path) is not TextureImporter importer)
                     continue; // the 3D shell's maps and environment are configured in Setup.Device
+                if (path.StartsWith(IconDir + "/"))
+                {
+                    ConfigureIconImporter(path, importer);
+                    continue;
+                }
 
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
@@ -210,11 +216,46 @@ namespace NightCafe.EditorTools
             GlassBlack = palette.glassBlack;
         }
 
+        public const string IconDir = "Assets/Art/icon";
+
+        /// <summary>
+        /// Launcher icons and the splash logo (tools/gen_icon.py) go to the OS, not the LCD:
+        /// uncompressed RGBA so the launcher gets the drawn edges, no mipmaps; only the splash
+        /// logo is a sprite, because that is what the splash screen takes.
+        /// </summary>
+        static void ConfigureIconImporter(string path, TextureImporter importer)
+        {
+            bool splash = Path.GetFileNameWithoutExtension(path).StartsWith("splash");
+            importer.textureType = splash ? TextureImporterType.Sprite : TextureImporterType.Default;
+            importer.spriteImportMode = splash ? SpriteImportMode.Single : SpriteImportMode.None;
+            importer.spritePixelsPerUnit = 100f;
+            importer.npotScale = TextureImporterNPOTScale.None;
+            importer.mipmapEnabled = false;
+            importer.alphaIsTransparency = true;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.maxTextureSize = 2048;
+            var android = importer.GetPlatformTextureSettings("Android");
+            android.overridden = true;
+            android.format = TextureImporterFormat.RGBA32;
+            android.maxTextureSize = 2048;
+            importer.SetPlatformTextureSettings(android);
+            importer.SaveAndReimport();
+        }
+
         static void ApplyProjectSettings()
         {
             PlayerSettings.productName = "Night Café";
             PlayerSettings.companyName = "mikoch81";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.mikoch81.nightcafe");
+            PlayerSettings.bundleVersion = "1.0.0";
+
+            // Play wants new uploads to target the current API (36 in 2026); 26 stays the floor.
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+            PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)36;
+
+            ApplyIcons();
+            ApplySplash();
 
             // GameActivity (the Unity 6 default) recreated the activity 60 ms after a cold start
             // on a Pixel 10 and crashed in UnityFoldingFeaturesWrapper.init() about one launch
@@ -233,6 +274,61 @@ namespace NightCafe.EditorTools
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Adaptive icon = the walnut background under the cup foreground; round and legacy
+        /// launchers (and the Play listing) get the two composed. Every size slot takes the same
+        /// source; Unity scales at build time.
+        /// </summary>
+        static void ApplyIcons()
+        {
+            var fg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconDir + "/icon_fg.png");
+            var bg = AssetDatabase.LoadAssetAtPath<Texture2D>(IconDir + "/icon_bg.png");
+            var legacy = AssetDatabase.LoadAssetAtPath<Texture2D>(IconDir + "/icon_legacy.png");
+            if (fg == null || bg == null || legacy == null)
+            {
+                Debug.LogWarning($"[NightCafe] Icons missing in {IconDir} - run tools/gen_icon.py; launcher keeps the Unity icon.");
+                return;
+            }
+
+            NamedBuildTarget android = NamedBuildTarget.Android;
+            foreach (PlatformIconKind kind in PlayerSettings.GetSupportedIconKinds(android))
+            {
+                PlatformIcon[] icons = PlayerSettings.GetPlatformIcons(android, kind);
+                foreach (PlatformIcon icon in icons)
+                {
+                    if (kind == AndroidPlatformIconKind.Adaptive)
+                        icon.SetTextures(bg, fg);
+                    else
+                        icon.SetTexture(legacy);
+                }
+                PlayerSettings.SetPlatformIcons(android, kind, icons);
+            }
+        }
+
+        /// <summary>
+        /// Our own splash: the cup and the wordmark on near-black for two seconds, no Unity
+        /// logo (optional since Unity 6). The logo is the sprite tools/gen_icon.py renders.
+        /// </summary>
+        static void ApplySplash()
+        {
+            var logo = AssetDatabase.LoadAssetAtPath<Sprite>(IconDir + "/splash_logo.png");
+            if (logo == null)
+            {
+                Debug.LogWarning($"[NightCafe] {IconDir}/splash_logo.png missing - run tools/gen_icon.py; splash left as is.");
+                return;
+            }
+
+            PlayerSettings.SplashScreen.show = true;
+            PlayerSettings.SplashScreen.showUnityLogo = false;
+            PlayerSettings.SplashScreen.backgroundColor = new Color32(0x12, 0x0b, 0x08, 0xff);
+            PlayerSettings.SplashScreen.drawMode = PlayerSettings.SplashScreen.DrawMode.AllSequential;
+            PlayerSettings.SplashScreen.animationMode = PlayerSettings.SplashScreen.AnimationMode.Static;
+            PlayerSettings.SplashScreen.overlayOpacity = 0f;
+            PlayerSettings.SplashScreen.blurBackgroundImage = false;
+            PlayerSettings.SplashScreen.background = null;
+            PlayerSettings.SplashScreen.logos = new[] { PlayerSettings.SplashScreenLogo.Create(2f, logo) };
         }
 
         static Sprite LoadSprite(string path)
