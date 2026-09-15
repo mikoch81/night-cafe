@@ -124,6 +124,11 @@ Obudowa, przyciski i wajcha nie są już sprite'ami — to mesh'e na warstwie `D
 | Melodie/dźwięki | Własne SFX | ✔ inne |
 | Mechanika 4 torów | Zachowana (niechroniona; klasyk sam był klonem Nintendo Egg) | ✔ dozwolone |
 
+Weryfikacja przed wysyłką do sklepu (2026-09-15, build 1.0.0 dev na Pixelu): tytuł, gra A/B, koniec zmiany,
+skin RETRO, ikona i splash obejrzane pod kątem powyższej tabeli — bez elementów z 1984. Nazwa pakietu
+`com.mikoch81.nightcafe`, marka na obudowie „Bréve Deck" i opisy sklepowe w `docs/store/LISTING.md`
+nie odwołują się do pierwowzoru. Do powtórzenia na buildzie release przed tagiem `v1.0.0`.
+
 ## 8. Zakres MVP (M1–M2)
 
 MUST: Tryb A, 4 tory, tempo T0–T9, kary, litość kota, oddech, rollover, highscore, haptyka, SFX, obudowa + przyciski wirtualne.

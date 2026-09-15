@@ -23,7 +23,9 @@ Tworzymy grę mobilną **Night Café** (Unity, Android, landscape) — opis i ws
   usuń przed commitem), `unity cmd eval --code '...'` (np. wymuszony reimport FBX).
 - Python: `py -3.12` (samo `python` to zaślepka ze Sklepu Windows). Blender 5.2 przez winget:
   `"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b -P tools/shell_model.py`.
-  Inkscape jeszcze nie zainstalowany (potrzebny do `gen_art*.py`).
+  Inkscape i ImageMagick zainstalowane (winget), ale nie ma ich w PATH Git Basha — przed `tools/*.py`:
+  `export PATH="/c/Program Files/Inkscape/bin:/c/Program Files/ImageMagick-7.1.2-Q16-HDRI:$PATH"`.
+  Pillow/numpy/scipy są w `py -3.12`.
 - Telefon Android po USB — `adb` z `C:\Tools\Sdk\platform-tools`: `adb devices`,
   `adb install -r build/NightCafe.apk`. Debug keystore jest inny niż na Linuksie — pierwsza instalacja
   z nowego komputera wymaga `adb uninstall com.mikoch81.nightcafe`.
@@ -173,8 +175,19 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
   (2) M5 (cel: Google Play — plan z 2026-09-15).
 - Krita: tylko retusz, instrukcja w `docs/art-direction.md`.
 
-**M5 — release candidate:**
-- Ikona + splash (wygeneruj z `device/lever_knob` + kubek), IL2CPP ARM64 **release** AAB bez pakietu `com.unity.pipeline` i bez dev flags, README, checklista §7 GDD, test na telefonie, tag `v1.0.0`.
+**M5 — release candidate (cel: Google Play; w toku od 2026-09-15):**
+- Zrobione: ikona adaptacyjna + splash (`tools/gen_icon.py` → `Assets/Art/icon`, setup wpina w PlayerSettings,
+  logo Unity wyłączone), `bundleVersion` 1.0.0, target SDK 36, menu `NightCafe/Build Android AAB (Release)`
+  (klucz uploadu z `build/keystore.local.json` tylko na czas builda, checklista ustawień release),
+  `tools/build_release.ps1` (headless, bez `com.unity.pipeline` — pakiet ma assembly runtime: interpreter IL
+  i połączenie z playerem), `README.md`, `docs/privacy.md`, `docs/store/LISTING.md` (opisy PL/EN, ścieżka
+  przez zamknięty test), `ReleaseSettingsTests`. Sprawdzone na Pixelu w buildzie dev: ikona, splash, 59 fps.
+- Do zrobienia: (1) Michał: keystore (`keytool`, komenda w rozmowie 2026-09-15) + `build/keystore.local.json`,
+  feature graphic z promptu 05, publiczny URL polityki prywatności (repo jest prywatne — GitHub Pages
+  wymaga publicznego repo albo osobnej strony); (2) `tools/build_release.ps1` przy zamkniętym edytorze →
+  `build/NightCafe.aab`; (3) zrzuty do sklepu **z buildu release** (dev build ma znak wodny „Development
+  Build" i licznik fps); (4) test na czystym telefonie (`adb uninstall`, 10 zimnych startów), GDD §7 na
+  finalnym buildzie, tag `v1.0.0`, upload na internal testing → zamknięty test (12 testerów / 14 dni) → produkcja.
 
 Po każdym milestone: commit + push, krótki raport co działa/czego brakuje.
 
