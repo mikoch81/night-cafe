@@ -40,3 +40,4 @@ art/hdri/**/*.hdr filter=lfs diff=lfs merge=lfs -text
 
 art/audio/raw/**/*.wav filter=lfs diff=lfs merge=lfs -text
 docs/store/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/store/**/*.mp4 filter=lfs diff=lfs merge=lfs -text

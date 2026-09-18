@@ -67,6 +67,14 @@ GitHub Pages from the repo's `docs/` folder is enough (Settings → Pages → De
 `master` / `/docs`); the URL is then `https://mikoch81.github.io/night-cafe/privacy` — the repo
 is private, so either make it public or host `privacy.md` as a public Gist / page elsewhere.
 
+## Trailer
+
+`docs/store/trailer_16x9.mp4` (38 s, 1080p) and `trailer_9x16.mp4` (stories) — cut by
+`tools/make_trailer.py` from a phone screen recording (`adb shell screenrecord`, path written as
+`//sdcard/...` from Git Bash) with the ART lo-fi loop and rain underneath. For the store's promo video
+upload the 16:9 file to YouTube (unlisted is fine) and paste the link in the listing; for testers send
+the file straight to WhatsApp/Messenger — the end card carries the opt-in link.
+
 ## Installing the AAB on a phone (what the store will ship)
 
 ```
@@ -86,6 +94,9 @@ Screenshots: play a real round on the release build and capture with `adb exec-o
 (the dev build carries a "Development Build" watermark and the fps counter).
 
 ## Path to production (new developer account)
+
+Android developer verification (Console > Weryfikacja dewelopera): package `com.mikoch81.nightcafe` registered
+2026-09-15 with 3 keys. Identity tab shows the account name and address with nothing pending. Both done; unregistered apps are removed from Play after 2026-09-30.
 
 1. Internal testing: upload `build/NightCafe.aab`, add your own account as a tester, install
    from the Play link (uninstall the sideloaded debug build first: signatures differ).
