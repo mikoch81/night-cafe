@@ -71,6 +71,7 @@ namespace NightCafe.UI
         TMP_FontAsset[] _digitDefaults, _letterDefaults, _bodyDefaults;
         Vector3[] _stepHomes;
         Vector3[] _plankHomes;
+        float[] _plankLengths;
         Vector3[] _toggleHomes;
 
         public ScreenStyle Current { get; private set; }
@@ -102,6 +103,11 @@ namespace NightCafe.UI
                 steps[i].transform.localScale = Vector3.one * (baristaScale * style.baristaScale);
             }
             _plankHomes ??= System.Array.ConvertAll(planks, p => p != null ? p.transform.localPosition : Vector3.zero);
+            // Sliced draw mode: the setup sized each plank along its rail segment (K1..K5). Assigning
+            // a sprite resets a sliced renderer to the sprite's own width (6.2 units, a unit past K5 and
+            // under the stools - review 2026-09-26: "cups drop before the ramp ends"), so the lengths
+            // are taken before the first assignment and put back every time.
+            _plankLengths ??= System.Array.ConvertAll(planks, p => p != null ? p.size.x : 0f);
             for (int i = 0; i < planks.Length; i++)
             {
                 SpriteRenderer plank = planks[i];
@@ -109,9 +115,7 @@ namespace NightCafe.UI
                 plank.sprite = style.plank;
                 plank.enabled = style.plank != null;
                 plank.transform.localPosition = _plankHomes[i] + (Vector3)style.plankOffset;
-                // Sliced draw mode: the setup sized the plank along the rail segment; only the
-                // thickness follows the style (the end caps keep their pixels).
-                plank.size = new Vector2(plank.size.x, style.plankHeight);
+                plank.size = new Vector2(_plankLengths[i], style.plankHeight);
             }
 
             if (scoreBoard != null)
@@ -133,6 +137,8 @@ namespace NightCafe.UI
             if (barista != null)
             {
                 barista.SetPoses(style.baristaUp, style.baristaDown, style.baristaCatch, style.baristaMiss, style.baristaWipe);
+                barista.SetReachPose(style.baristaReach);
+                barista.SetShooPoses(style.baristaShooA, style.baristaShooB);
                 barista.SetScale(baristaScale * style.baristaScale);
                 barista.SetOffset(style.baristaOffset);
                 barista.SetMoveSeconds(style.moveSeconds);

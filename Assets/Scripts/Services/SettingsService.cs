@@ -1,4 +1,5 @@
 using System;
+using NightCafe.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -39,20 +40,24 @@ namespace NightCafe.Services
         const string MusicKey = "nightcafe.music";
         const string SfxKey = "nightcafe.sfx";
         const string HapticsKey = "nightcafe.haptics";
+        const string PolishKey = "nightcafe.polish";
 
         readonly ISettingsStore _store;
 
-        public SettingsService(ISettingsStore store)
+        /// <param name="systemLanguage">The language on a first run (the phone's); a saved choice wins.</param>
+        public SettingsService(ISettingsStore store, Language systemLanguage = Language.English)
         {
             _store = store;
             MusicEnabled = _store.Load(MusicKey, true);
             SfxEnabled = _store.Load(SfxKey, true);
             HapticsEnabled = _store.Load(HapticsKey, true);
+            Language = _store.Load(PolishKey, systemLanguage == Language.Polish) ? Language.Polish : Language.English;
         }
 
         public bool MusicEnabled { get; private set; }
         public bool SfxEnabled { get; private set; }
         public bool HapticsEnabled { get; private set; }
+        public Language Language { get; private set; }
 
         public event Action Changed;
 
@@ -61,6 +66,13 @@ namespace NightCafe.Services
         public void ToggleSfx() => Set(SfxKey, SfxEnabled = !SfxEnabled);
 
         public void ToggleHaptics() => Set(HapticsKey, HapticsEnabled = !HapticsEnabled);
+
+        /// <summary>English and Polish, one tap each way (review 2026-09-26).</summary>
+        public void ToggleLanguage()
+        {
+            Language = Language == Language.Polish ? Language.English : Language.Polish;
+            Set(PolishKey, Language == Language.Polish);
+        }
 
         void Set(string key, bool value)
         {

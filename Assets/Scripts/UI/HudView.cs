@@ -17,6 +17,7 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text bestText;
         [SerializeField] TMP_Text modeText;
         [SerializeField] GameObject titlePanel;
+        [SerializeField] TMP_Text titleText;
         [SerializeField] GameObject demoPanel;
         [SerializeField] TMP_Text demoText;
         [SerializeField] float demoBlinkSeconds = 0.6f;
@@ -26,6 +27,19 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text gameOverRecord;
         [SerializeField] TMP_Text gameOverFooter;
         [SerializeField] TMP_Text fpsText;
+
+        [Header("Levels and café events (1.1.0)")]
+        [SerializeField] TMP_Text levelText;
+        [Tooltip("A strip of dark glass with one line on it: LEVEL n for a moment, RUSH HOUR while it lasts.")]
+        [SerializeField] GameObject bannerRoot;
+        [SerializeField] TMP_Text bannerText;
+
+        string _flash;
+        float _flashUntil;
+        int _countdown = -1;
+        Txt _countdownLabel = Txt.RushHour;
+        int _best;
+        int _level;
 
         Color _recordColor = Color.white;
         Color _accentColor = Color.white;
@@ -54,8 +68,72 @@ namespace NightCafe.UI
         /// <summary>The whole record, three digits at least, like the counter.</summary>
         public void SetBest(int bestTotal)
         {
+            _best = bestTotal;
             if (bestText != null)
-                bestText.text = $"BEST {bestTotal:000}";
+                bestText.text = Loc.F(Txt.HudBest, bestTotal);
+        }
+
+        /// <summary>LV n beside the mode letter; hidden (0) off shift.</summary>
+        public void SetLevel(int level)
+        {
+            _level = level;
+            if (levelText == null)
+                return;
+
+            levelText.gameObject.SetActive(level > 0);
+            levelText.text = Loc.F(Txt.HudLevel, level);
+        }
+
+        /// <summary>The language changed: every line the HUD owns is set again.</summary>
+        public void Relocalize()
+        {
+            SetBest(_best);
+            SetLevel(_level);
+            SetText(titleText, Loc.T(Txt.TitleTapToStart));
+            SetText(demoText, Loc.T(Txt.DemoTapToStart));
+            RenderBanner();
+        }
+
+        /// <summary>A line on the banner for a few seconds (LEVEL 3); it wins over the rush countdown.</summary>
+        public void FlashBanner(string text, float seconds)
+        {
+            _flash = text;
+            _flashUntil = Time.time + seconds;
+            RenderBanner();
+        }
+
+        /// <summary>RUSH HOUR with the seconds left, or -1 to take it down.</summary>
+        public void SetRushCountdown(int seconds) => SetCountdown(Txt.RushHour, seconds);
+
+        /// <summary>A running event's name and the seconds left (RUSH HOUR 42, TERRIBLE TEN 7); -1 takes it down.</summary>
+        public void SetCountdown(Txt label, int seconds)
+        {
+            if (seconds == _countdown && label == _countdownLabel)
+                return;
+
+            _countdown = seconds;
+            _countdownLabel = label;
+            RenderBanner();
+        }
+
+        public void ClearBanner()
+        {
+            _flash = null;
+            _countdown = -1;
+            RenderBanner();
+        }
+
+        void RenderBanner()
+        {
+            if (bannerRoot == null || bannerText == null)
+                return;
+
+            string line = _flash != null && Time.time < _flashUntil ? _flash
+                : _countdown >= 0 ? $"{Loc.T(_countdownLabel)}  {_countdown}"
+                : null;
+            bannerRoot.SetActive(line != null);
+            if (line != null)
+                bannerText.text = line;
         }
 
         public void SetMode(GameMode mode)
@@ -120,6 +198,12 @@ namespace NightCafe.UI
 
         void Update()
         {
+            if (_flash != null && Time.time >= _flashUntil)
+            {
+                _flash = null;
+                RenderBanner();
+            }
+
             UpdateDemoBlink();
             UpdateFps();
         }

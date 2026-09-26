@@ -39,6 +39,16 @@ namespace NightCafe.Core
         [SerializeField] ScreenStyleApplier styleApplier;
         [SerializeField] ScreenStyle artStyle;
         [SerializeField] PauseMenuView menu;
+        [Tooltip("The two footstools: left (under LeftUp), right (under RightUp).")]
+        [SerializeField] LadderView[] ladderViews = new LadderView[LadderService.Sides];
+        [Tooltip("Miro's speech bubble: hints the first times, then jokes (review 2026-09-26).")]
+        [SerializeField] SpeechBubbleView bubble;
+        [Tooltip("Noir, the black cat who bumps the stools (review 2026-09-26).")]
+        [SerializeField] BlackCatView blackCat;
+        [Tooltip("Steam and shaking for the terrible ten seconds (level 5+).")]
+        [SerializeField] SteamFx steam;
+        [Tooltip("Seconds between the wild machine's shrieks while it lasts.")]
+        [SerializeField] float frenzyShriekEvery = 2.2f;
         [SerializeField] FlashFx neonFlash;
         [SerializeField] FlashFx screenDim;
         [SerializeField] SpriteSequenceFx neonCat;
@@ -57,6 +67,17 @@ namespace NightCafe.Core
         [Tooltip("Sideways speed the cup keeps from its slide as it leaves the rail end.")]
         [SerializeField] float cupFallCarry = 1.5f;
         [SerializeField] float cupFallSpin = 420f;
+
+        [Header("Café events (1.1.0)")]
+        [Tooltip("How far below his slot Miro starts climbing an askew ladder, in LCD units.")]
+        [SerializeField] float climbHeight = 1.0f;
+        [SerializeField] float levelBannerSeconds = 1.8f;
+        [Tooltip("Seconds a speech bubble line stays up; a two-line hint gets longer.")]
+        [SerializeField] float bubbleSeconds = 2.4f;
+        [SerializeField] float hintBubbleSeconds = 3.4f;
+        [Tooltip("Paprika (ginger) and Noir (black) relative to Sablé's after-shift size.")]
+        [SerializeField] float strayScale = 0.8f;
+        [SerializeField] float bumperScale = 0.65f;
 
         readonly List<PilotCup> _pilotCups = new(8);
         readonly List<string> _unlocks = new(2);
@@ -82,6 +103,24 @@ namespace NightCafe.Core
         bool _menuPausedRound; // the open menu is holding a live shift
         float _lastMopX = float.NegativeInfinity;
 
+        // Levels and café events (rebuilt with the mode, like the balance services)
+        readonly IRandom _eventRng = new UnityRandom();
+        readonly LadderChange[] _ladderChanges = new LadderChange[LadderService.Sides];
+        ShiftEventDirector _events;
+        LadderService _ladders;
+        QuietSpellDirector _quiet;
+        BaristaQuips _quips;
+        int _level;
+        bool _rush;
+        float _rushLeft;
+        bool _frenzy;           // the terrible ten seconds: one machine gone haywire
+        float _frenzyLeft;
+        float _frenzyShriek;
+        ShiftEvent _pendingBump;    // Noir is on his way to a stool; the mishap lands with his shove
+        int _pendingSide;
+        LanePosition? _climbTarget; // Miro is on his way up an askew ladder: in no slot until he arrives
+        float _climbLeft;
+
         public GameState State => _flow.State;
 
         /// <summary>True while the attract pilot is playing on the title screen (GDD 6).</summary>
@@ -96,7 +135,8 @@ namespace NightCafe.Core
 
             VerifyFxSharesCupSpace();
 
-            _settings = new SettingsService(new PlayerPrefsSettingsStore());
+            _settings = new SettingsService(new PlayerPrefsSettingsStore(), Loc.FromSystem(Application.systemLanguage));
+            Loc.Set(_settings.Language);
             _profile = new ProfileService(FileProfileStore.Default());
             _haptics = new HapticsService(HapticsService.CreateBackend(), _settings);
             _brew = new BrewTimer(deviceConfig.brewTimerMaxMinutes);
@@ -120,12 +160,18 @@ namespace NightCafe.Core
             audioService.Initialise(_settings);
             titleToggles.Initialise(_settings, _profile);
             cat.CrossingStarted += OnCatCrossingStarted;
+            if (blackCat != null)
+            {
+                blackCat.Bumped += OnNoirBumped;
+                blackCat.DecideShove = OnNoirArrived;
+            }
 
             laneInput.Pressed += OnPressed;
 
             ConfigureMode(_profile.SelectedMode);
             ApplySkin();
             ApplyScreenStyle();
+            hud.Relocalize();
         }
 
         /// <summary>GDD 5.2: the painted diorama, the one screen style since RETRO was dropped.</summary>
@@ -137,6 +183,34 @@ namespace NightCafe.Core
                 styleApplier.Apply(EffectiveStyle);
             if (audioService != null)
                 audioService.SetSoundSet(EffectiveStyle != null ? EffectiveStyle.sounds : null);
+
+            // Paprika, the ginger stray, lounges on the stools; Noir bumps them. Without their art
+            // Sablé stands in (her after-shift curl on the seat, her walking frames for the rest).
+            ScreenStyle style = EffectiveStyle;
+            if (style != null)
+            {
+                float catSize = laneConfig.catScale * style.catScale;
+                bool stray = style.strayLounge != null;
+                foreach (LadderView view in ladderViews)
+                {
+                    if (view == null)
+                        continue;
+                    if (stray)
+                        view.SetCat(style.strayLounge, style.strayTrotA, style.strayTrotB, style.strayLeap,
+                            catSize * strayScale, catSize * strayScale);
+                    else
+                        view.SetCat(style.catAsleepA, style.catA, style.catB, null, catSize * 0.55f, catSize * 0.8f);
+                    view.SetBroken(style.stepBroken);
+                }
+
+                if (blackCat != null)
+                {
+                    bool noir = style.bumperWalkA != null;
+                    blackCat.SetFrames(noir ? style.bumperWalkA : style.catA, noir ? style.bumperWalkB : style.catB,
+                        noir ? style.bumperBump : style.catA, noir ? style.bumperRear : null,
+                        noir ? style.bumperTailA : null, noir ? style.bumperTailB : null, catSize * bumperScale);
+                }
+            }
 
             // The applier parks Miro back on his lane slot; on the title he belongs at the counter.
             if (_flow != null && State == GameState.Title)
@@ -194,6 +268,8 @@ namespace NightCafe.Core
 
             if (cat != null)
                 cat.CrossingStarted -= OnCatCrossingStarted;
+            if (blackCat != null)
+                blackCat.Bumped -= OnNoirBumped;
 
             if (laneInput != null)
                 laneInput.Pressed -= OnPressed;
@@ -216,8 +292,14 @@ namespace NightCafe.Core
             _score = new ScoreService(_config.Score);
             _penalty = new PenaltyService(_config.maxStains);
             _orders = new OrderService(_config.Orders, new UnityRandom());
+            _events = new ShiftEventDirector(_config.Events, _eventRng);
+            _ladders = new LadderService(_config.Events);
+            _quiet = new QuietSpellDirector(_config.Events, _eventRng);
+            _quips ??= new BaristaQuips(_eventRng);
+            spawner.LaneClosed = lane => _ladders.LaneClosed(lane);
 
             _score.ScoreChanged += hud.SetScore;
+            _score.ScoreChanged += OnScoreChanged;
             _score.MercyTriggered += OnMercyTriggered;
             _score.BreatherTriggered += OnBreatherTriggered;
             _score.ComboBonusAwarded += OnComboBonusAwarded;
@@ -238,6 +320,7 @@ namespace NightCafe.Core
             if (_score != null)
             {
                 _score.ScoreChanged -= hud.SetScore;
+                _score.ScoreChanged -= OnScoreChanged;
                 _score.MercyTriggered -= OnMercyTriggered;
                 _score.BreatherTriggered -= OnBreatherTriggered;
                 _score.ComboBonusAwarded -= OnComboBonusAwarded;
@@ -291,6 +374,8 @@ namespace NightCafe.Core
                 SweepBrokenCups();
                 if (IsDemo)
                     UpdateDemo(dt);
+                else
+                    UpdateShift(dt);
             }
         }
 
@@ -380,7 +465,418 @@ namespace NightCafe.Core
             Apply(_flow.Press(Time.time, consumed));
 
             if (_flow.AcceptsLaneMoves && press.Lane.HasValue)
-                barista.MoveTo(press.Lane.Value);
+                MoveBarista(press.Lane.Value);
+        }
+
+        /// <summary>
+        /// A lane press in a live shift. The lower slots are always a plain move; an upper slot
+        /// asks its ladder first (1.1.0): a cat to shoo, a stool to set up, a slow climb, or
+        /// nothing to stand on.
+        /// </summary>
+        void MoveBarista(LanePosition lane)
+        {
+            _climbTarget = null; // a new press changes his mind mid-climb
+            if (!lane.IsUp())
+            {
+                barista.MoveTo(lane);
+                return;
+            }
+
+            int side = LadderService.SideOf(lane);
+            LadderPress press = _ladders.Press(side);
+            switch (press)
+            {
+                case LadderPress.Move:
+                    barista.MoveTo(lane);
+                    break;
+                case LadderPress.Climb:
+                    if (barista.Current == lane)
+                    {
+                        barista.MoveTo(lane);
+                        break;
+                    }
+
+                    _climbTarget = lane;
+                    _climbLeft = _ladders.ClimbDelay;
+                    barista.BeginClimb(lane, _ladders.ClimbDelay, climbHeight);
+                    audioService.Play(GameSfx.LadderCreak);
+                    break;
+                case LadderPress.Blocked:
+                    _haptics.OneShot(audioConfig.catchHapticMs);
+                    barista.Shrug();
+                    Say(Quip.LadderBlocked);
+                    break;
+                case LadderPress.Shoo:
+                    // He steps to the foot of the stool and shoos her off, outwards.
+                    GoToFootOf(side);
+                    barista.Shoo(Outward(side));
+                    ladderViews[side].ShooCat();
+                    audioService.Play(GameSfx.CatHiss);
+                    RenderLadder(side);
+                    Say(Quip.CatShooed);
+                    break;
+                case LadderPress.RepairStep:
+                case LadderPress.Repaired:
+                    GoToFootOf(side);
+                    barista.Lift(-Outward(side)); // the stool lies inwards of him
+                    audioService.Play(GameSfx.LadderKnock);
+                    RenderLadder(side);
+                    if (press == LadderPress.Repaired)
+                        Say(Quip.LadderRepaired);
+                    break;
+            }
+        }
+
+        /// <summary>Shooing and lifting are done from the floor next to the stool: that side's lower slot.</summary>
+        void GoToFootOf(int side)
+        {
+            LanePosition foot = LadderService.LowerLane(side);
+            if (barista.Current != foot)
+                barista.MoveTo(foot);
+        }
+
+        /// <summary>-1 for the left stool, +1 for the right: where a knocked-over stool lies and a shooed cat flies.</summary>
+        static float Outward(int side) => side == 0 ? -1f : 1f;
+
+        /// <summary>Miro says something about the moment - in a live shift only, not in the demo.</summary>
+        void Say(Quip quip)
+        {
+            if (bubble == null || _flow.IsDemo || State is not (GameState.Playing or GameState.Breather))
+                return;
+
+            string line = _quips.Line(quip);
+            bubble.Say(line, line.Contains("\n") ? hintBubbleSeconds : bubbleSeconds);
+        }
+
+        // ------------------------------------------------------------------ café events (1.1.0)
+
+        /// <summary>The side whose upper slot Miro stands on, or -1 (down below, or mid-climb).</summary>
+        int BaristaUpSide() =>
+            !_climbTarget.HasValue && barista.Current.IsUp() ? LadderService.SideOf(barista.Current) : -1;
+
+        /// <summary>Climbs, ladders, the rush clock and the event director, in live play only.</summary>
+        void UpdateShift(float dt)
+        {
+            if (_climbTarget.HasValue)
+            {
+                _climbLeft -= dt;
+                if (_climbLeft <= 0f)
+                {
+                    barista.MoveTo(_climbTarget.Value);
+                    _climbTarget = null;
+                }
+            }
+
+            _ladders.Tick(dt, BaristaUpSide(), _ladderChanges);
+            for (int side = 0; side < LadderService.Sides; side++)
+            {
+                if (_ladderChanges[side] == LadderChange.None)
+                    continue;
+
+                if (_ladderChanges[side] == LadderChange.Broke)
+                    LadderBrokeUnderBarista(side);
+                else if (_ladderChanges[side] == LadderChange.CatLeft)
+                    Say(Quip.CatLeft);
+                RenderLadder(side);
+            }
+
+            if (_rush)
+            {
+                _rushLeft -= dt;
+                hud.SetRushCountdown(Mathf.Max(0, Mathf.CeilToInt(_rushLeft)));
+                if (_rushLeft <= 0f)
+                    EndRush();
+            }
+
+            if (_frenzy)
+                UpdateFrenzy(dt);
+
+            UpdateQuietSpell();
+
+            if (State == GameState.Playing)
+                StartEvent(_events.Tick(dt, _level, _ladders.AnyActive || _pendingBump != ShiftEvent.None, _rush,
+                    _quiet.Active, BaristaUpSide() >= 0, _frenzy));
+        }
+
+        /// <summary>
+        /// The terrible ten seconds (level 5+, review 2026-09-26: "some testers miss the thrill"):
+        /// one machine, picked at random, steams and shakes and fires its cups back to back at
+        /// nearly twice the speed; the other three keep a single cup between them.
+        /// </summary>
+        void StartFrenzy()
+        {
+            int lane = PickFrenzyLane();
+            if (lane < 0)
+                return;
+
+            _frenzy = true;
+            _frenzyLeft = _config.frenzySeconds;
+            _frenzyShriek = frenzyShriekEvery;
+            spawner.StartFrenzy(lane, _config.FrenzyStepFactorAt(_level), _config.frenzyStepGap, _config.frenzyOtherCups);
+            _orders.Held = true; // Mode B: the wild machine brews the order, and the order stays put
+            if (steam != null)
+                steam.Erupt(lane, _config.frenzySeconds);
+            audioService.Play(GameSfx.MachineFrenzy);
+            _haptics.Pattern(HapticPatterns.Pulses(2, audioConfig.missHapticMs, 60));
+            neonFlash.Blink(4, 0.18f);
+            hud.SetCountdown(Txt.TerribleTen, Mathf.CeilToInt(_frenzyLeft));
+            Say(Quip.FrenzyStart);
+        }
+
+        /// <summary>A machine whose lane is open (a broken stool closes its upper lane).</summary>
+        int PickFrenzyLane()
+        {
+            int start = _eventRng.NextInt(0, LanePositionExtensions.Count);
+            for (int i = 0; i < LanePositionExtensions.Count; i++)
+            {
+                int lane = (start + i) % LanePositionExtensions.Count;
+                if (!_ladders.LaneClosed(lane))
+                    return lane;
+            }
+
+            return -1;
+        }
+
+        void UpdateFrenzy(float dt)
+        {
+            _frenzyLeft -= dt;
+            _frenzyShriek -= dt;
+            if (_frenzyShriek <= 0f && _frenzyLeft > 1f)
+            {
+                _frenzyShriek = frenzyShriekEvery;
+                audioService.Play(GameSfx.MachineFrenzy);
+            }
+
+            hud.SetCountdown(Txt.TerribleTen, Mathf.Max(0, Mathf.CeilToInt(_frenzyLeft)));
+            if (_frenzyLeft <= 0f)
+                EndFrenzy();
+        }
+
+        void EndFrenzy()
+        {
+            if (!_frenzy)
+                return;
+
+            Say(Quip.FrenzyEnd); // quiet after the shift: Say only talks in live play
+            _frenzy = false;
+            spawner.StopFrenzy();
+            _orders.Held = false;
+            if (steam != null)
+                steam.Stop();
+            hud.SetCountdown(Txt.TerribleTen, -1);
+            _events.FrenzyEnded(_level);
+        }
+
+        /// <summary>From level 5 on, now and then a few calmer points: slower cups, one fewer on screen.</summary>
+        void UpdateQuietSpell()
+        {
+            switch (_quiet.Tick(_score.TotalScore, _level, _rush || _frenzy))
+            {
+                case QuietChange.Started:
+                    _tempo.StepFactor = _config.quietStepFactor;
+                    spawner.ExtraCups = _config.quietExtraCups;
+                    hud.FlashBanner(Loc.T(Txt.QuietSpell), levelBannerSeconds);
+                    Say(Quip.QuietStart);
+                    break;
+                case QuietChange.Ended:
+                    _tempo.StepFactor = 1f;
+                    spawner.ExtraCups = 0;
+                    hud.FlashBanner(Loc.T(Txt.FullSpeed), levelBannerSeconds);
+                    audioService.Play(GameSfx.LevelUp);
+                    Say(Quip.QuietEnd);
+                    break;
+            }
+        }
+
+        void StartEvent(ShiftEvent shiftEvent)
+        {
+            if (shiftEvent == ShiftEvent.None)
+                return;
+
+            if (shiftEvent == ShiftEvent.RushHour)
+            {
+                StartRush();
+                return;
+            }
+
+            if (shiftEvent == ShiftEvent.MachineFrenzy)
+            {
+                StartFrenzy();
+                return;
+            }
+
+            int side = LadderService.PickSide(shiftEvent, BaristaUpSide(), _eventRng);
+            if (_ladders.State(side) != LadderState.Standing)
+                return;
+
+            // The ladder mishaps are Noir's doing: he walks up to the stool first, and the mishap
+            // lands with his shove (OnNoirBumped). Paprika just jumps up.
+            if (shiftEvent != ShiftEvent.CatOnLadder && blackCat != null)
+            {
+                _pendingBump = shiftEvent;
+                _pendingSide = side;
+                blackCat.Visit(laneConfig.GetBaristaSlot(LadderService.UpperLane(side)).x, Outward(side));
+                return;
+            }
+
+            ApplyLadderEvent(shiftEvent, side);
+        }
+
+        /// <summary>
+        /// Noir's shove: a shake if Miro is up on that stool now (it only ever shakes under him),
+        /// otherwise the planned mishap (a shake aimed at him that finds the stool empty knocks it askew).
+        /// </summary>
+        /// <summary>
+        /// Noir has reached the stool: what he does depends on where Miro stands now - the tail
+        /// for a stool with Miro on it (it shakes), his hind legs to push one over, a shoulder
+        /// to knock one askew.
+        /// </summary>
+        NoirShove OnNoirArrived()
+        {
+            if (_pendingBump == ShiftEvent.None)
+                return NoirShove.Shoulder;
+
+            _pendingBump = LadderService.BumpOutcome(_pendingBump, _pendingSide, BaristaUpSide());
+            return _pendingBump switch
+            {
+                ShiftEvent.LadderCreak => NoirShove.Tail,
+                ShiftEvent.LadderRepair => NoirShove.Rear,
+                _ => NoirShove.Shoulder
+            };
+        }
+
+        /// <summary>The blow lands: the mishap decided on arrival happens now.</summary>
+        void OnNoirBumped()
+        {
+            if (_pendingBump == ShiftEvent.None)
+                return;
+
+            ShiftEvent mishap = _pendingBump;
+            _pendingBump = ShiftEvent.None;
+            ApplyLadderEvent(mishap, _pendingSide);
+        }
+
+        void ApplyLadderEvent(ShiftEvent shiftEvent, int side)
+        {
+            if (!_ladders.StartOn(side, shiftEvent))
+                return;
+
+            audioService.Play(shiftEvent switch
+            {
+                ShiftEvent.CatOnLadder => GameSfx.CatMeow,
+                ShiftEvent.LadderCreak => GameSfx.LadderCreak,
+                ShiftEvent.LadderRepair => GameSfx.LadderBreak,
+                _ => GameSfx.LadderKnock
+            });
+            Say(shiftEvent switch
+            {
+                ShiftEvent.CatOnLadder => Quip.CatOnLadder,
+                ShiftEvent.LadderCreak => Quip.LadderCreak,
+                ShiftEvent.LadderSlowClimb => Quip.LadderSlowClimb,
+                _ => Quip.LadderToppled
+            });
+
+            // A climb already headed to a stool that is now blocked has nowhere to arrive.
+            if (_climbTarget.HasValue && LadderService.SideOf(_climbTarget.Value) == side && _ladders.Blocks(side))
+            {
+                _climbTarget = null;
+                barista.MoveTo(barista.Current);
+            }
+
+            RenderLadder(side);
+        }
+
+        /// <summary>A creaking ladder gave way: Miro drops to the counter below and the cup on his tray breaks.</summary>
+        void LadderBrokeUnderBarista(int side)
+        {
+            audioService.Play(GameSfx.LadderBreak);
+            if (BaristaUpSide() != side)
+                return;
+
+            barista.Fall(LadderService.LowerLane(side), Outward(side));
+            Say(Quip.LadderBroke);
+            _score.RegisterMiss();
+            ShowBrokenCup(new Vector2(barista.transform.localPosition.x, laneConfig.barLineY));
+            _haptics.OneShot(audioConfig.missHapticMs);
+            cat.Play();
+            _penalty.AddStain();
+        }
+
+        void StartRush()
+        {
+            _rush = true;
+            _rushLeft = _config.rushHourSeconds;
+            _tempo.StepFactor = _config.rushStepFactor;
+            spawner.ExtraCups = _config.rushExtraCups;
+            audioService.Play(GameSfx.RushBell);
+            audioService.SetRushHour(true);
+            neonFlash.Blink(3, 0.25f);
+            hud.SetRushCountdown(Mathf.CeilToInt(_rushLeft));
+            Say(Quip.RushStart);
+        }
+
+        void EndRush()
+        {
+            if (!_rush)
+                return;
+
+            Say(Quip.RushEnd); // quiet after the shift: Say only talks in live play
+
+            _rush = false;
+            _tempo.StepFactor = 1f;
+            spawner.ExtraCups = 0;
+            audioService.SetRushHour(false);
+            hud.SetRushCountdown(-1);
+            _events.RushEnded(_level);
+        }
+
+        void OnScoreChanged(int _)
+        {
+            if (State == GameState.Title || _level <= 0)
+                return;
+
+            int level = _config.Events.LevelFor(_score.TotalScore);
+            if (level <= _level)
+                return;
+
+            _level = level;
+            hud.SetLevel(level);
+            hud.FlashBanner(Loc.F(Txt.LevelBanner, level), levelBannerSeconds);
+            audioService.Play(GameSfx.LevelUp);
+        }
+
+        void RenderLadder(int side)
+        {
+            if (side < ladderViews.Length && ladderViews[side] != null)
+                ladderViews[side].Show(_ladders.State(side), _ladders.RepairsLeft(side), _config.ladderRepairPresses);
+        }
+
+        /// <summary>Everything back to a quiet café: no rush, ladders up, no climb.</summary>
+        void ResetShiftEvents()
+        {
+            EndRush();
+            EndFrenzy();
+            if (steam != null)
+                steam.Clear();
+            _events.Reset();
+            _ladders.Reset();
+            _quiet.Reset();
+            _quips.Reset();
+            _pendingBump = ShiftEvent.None;
+            if (blackCat != null)
+                blackCat.Hide();
+            _tempo.StepFactor = 1f;
+            spawner.ExtraCups = 0;
+            if (bubble != null)
+                bubble.Hide();
+            _climbTarget = null;
+            foreach (LadderView view in ladderViews)
+            {
+                if (view != null)
+                    view.ResetAll();
+            }
+
+            hud.ClearBanner();
         }
 
         /// <summary>
@@ -457,6 +953,9 @@ namespace NightCafe.Core
                     break;
                 case MenuAction.FlipMode:
                     SwitchModeFromMenu();
+                    break;
+                case MenuAction.ToggleLanguage:
+                    _settings.ToggleLanguage();
                     break;
                 case MenuAction.ShowScores:
                     menu.ShowScores(_mode, _profile.TopScores(_mode));
@@ -615,6 +1114,8 @@ namespace NightCafe.Core
         void BeginRound()
         {
             ResetRoundState();
+            _level = 1;
+            hud.SetLevel(1);
             barista.SetVisible(true);
             RenderOrderPanel(); // the flow is already Playing here; ResetRoundState could not show it before
             spawner.BeginRound();
@@ -623,6 +1124,9 @@ namespace NightCafe.Core
         void ResetRoundState()
         {
             _rolledOver = false;
+            ResetShiftEvents();
+            _level = 0;
+            hud.SetLevel(0);
             _tempo.Reset();
             _score.Reset();
             _penalty.Reset();
@@ -650,6 +1154,7 @@ namespace NightCafe.Core
         void EnterGameOver()
         {
             _flow.EnteredGameOver(Time.time);
+            ResetShiftEvents();
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
             barista.SetVisible(false); // the result text sits where the barista stands
@@ -684,7 +1189,7 @@ namespace NightCafe.Core
             foreach (string id in _unlocks)
             {
                 if (_profile.Unlock(id) && first == null && SkinCatalog.TryGet(id, out Skin skin))
-                    first = skin.Name;
+                    first = Loc.Skin(SkinCatalog.IndexOf(id), skin.Name);
             }
 
             return first;
@@ -698,7 +1203,8 @@ namespace NightCafe.Core
             if (!_orders.Enabled)
                 return;
 
-            int colour = _orders.RollCupColour();
+            // Mode B: the wild machine brews nothing but the order (the terrible ten seconds).
+            int colour = _frenzy && cup.Lane == spawner.FrenzyLane ? _orders.CurrentOrder : _orders.RollCupColour();
             cup.Paint(colour, _config.orderColors[colour]);
         }
 
@@ -708,7 +1214,7 @@ namespace NightCafe.Core
         /// </summary>
         void ResolveCup(CupController cup)
         {
-            bool present = (int)barista.Current == cup.Lane;
+            bool present = (int)barista.Current == cup.Lane && !_climbTarget.HasValue; // mid-climb he is in no slot
             CatchOutcome outcome = CatchRules.Resolve(present, _orders.IsWanted(cup.Colour));
 
             if (outcome == CatchOutcome.Caught)
@@ -812,7 +1318,7 @@ namespace NightCafe.Core
             }
 
             int colour = _orders.CurrentOrder;
-            string name = colour < _config.orderNames.Length ? _config.orderNames[colour] : "";
+            string name = Loc.Order(colour, colour < _config.orderNames.Length ? _config.orderNames[colour] : "");
             orderPanel.Show(colour, _config.orderColors[colour], name);
         }
 
@@ -857,6 +1363,19 @@ namespace NightCafe.Core
         {
             audioService.ApplySettings();
             ApplyScreenStyle();
+            if (Loc.Current != _settings.Language)
+                Relocalize();
+        }
+
+        /// <summary>English / Polish from the menu: every line on screen is set again.</summary>
+        void Relocalize()
+        {
+            Loc.Set(_settings.Language);
+            hud.Relocalize();
+            titleToggles.Render();
+            RenderOrderPanel();
+            if (menu.IsOpen)
+                menu.Render(_settings, _mode);
         }
 
         void OnProfileChanged()

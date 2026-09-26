@@ -19,6 +19,16 @@ MonoBehaviour:
   gameOver: {fileID: 0}
   brewAlarm: {fileID: 0}
   leverClick: {fileID: 0}
+  rushBell: {fileID: 0}
+  ladderCreak: {fileID: 0}
+  ladderBreak: {fileID: 0}
+  ladderKnock: {fileID: 0}
+  catHiss: {fileID: 0}
+  levelUp: {fileID: 0}
+  machineFrenzy: {fileID: 0}
+  rushCrowd: []
+  rushCrowdOffsetDb: -8
+  rushAmbienceBoostDb: 6
   lofiLoop: {fileID: 0}
   musicOffsetDb: -18
   ambience: {fileID: 0}

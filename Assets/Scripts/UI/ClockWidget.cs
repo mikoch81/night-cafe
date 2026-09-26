@@ -1,4 +1,5 @@
 using System;
+using NightCafe.Core;
 using NightCafe.Services;
 using TMPro;
 using UnityEngine;
@@ -110,7 +111,11 @@ namespace NightCafe.UI
                 : ClockFormatter.Format(now, _colonVisible);
 
             if (brewTag != null)
+            {
                 brewTag.gameObject.SetActive(brewing);
+                if (brewing)
+                    brewTag.text = Loc.T(Txt.Brew);
+            }
 
             // With a dial the digits are the kitchen timer only; the hands step aside for them.
             bool hands = _analogue && !brewing;

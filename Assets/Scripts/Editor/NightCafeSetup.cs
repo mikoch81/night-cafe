@@ -133,6 +133,7 @@ namespace NightCafe.EditorTools
             { "plank", new Vector4(96f, 0f, 96f, 0f) },
             { "title_sign", new Vector4(80f, 80f, 80f, 80f) },
             { "result_card", new Vector4(50f, 150f, 50f, 70f) },
+            { "speech_bubble", new Vector4(80f, 80f, 80f, 80f) },
         };
 
         static void ConfigureSpriteImporters()

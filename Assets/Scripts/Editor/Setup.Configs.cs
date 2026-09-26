@@ -53,6 +53,12 @@ namespace NightCafe.EditorTools
             config.catchesPerTempoLevel = 10;
             config.unlockSkinId = Services.SkinCatalog.OnyxId;
             config.unlockSkinScore = 500;
+            // 2 points a cup: the same number of cups per level and per quiet spell as Mode A.
+            config.levelThresholds = new[] { 50, 100, 200, 280 };
+            config.levelEvery = 100;
+            config.quietPoints = 40;
+            config.quietGapMinPoints = 80;
+            config.quietGapMaxPoints = 160;
             EditorUtility.SetDirty(config);
             return config;
         }
@@ -183,6 +189,18 @@ namespace NightCafe.EditorTools
             config.leverClick = LoadClip("sfx_click", ArtAudioDir, tool);
             config.lofiLoop = LoadClip("music_lofi_loop", ArtAudioDir, tool);
             config.ambience = LoadClip("ambience_rain_cafe", ArtAudioDir, tool);
+            config.rushBell = LoadClip("sfx_rush_bell", ArtAudioDir, tool);
+            config.ladderCreak = LoadClip("sfx_ladder_creak", ArtAudioDir, tool);
+            config.ladderBreak = LoadClip("sfx_ladder_break", ArtAudioDir, tool);
+            config.ladderKnock = LoadClip("sfx_ladder_knock", ArtAudioDir, tool);
+            config.catHiss = LoadClip("sfx_cat_hiss", ArtAudioDir, tool);
+            config.levelUp = LoadClip("sfx_level_up", ArtAudioDir, tool);
+            config.machineFrenzy = LoadClip("sfx_machine_frenzy", ArtAudioDir, tool);
+            config.rushCrowd = new[]
+            {
+                LoadClip("sfx_crowd_1", ArtAudioDir, tool), LoadClip("sfx_crowd_2", ArtAudioDir, tool),
+                LoadClip("sfx_crowd_3", ArtAudioDir, tool), LoadClip("sfx_crowd_4", ArtAudioDir, tool),
+            };
 
             EditorUtility.SetDirty(config);
             return config;

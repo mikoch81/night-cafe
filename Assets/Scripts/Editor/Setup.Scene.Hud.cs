@@ -26,6 +26,21 @@ namespace NightCafe.EditorTools
 
             TMP_Text best = WorldText("BestText", root, new Vector2(-4.30f, 3.55f), "BEST 000", 4.6f, letterFont,
                 ActiveAmber, 0, new Vector2(3.9f, 1.2f));
+
+            // 1.1.0: the level beside the mode letter, and a banner strip for LEVEL n / RUSH HOUR.
+            TMP_Text level = WorldText("LevelText", root, new Vector2(3.25f, 3.55f), "LV 1", 4.6f, letterFont,
+                ActiveAmber, 0, new Vector2(1.9f, 1.2f));
+            level.gameObject.SetActive(false);
+            GameObject banner = Child("Banner", root);
+            var bannerBackGo = Child("BannerBacking", banner.transform, new Vector2(0f, 2.55f));
+            bannerBackGo.transform.localScale = new Vector3(7.4f, 1.0f, 1f);
+            var bannerBack = bannerBackGo.AddComponent<SpriteRenderer>();
+            bannerBack.sprite = WhitePixelSprite();
+            bannerBack.color = new Color(GlassBlack.r, GlassBlack.g, GlassBlack.b, 0.6f);
+            SetSorting(bannerBack, Core.SortingLayers.Hud, PropOrder);
+            TMP_Text bannerText = WorldText("BannerText", banner.transform, new Vector2(0f, 2.55f),
+                "RUSH HOUR", 5.4f, monoFont, ActiveAmber, 0, new Vector2(7f, 0.9f));
+            banner.SetActive(false);
             best.wordSpacing = 12f; // DSEG's space is a bare segment gap; open it up between BEST and the digits
 
             // --- Title ---------------------------------------------------------
@@ -120,6 +135,9 @@ namespace NightCafe.EditorTools
             // --- Menu (review 2026-09-26) ---------------------------------------
             (PauseMenuView menu, SpriteRenderer menuCard, TMP_Text[] menuTexts) = BuildMenu(root, monoFont);
 
+            // --- Miro's speech bubble (1.1.0) -------------------------------------
+            (SpeechBubbleView bubble, TMP_Text bubbleText) = BuildSpeechBubble(root, monoFont);
+
             // --- Debug overlay --------------------------------------------------
             TMP_Text fps = BuildDebugCanvas(monoFont);
 
@@ -130,6 +148,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("bestText").objectReferenceValue = best;
                 so.FindProperty("modeText").objectReferenceValue = mode;
                 so.FindProperty("titlePanel").objectReferenceValue = titlePanel;
+                so.FindProperty("titleText").objectReferenceValue = titleText;
                 so.FindProperty("demoPanel").objectReferenceValue = demoPanel;
                 so.FindProperty("demoText").objectReferenceValue = demoText;
                 so.FindProperty("gameOverPanel").objectReferenceValue = gameOverPanel;
@@ -138,11 +157,15 @@ namespace NightCafe.EditorTools
                 so.FindProperty("gameOverRecord").objectReferenceValue = gameOverRecord;
                 so.FindProperty("gameOverFooter").objectReferenceValue = gameOverFooter;
                 so.FindProperty("fpsText").objectReferenceValue = fps;
+                so.FindProperty("levelText").objectReferenceValue = level;
+                so.FindProperty("bannerRoot").objectReferenceValue = banner;
+                so.FindProperty("bannerText").objectReferenceValue = bannerText;
             });
 
             return (hud, toggles, clockWidget, new TitleProps
             {
                 menu = menu,
+                bubble = bubble,
                 menuCard = menuCard,
                 menuTexts = menuTexts,
                 titleGroup = titleGroup.transform,
@@ -156,7 +179,7 @@ namespace NightCafe.EditorTools
                 demoBacking = demoBacking,
                 resultCard = resultCard,
                 signTexts = new[] { titleText },
-                cardTexts = new[] { gameOverHeader, gameOverScore, gameOverFooter },
+                cardTexts = new[] { gameOverHeader, gameOverScore, gameOverFooter, bubbleText },
             });
         }
 
@@ -172,6 +195,48 @@ namespace NightCafe.EditorTools
             public SpriteRenderer[] toggleCards;
             public TMP_Text[] toggleLabels, signTexts, cardTexts, menuTexts;
             public PauseMenuView menu;
+            public SpeechBubbleView bubble;
+        }
+
+        // The bubble sits over the HUD lettering and under the menu.
+        const int BubbleOrder = 20;
+
+        /// <summary>
+        /// Miro's speech bubble: a 9-sliced paper body, a tail and a line of hand lettering
+        /// (tools/gen_bubble.py). The game loop points it at the barista.
+        /// </summary>
+        static (SpeechBubbleView view, TMP_Text text) BuildSpeechBubble(Transform hudRoot, TMP_FontAsset font)
+        {
+            GameObject go = Child("SpeechBubble", hudRoot);
+
+            var bodyGo = Child("BubbleBody", go.transform);
+            var body = bodyGo.AddComponent<SpriteRenderer>();
+            body.sprite = LoadSprite(ScreenV3Dir + "/speech_bubble.png");
+            body.drawMode = SpriteDrawMode.Sliced;
+            body.size = new Vector2(3f, 1f);
+            body.enabled = false;
+            SetSorting(body, Core.SortingLayers.Hud, BubbleOrder);
+
+            var tailGo = Child("BubbleTail", go.transform);
+            var tail = tailGo.AddComponent<SpriteRenderer>();
+            tail.sprite = LoadSprite(ScreenV3Dir + "/speech_tail.png");
+            tail.enabled = false;
+            SetSorting(tail, Core.SortingLayers.Hud, BubbleOrder + 1); // covers the body's outline at the join
+
+            TMP_Text text = WorldText("BubbleText", go.transform, Vector2.zero, "", 3.4f, font,
+                new Color(0.23f, 0.16f, 0.11f), BubbleOrder + 2, new Vector2(3.4f, 1f));
+            text.textWrappingMode = TextWrappingModes.Normal;
+            text.lineSpacing = -12f;
+            text.enabled = false;
+
+            var view = go.AddComponent<SpeechBubbleView>();
+            SetSerialized(view, so =>
+            {
+                so.FindProperty("body").objectReferenceValue = body;
+                so.FindProperty("tail").objectReferenceValue = tail;
+                so.FindProperty("text").objectReferenceValue = text;
+            });
+            return (view, text);
         }
 
         // The menu draws over everything else in the LCD, the HUD digits included.
@@ -209,13 +274,15 @@ namespace NightCafe.EditorTools
             TMP_Text header = Row("MenuHeader", panel.transform, 3.3f, "PAUSED", 6f);
 
             GameObject main = Child("MainPage", panel.transform);
-            TMP_Text resume = Row("ResumeRow", main.transform, 2.3f, "RESUME");
-            TMP_Text music = Row("MusicRow", main.transform, 1.4f, "MUSIC  ON");
-            TMP_Text sound = Row("SoundRow", main.transform, 0.5f, "SOUND  ON");
-            TMP_Text mode = Row("ModeRow", main.transform, -0.4f, "MODE  A");
-            TMP_Text scores = Row("ScoresRow", main.transform, -1.3f, "TOP 10");
-            TMP_Text endShift = Row("EndShiftRow", main.transform, -2.2f, "END SHIFT");
-            TMP_Text quit = Row("QuitRow", main.transform, -3.1f, "QUIT GAME");
+            // Eight rows 0.8 apart (1.1.0 added LANGUAGE / JĘZYK); the view sets the words.
+            TMP_Text resume = Row("ResumeRow", main.transform, 2.4f, "RESUME");
+            TMP_Text music = Row("MusicRow", main.transform, 1.6f, "MUSIC  ON");
+            TMP_Text sound = Row("SoundRow", main.transform, 0.8f, "SOUND  ON");
+            TMP_Text mode = Row("ModeRow", main.transform, 0.0f, "MODE  A");
+            TMP_Text scores = Row("ScoresRow", main.transform, -0.8f, "TOP 10");
+            TMP_Text language = Row("LanguageRow", main.transform, -1.6f, "LANGUAGE  EN");
+            TMP_Text endShift = Row("EndShiftRow", main.transform, -2.4f, "END SHIFT");
+            TMP_Text quit = Row("QuitRow", main.transform, -3.2f, "QUIT GAME");
 
             GameObject scoresPage = Child("ScoresPage", panel.transform);
             TMP_Text list = WorldText("ScoresText", scoresPage.transform, new Vector2(0f, -0.1f), "NO SHIFTS YET", 3.9f,
@@ -237,13 +304,14 @@ namespace NightCafe.EditorTools
                 so.FindProperty("scoresRow").objectReferenceValue = scores;
                 so.FindProperty("endShiftRow").objectReferenceValue = endShift;
                 so.FindProperty("quitRow").objectReferenceValue = quit;
+                so.FindProperty("languageRow").objectReferenceValue = language;
                 so.FindProperty("mainPage").objectReferenceValue = main;
                 so.FindProperty("scoresPage").objectReferenceValue = scoresPage;
                 so.FindProperty("scoresText").objectReferenceValue = list;
                 so.FindProperty("backRow").objectReferenceValue = back;
             });
 
-            return (view, card, new[] { header, resume, music, sound, mode, scores, endShift, quit, list, back });
+            return (view, card, new[] { header, resume, music, sound, mode, scores, language, endShift, quit, list, back });
         }
 
         /// <summary>A hidden sprite slot the applier fills from the style (Hud layer, under the text).</summary>

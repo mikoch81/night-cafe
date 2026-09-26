@@ -36,8 +36,22 @@ MonoBehaviour:
   baristaCatch: {fileID: 21300000, guid: d6c8e9ce708ccc6868408c8a1c0f9f31, type: 3}
   baristaMiss: {fileID: 21300000, guid: 6fbdc7334b696dc58bbc89de5f62f8c9, type: 3}
   baristaWipe: {fileID: 21300000, guid: 5c27159ea269d1dd3ac7634b0489571d, type: 3}
+  baristaReach: {fileID: 21300000, guid: 9fdf9f94441a271a99b7c9a81fc51cf6, type: 3}
   catA: {fileID: 21300000, guid: 1ff10d3b7636d4289a6cb9582c9f158f, type: 3}
   catB: {fileID: 21300000, guid: eae5d4bcbfa42f2228e670979871fee0, type: 3}
+  baristaShooA: {fileID: 21300000, guid: 97b6f826e4456884482289a4e0badde6, type: 3}
+  baristaShooB: {fileID: 21300000, guid: 1441d20e211fada499f2a05dd6e7732f, type: 3}
+  strayTrotA: {fileID: 21300000, guid: b7c18251a4e8e5346bb403a496fe097e, type: 3}
+  strayTrotB: {fileID: 21300000, guid: 8acb51973cd5e4849802cd16685ebaf9, type: 3}
+  strayLounge: {fileID: 21300000, guid: 7cdf54be7b68c1245bed9f6207a376d8, type: 3}
+  strayLeap: {fileID: 21300000, guid: e8fe8bcf735498c46a4b6b9cd73bf783, type: 3}
+  bumperWalkA: {fileID: 21300000, guid: f27cbc8443b63cf48bb85df8ce7fe5d1, type: 3}
+  bumperWalkB: {fileID: 21300000, guid: 82d500c3cea0e3547b20f32c905d20c5, type: 3}
+  bumperBump: {fileID: 21300000, guid: f3fe34d3d414eb84ebf0c044452e3f81, type: 3}
+  bumperRear: {fileID: 21300000, guid: ebbebd55841384d439a53412593ac48b, type: 3}
+  bumperTailA: {fileID: 21300000, guid: f12da71442321c64fb35ef7335eee1f4, type: 3}
+  bumperTailB: {fileID: 21300000, guid: 4d436e5650f95bd45be78754a342c11c, type: 3}
+  stepBroken: {fileID: 21300000, guid: 67e4334c640e82c4da62b325c6bda232, type: 3}
   cup: {fileID: 21300000, guid: 885173fc31a2ab7aab35b1de0bb25082, type: 3}
   cupsByOrder:
   - {fileID: 21300000, guid: 885173fc31a2ab7aab35b1de0bb25082, type: 3}

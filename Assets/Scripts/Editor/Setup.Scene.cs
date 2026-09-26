@@ -45,6 +45,9 @@ namespace NightCafe.EditorTools
             BuildScreenArt(screenRoot, laneConfig);
             SpriteRenderer[] planks = BuildPlanks(screenRoot, laneConfig);
             SpriteRenderer[] steps = BuildSteps(screenRoot, laneConfig);
+            LadderView[] ladders = BuildLadderViews(screenRoot, laneConfig, steps);
+            BlackCatView blackCat = BuildBlackCat(screenRoot, laneConfig);
+            SteamFx steam = BuildSteam(screenRoot);
 
             Transform cupRoot = Child("CupPoolRoot", screenRoot).transform;
             TimedSpriteFx[] brokenFx = BuildBrokenCupFx(screenRoot, laneConfig);
@@ -67,6 +70,8 @@ namespace NightCafe.EditorTools
             AudioService audioService = BuildAudio(context, audioConfig);
             LcdPointer pointer = BuildPointer(context, deviceCamera, lcdCamera, screenFace);
             var loop = context.AddComponent<GameLoopController>();
+
+            SetSerialized(titleProps.bubble, so => so.FindProperty("target").objectReferenceValue = barista.transform);
 
             SetSerialized(spawner, so =>
             {
@@ -97,6 +102,13 @@ namespace NightCafe.EditorTools
                 so.FindProperty("styleApplier").objectReferenceValue = styleApplier;
                 so.FindProperty("artStyle").objectReferenceValue = artStyle;
                 so.FindProperty("menu").objectReferenceValue = titleProps.menu;
+                so.FindProperty("bubble").objectReferenceValue = titleProps.bubble;
+                so.FindProperty("blackCat").objectReferenceValue = blackCat;
+                so.FindProperty("steam").objectReferenceValue = steam;
+                SerializedProperty ladderArray = so.FindProperty("ladderViews");
+                ladderArray.arraySize = ladders.Length;
+                for (int i = 0; i < ladders.Length; i++)
+                    ladderArray.GetArrayElementAtIndex(i).objectReferenceValue = ladders[i];
                 so.FindProperty("neonFlash").objectReferenceValue = neon;
                 so.FindProperty("screenDim").objectReferenceValue = dim;
                 so.FindProperty("neonCat").objectReferenceValue = neonCat;
@@ -140,6 +152,85 @@ namespace NightCafe.EditorTools
                 renderer.color = InactiveAmber;
                 SetSorting(renderer, Core.SortingLayers.Segments, 0);
             }
+        }
+
+        /// <summary>
+        /// 1.1.0: a LadderView per footstool (left, right) that poses the stool for the ladder
+        /// events, with a slot for Sablé napping on top (the style supplies her sleeping frame).
+        /// </summary>
+        static LadderView[] BuildLadderViews(Transform screenRoot, LaneConfig laneConfig, SpriteRenderer[] steps)
+        {
+            Transform props = screenRoot.Find("Props");
+            var views = new LadderView[steps.Length];
+            for (int i = 0; i < steps.Length; i++)
+            {
+                var go = Child($"Ladder_{i}", props);
+                var catGo = Child("LadderCat", go.transform);
+                var cat = catGo.AddComponent<SpriteRenderer>();
+                cat.enabled = false;
+                SetSorting(cat, Core.SortingLayers.Segments, 31); // over the stool (29) and Miro (30)
+
+                var view = go.AddComponent<LadderView>();
+                SetSerialized(view, so =>
+                {
+                    so.FindProperty("stool").objectReferenceValue = steps[i];
+                    so.FindProperty("cat").objectReferenceValue = cat;
+                    so.FindProperty("floorY").floatValue = laneConfig.barLineY;
+                    so.FindProperty("outward").floatValue = i == 0 ? -1f : 1f; // steps[] is LeftUp, RightUp
+                });
+                views[i] = view;
+            }
+
+            return views;
+        }
+
+        /// <summary>Noir, who bumps the stools (1.1.0): on the floor, in front of the stools and Miro.</summary>
+        static BlackCatView BuildBlackCat(Transform screenRoot, LaneConfig laneConfig)
+        {
+            var go = Child("BlackCat", screenRoot.Find("Props"));
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.enabled = false;
+            SetSorting(renderer, Core.SortingLayers.Segments, 31);
+
+            var view = go.AddComponent<BlackCatView>();
+            SetSerialized(view, so =>
+            {
+                so.FindProperty("spriteRenderer").objectReferenceValue = renderer;
+                so.FindProperty("floorY").floatValue = laneConfig.barLineY;
+            });
+            return view;
+        }
+
+        /// <summary>
+        /// The terrible ten seconds (1.1.0): a pool of steam puffs over the machine heads, which the
+        /// component also shakes. Above the cups, under the HUD.
+        /// </summary>
+        static SteamFx BuildSteam(Transform screenRoot)
+        {
+            var go = Child("Steam", screenRoot);
+            Sprite puffSprite = LoadSprite(ScreenV3Dir + "/steam_puff.png");
+            var puffs = new SpriteRenderer[16];
+            for (int i = 0; i < puffs.Length; i++)
+            {
+                var renderer = Child($"Puff_{i}", go.transform).AddComponent<SpriteRenderer>();
+                renderer.sprite = puffSprite;
+                renderer.enabled = false;
+                SetSorting(renderer, Core.SortingLayers.Segments, 35);
+                puffs[i] = renderer;
+            }
+
+            var machines = new Transform[LanePositionExtensions.Count];
+            Transform heads = screenRoot.Find("MachineHeads");
+            foreach (LanePosition lane in Enum.GetValues(typeof(LanePosition)))
+                machines[(int)lane] = heads.Find($"MachineHead_{lane}");
+
+            var fx = go.AddComponent<SteamFx>();
+            SetSerialized(fx, so =>
+            {
+                Fill(so.FindProperty("machines"), machines);
+                Fill(so.FindProperty("puffs"), puffs);
+            });
+            return fx;
         }
 
         static TimedSpriteFx[] BuildBrokenCupFx(Transform screenRoot, LaneConfig laneConfig)

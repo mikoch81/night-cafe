@@ -300,6 +300,74 @@ przezroczyste; Pillow, jednorazowo). Szyld i paragon są sprite'ami dziewięciok
 `ScreenStyle.titleSignSize` / `resultCardSize`; karteczki i tarcza skalowane jednolicie (`toggleCardWidth`,
 `clockFaceWidth`). Ogon kota A zwisający z półki został ucięty (`--box` kończy się na blacie).
 
+## 20–22 — Obsada 1.1.0 (2026-09-26, Higgsfield GPT Image 2.5, referencja stylu = nasze arkusze)
+
+Uwagi Michała do etapu 2: Sablé (biała) tylko sprząta; na taborecie wyleguje się nowy **rudy wredny kot
+Paprika**; drabiny szturcha **czarny kot Noir**; Miro przegania kota **ręcznikiem**. Generacje w
+Higgsfield (`gpt_image_2_5`, quality high, 2k, 16:9) z referencją: `14_sable_sheet.png` dla kotów,
+`13_miro_sheet.png` dla Miro. Oryginały w `art/generated/` (licencja tam), cięcie:
+`tools/cut_sheet.py` + `tools/finish_cast.py`. Wszystkie trzy wyszły za pierwszym razem.
+
+### 20 — Paprika (ref. 14)
+```
+Character sheet in exactly the same drawing style as the reference image (scratchy ink linocut-like
+illustration, thick rough black outlines, flat fill with fine hatching strokes, no shading, no gradients).
+A NEW cat: a scruffy, mean-looking ginger orange tabby tomcat with a chunky body, torn ear, squinting
+grumpy eyes and a smug expression. No mop, no props. Four separate full-body poses in one row, side view
+facing right, evenly spaced with clear white space between them, all on a plain pure white background,
+no floor lines: 1) trotting, left legs forward; 2) trotting, legs swapped; 3) lying lazily on its belly,
+awake, smug half-closed eyes, front paws stretched forward, tail hanging down; 4) startled mid-air leap
+with all four legs splayed and fur puffed up. Big readable silhouettes, same cat and proportions in
+every pose. No text, no labels, no shadows.
+```
+
+### 21 — Noir (ref. 14)
+```
+Character sheet in exactly the same drawing style as the reference image (scratchy ink linocut-like
+illustration, solid black cat silhouette with fine white scratch hatching, amber eyes). A DIFFERENT
+black cat: slender, sly and mischievous, long thin tail, sneaky narrowed amber eyes. No mop, no props.
+Three separate full-body poses in one row, side view facing right, evenly spaced with clear white space
+between them, on a plain pure white background, no floor lines: 1) sneaking walk, low body, left legs
+forward; 2) sneaking walk, legs swapped; 3) standing and shoving sideways with its shoulder and head,
+leaning into something on its right as if bumping a stool, tail up. Big readable silhouettes, same cat
+in every pose. No text, no labels, no shadows.
+```
+
+### 22 — Miro z ręcznikiem (ref. 13)
+```
+Character sheet of exactly the same young barista as in the reference (same flat cap, rolled sleeves,
+white shirt, long brown apron, same drawing style, line weight, colours and proportions). Side view
+facing right, full body, feet on the same line, on a plain pure white background. Two poses in one row
+with wide white space between them: 1) swinging a cream kitchen tea towel with two red stripes high over
+his head with his right arm to shoo a cat away, determined annoyed face, the towel flapping to the back;
+2) the same action a moment later, the towel whipped forward in front of him at chest height, arm
+extended forward. Big readable silhouette. No tray, no cups, no cat, no text, no labels, no floor shadow.
+```
+
+### 23 — Noir, nowe pozy (ref. = nasz arkusz 21)
+```
+More poses of exactly the same slender black cat as in the reference image, same drawing style (scratchy
+ink linocut-like illustration, solid black silhouette with fine white scratch hatching, amber eyes, long
+thin tail), same size and proportions. Three separate full-body poses in one row, side view, evenly spaced
+with wide white space between them, on a plain pure white background, no floor lines, no props: 1) facing
+right, standing up tall on its hind legs, body upright, both front paws raised and stretched forward at
+shoulder height pushing hard against something invisible in front of it, determined mischievous face;
+2) facing LEFT (looking back over its shoulder with a sly grin), standing on all fours, its long tail swung
+far out to the right side and lashing hard like a whip; 3) the same as pose 2 but the tail swung high and
+curled up to the right, mid-lash. No text, no labels, no shadows.
+```
+Pozy 2–3 cięte z `--flip` (w grze wszystko patrzy w prawo).
+
+Połamany taboret (`step_broken.png`) to wektor w `tools/gen_art_v3.py` (te same części co `step`), obłok
+pary (`steam_puff.png`) z `tools/gen_steam.py`.
+
+### Dźwięk szalejącego ekspresu (ElevenLabs, flow „Night Café 1.1.0 SFX”, `eleven_text_to_sound_v2`)
+```
+An old espresso machine going haywire: a loud screaming steam wand hiss rising in pressure, rattling
+metal, frantic gurgling and sputtering, short and intense, cartoonish, no music
+```
+Dwa warianty (2 s i 1 s); w grze pierwszy → `sfx_machine_frenzy.wav` (`prep_audio.py effects`).
+
 ## Dźwięk (2026-09-14): Suno + ElevenLabs Sound Effects
 
 Wygenerowane przez Michała na płatnych planach (prawa komercyjne, `art/audio/LICENSE.md`). Surowe pliki w

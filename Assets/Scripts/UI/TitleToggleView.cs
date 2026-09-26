@@ -1,3 +1,4 @@
+using NightCafe.Core;
 using NightCafe.Services;
 using TMPro;
 using UnityEngine;
@@ -73,7 +74,7 @@ namespace NightCafe.UI
             if (skinLabel != null && _profile != null)
             {
                 SkinCatalog.TryGet(_profile.SelectedSkin, out Skin skin);
-                skinLabel.text = skin.Name;
+                skinLabel.text = Loc.Skin(SkinCatalog.IndexOf(_profile.SelectedSkin), skin.Name);
                 skinLabel.color = onColor;
             }
         }
@@ -83,7 +84,7 @@ namespace NightCafe.UI
             if (label == null)
                 return;
 
-            label.text = on ? $"{glyph} ON" : $"{glyph} OFF";
+            label.text = $"{glyph} {Loc.OnOff(on)}";
             label.color = on ? onColor : offColor;
         }
 

@@ -40,6 +40,20 @@ namespace NightCafe.EditorTools
             ("catAsleepA", "sable_sleep_a.png"), ("catAsleepB", "sable_sleep_b.png"),
         };
 
+        /// <summary>
+        /// The 1.1.0 cast (art/generated 20-22, tools/finish_cast.py) and the broken stool
+        /// (tools/gen_art_v3.py). Optional like the title props: without them Sablé plays both cats.
+        /// </summary>
+        public static readonly (string slot, string file)[] ArtCastSprites =
+        {
+            ("baristaShooA", "miro_shoo_a.png"), ("baristaShooB", "miro_shoo_b.png"),
+            ("strayTrotA", "paprika_trot_a.png"), ("strayTrotB", "paprika_trot_b.png"),
+            ("strayLounge", "paprika_lounge.png"), ("strayLeap", "paprika_leap.png"),
+            ("bumperWalkA", "noir_walk_a.png"), ("bumperWalkB", "noir_walk_b.png"), ("bumperBump", "noir_bump.png"),
+            ("bumperRear", "noir_rear.png"), ("bumperTailA", "noir_tail_a.png"), ("bumperTailB", "noir_tail_b.png"),
+            ("stepBroken", "step_broken.png"),
+        };
+
         const string HandBoldFontPath = FontDir + "/CabinSketch-Bold.ttf";
         const string HandBoldFontAssetPath = FontDir + "/CabinSketch-Bold SDF.asset";
         const string HandFontPath = FontDir + "/PatrickHand-Regular.ttf";
@@ -80,6 +94,8 @@ namespace NightCafe.EditorTools
             art.baristaCatch = found["baristaCatch"] ?? Fallback("Assets/Art/sprites/barista_catch.png");
             art.baristaMiss = found["baristaMiss"] ?? Fallback("Assets/Art/sprites/barista_miss.png");
             art.baristaWipe = found["baristaWipe"] ?? Fallback("Assets/Art/sprites/barista_wipe.png");
+            // The tray-up pose has his arms raised: shooing the cat off a stool, lifting a fallen one.
+            art.baristaReach = found["baristaUp"] ?? art.baristaCatch;
             art.catA = found["catA"] ?? Fallback("Assets/Art/sprites/cat_a.png");
             art.catB = found["catB"] ?? Fallback("Assets/Art/sprites/cat_b.png");
             art.cup = found["cup0"] ?? Fallback("Assets/Art/sprites/cup.png");
@@ -123,10 +139,35 @@ namespace NightCafe.EditorTools
             art.sounds = artSounds;
             art.complete = complete;
             ApplyArtTitleDressing(art, laneConfig);
+            ApplyArtCast(art);
             EditorUtility.SetDirty(art);
 
             if (!complete)
                 Debug.LogWarning($"[NightCafe] ScreenStyle ART incomplete: {ScreenV3Dir} is missing files, vector sprites stand in.");
+        }
+
+        static void ApplyArtCast(ScreenStyle art)
+        {
+            var found = new Dictionary<string, Sprite>();
+            foreach ((string slot, string file) in ArtCastSprites)
+            {
+                string path = $"{ScreenV3Dir}/{file}";
+                found[slot] = File.Exists(path) ? AssetDatabase.LoadAssetAtPath<Sprite>(path) : null;
+            }
+
+            art.baristaShooA = found["baristaShooA"];
+            art.baristaShooB = found["baristaShooB"] ?? found["baristaShooA"];
+            art.strayTrotA = found["strayTrotA"];
+            art.strayTrotB = found["strayTrotB"] ?? found["strayTrotA"];
+            art.strayLounge = found["strayLounge"];
+            art.strayLeap = found["strayLeap"] ?? found["strayTrotB"];
+            art.bumperWalkA = found["bumperWalkA"];
+            art.bumperWalkB = found["bumperWalkB"] ?? found["bumperWalkA"];
+            art.bumperBump = found["bumperBump"] ?? found["bumperWalkA"];
+            art.bumperRear = found["bumperRear"] ?? art.bumperBump;
+            art.bumperTailA = found["bumperTailA"] ?? art.bumperBump;
+            art.bumperTailB = found["bumperTailB"] ?? art.bumperTailA;
+            art.stepBroken = found["stepBroken"];
         }
 
         /// <summary>A vector sprite standing in for a painted one that has not been delivered.</summary>
@@ -271,6 +312,7 @@ namespace NightCafe.EditorTools
                         break;
                     case "BestText":
                     case "ModeText":
+                    case "LevelText":
                         letters.Add(text);
                         break;
                     default:

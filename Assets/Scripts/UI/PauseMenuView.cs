@@ -18,7 +18,8 @@ namespace NightCafe.UI
         ShowScores,
         Back,
         EndShift,
-        Quit
+        Quit,
+        ToggleLanguage
     }
 
     /// <summary>
@@ -38,6 +39,7 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text scoresRow;
         [SerializeField] TMP_Text endShiftRow;
         [SerializeField] TMP_Text quitRow;
+        [SerializeField] TMP_Text languageRow;
         [SerializeField] GameObject mainPage;
         [SerializeField] GameObject scoresPage;
         [SerializeField] TMP_Text scoresText;
@@ -90,14 +92,15 @@ namespace NightCafe.UI
 
         public void Render(SettingsService settings, GameMode mode)
         {
-            Set(header, _inRound ? "PAUSED" : "MENU", ink);
-            Set(resumeRow, _inRound ? "RESUME" : "CLOSE", ink);
-            Set(musicRow, settings.MusicEnabled ? "MUSIC  ON" : "MUSIC  OFF", settings.MusicEnabled ? ink : fadedInk);
-            Set(soundRow, settings.SfxEnabled ? "SOUND  ON" : "SOUND  OFF", settings.SfxEnabled ? ink : fadedInk);
-            Set(modeRow, $"MODE  {mode.Letter()}", ink);
-            Set(scoresRow, "TOP 10", ink);
-            Set(endShiftRow, "END SHIFT", _inRound ? ink : fadedInk);
-            Set(quitRow, "QUIT GAME", ink);
+            Set(header, Loc.T(_inRound ? Txt.Paused : Txt.Menu), ink);
+            Set(resumeRow, Loc.T(_inRound ? Txt.Resume : Txt.Close), ink);
+            Set(musicRow, $"{Loc.T(Txt.Music)}  {Loc.OnOff(settings.MusicEnabled)}", settings.MusicEnabled ? ink : fadedInk);
+            Set(soundRow, $"{Loc.T(Txt.Sound)}  {Loc.OnOff(settings.SfxEnabled)}", settings.SfxEnabled ? ink : fadedInk);
+            Set(modeRow, $"{Loc.T(Txt.Mode)}  {mode.Letter()}", ink);
+            Set(scoresRow, Loc.T(Txt.TopTen), ink);
+            Set(languageRow, Loc.T(Txt.LanguageRow), ink);
+            Set(endShiftRow, Loc.T(Txt.EndShift), _inRound ? ink : fadedInk);
+            Set(quitRow, Loc.T(Txt.QuitGame), ink);
         }
 
         /// <summary>The local list for one mode, best first, with a BACK row under it.</summary>
@@ -105,8 +108,8 @@ namespace NightCafe.UI
         {
             SetActive(mainPage, false);
             SetActive(scoresPage, true);
-            Set(header, $"TOP 10 · {mode.Letter()}", ink);
-            Set(backRow, "BACK", ink);
+            Set(header, $"{Loc.T(Txt.TopTen)} · {mode.Letter()}", ink);
+            Set(backRow, Loc.T(Txt.Back), ink);
             if (scoresText != null)
             {
                 scoresText.text = FormatScores(scores);
@@ -117,7 +120,7 @@ namespace NightCafe.UI
         public static string FormatScores(IReadOnlyList<ScoreEntry> scores)
         {
             if (scores == null || scores.Count == 0)
-                return "NO SHIFTS YET";
+                return Loc.T(Txt.NoShiftsYet);
 
             var text = new StringBuilder();
             for (int i = 0; i < scores.Count && i < ProfileService.TopScoreCount; i++)
@@ -145,6 +148,7 @@ namespace NightCafe.UI
             if (LcdHit.Hits(soundRow, lcdPoint, rowHitSize)) return MenuAction.ToggleSound;
             if (LcdHit.Hits(modeRow, lcdPoint, rowHitSize)) return MenuAction.FlipMode;
             if (LcdHit.Hits(scoresRow, lcdPoint, rowHitSize)) return MenuAction.ShowScores;
+            if (LcdHit.Hits(languageRow, lcdPoint, rowHitSize)) return MenuAction.ToggleLanguage;
             if (_inRound && LcdHit.Hits(endShiftRow, lcdPoint, rowHitSize)) return MenuAction.EndShift;
             if (LcdHit.Hits(quitRow, lcdPoint, rowHitSize)) return MenuAction.Quit;
             return MenuAction.None;

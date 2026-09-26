@@ -28,6 +28,34 @@ namespace NightCafe.Gameplay
 
         public bool SpawningEnabled { get; set; }
 
+        /// <summary>Rush hour: this many cups more on screen than the tempo allows.</summary>
+        public int ExtraCups { get; set; }
+
+        /// <summary>Lanes that must not get a new cup right now (a broken ladder's); null = all open.</summary>
+        public Func<int, bool> LaneClosed { get; set; }
+
+        /// <summary>
+        /// The terrible ten seconds: this lane's machine fires its own cups, faster and back to
+        /// back, while the other lanes keep at most FrenzyOtherCups on screen; -1 = off.
+        /// </summary>
+        public int FrenzyLane { get; private set; } = -1;
+
+        float _frenzyStepFactor = 1f;
+        int _frenzyStepGap = 2;
+        int _frenzyOtherCups = 1;
+        bool _frenzyPrimed;     // the lane's ordinary cups have cleared: the fast ones never run into them
+
+        public void StartFrenzy(int lane, float stepFactor, int stepGap, int otherCups)
+        {
+            FrenzyLane = lane;
+            _frenzyStepFactor = stepFactor;
+            _frenzyStepGap = Mathf.Max(1, stepGap);
+            _frenzyOtherCups = Mathf.Max(0, otherCups);
+            _frenzyPrimed = false;
+        }
+
+        public void StopFrenzy() => FrenzyLane = -1;
+
         /// <summary>Parent of the pooled cups; broken-cup FX must sit under the same transform.</summary>
         public Transform CupRoot => cupRoot;
 
@@ -52,6 +80,7 @@ namespace NightCafe.Gameplay
 
         public void BeginRound()
         {
+            StopFrenzy();
             DespawnAll();
             _nextSpawnAt = Time.time + _director.FirstSpawnDelay;
             SpawningEnabled = true;
@@ -83,10 +112,17 @@ namespace NightCafe.Gameplay
             if (!SpawningEnabled || _director == null)
                 return;
 
+            if (FrenzyLane >= 0)
+                UpdateFrenzy();
+
             if (Time.time < _nextSpawnAt)
                 return;
 
-            if (!_director.TryPickLane(this, _tempo.Level, out int lane))
+            if (FrenzyLane >= 0 && TotalActiveCups - CupsOnLane(FrenzyLane) >= _frenzyOtherCups)
+                return; // the wild machine has the stage; the others wait their turn
+
+            Func<int, bool> closed = FrenzyLane < 0 ? LaneClosed : l => l == FrenzyLane || (LaneClosed?.Invoke(l) ?? false);
+            if (!_director.TryPickLane(this, _tempo.Level, ExtraCups, closed, out int lane))
                 return; // Stay due; retry next frame once a slot frees up.
 
             Spawn(lane);
@@ -98,13 +134,34 @@ namespace NightCafe.Gameplay
             _nextSpawnAt = basis + _director.RollNextInterval(_tempo.StepTime);
         }
 
-        void Spawn(int lane)
+        /// <summary>The wild machine fires a new cup as soon as its last one is far enough down the rail.</summary>
+        void UpdateFrenzy()
+        {
+            if (LaneClosed != null && LaneClosed(FrenzyLane))
+                return;
+            int onLane = CupsOnLane(FrenzyLane);
+            if (!_frenzyPrimed)
+            {
+                if (onLane > 0)
+                    return; // the machine builds up steam while the last ordinary cup slides off
+                _frenzyPrimed = true;
+            }
+            if (onLane > 0 && NewestCupStep(FrenzyLane) < _frenzyStepGap)
+                return;
+
+            float factor = _frenzyStepFactor;
+            Spawn(FrenzyLane, () => _tempo.StepTime * factor);
+        }
+
+        void Spawn(int lane) => Spawn(lane, () => _tempo.StepTime);
+
+        void Spawn(int lane, Func<float> stepTime)
         {
             CupController cup = _pool.Rent();
             cup.ReachedCatchPoint += OnCupReachedCatchPoint;
             cup.Landed += OnCupLanded;
             cup.transform.localScale = Vector3.one * _laneConfig.cupScale;
-            cup.Launch(lane, _laneConfig.GetSteps(lane), () => _tempo.StepTime, _laneConfig.cupTiltDegrees);
+            cup.Launch(lane, _laneConfig.GetSteps(lane), stepTime, _laneConfig.cupTiltDegrees);
             _active.Add(cup);
             CupSpawned?.Invoke(cup);
         }

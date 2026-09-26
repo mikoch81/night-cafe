@@ -200,6 +200,11 @@ RETRO jako odblokowywany skin ekranu, GDD §5 przepisane):**
 
 Po każdym milestone: commit + push, krótki raport co działa/czego brakuje.
 
+## Stan (2026-09-26) — runda 1.1.0
+
+Aktualny stan, decyzje i plan rundy poprawek po teście zamkniętym: **[HANDOFF_1.1.0.md](HANDOFF_1.1.0.md)**
+(gałąź `release/1.1.0`; etap 1 w commicie `6615732`, etap 2 niescommitowany, czeka na uwagi Michała).
+
 ## Stan (2026-09-13)
 
 M4 w większości zrobione i sprawdzone na Pixelu (10/10 zimnych startów, 59 fps): `tools/gen_art.py`

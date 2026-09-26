@@ -60,8 +60,30 @@ namespace NightCafe.Config
         public Sprite baristaCatch;
         public Sprite baristaMiss;
         public Sprite baristaWipe;
+        [Tooltip("Arms up: shooing Sablé off a stool, lifting a knocked-over one (1.1.0). Falls back to the catch pose.")]
+        public Sprite baristaReach;
         public Sprite catA;
         public Sprite catB;
+
+        [Header("Café troublemakers (1.1.0) - optional; without them Sablé stands in")]
+        [Tooltip("Miro shooing a cat with a tea towel: over his head, then whipped forward.")]
+        public Sprite baristaShooA;
+        public Sprite baristaShooB;
+        [Tooltip("Paprika, the ginger stray who naps on the stools: trot A/B, lounging, thrown.")]
+        public Sprite strayTrotA;
+        public Sprite strayTrotB;
+        public Sprite strayLounge;
+        public Sprite strayLeap;
+        [Tooltip("Noir, the black cat who bumps the stools: walk A/B, the shove.")]
+        public Sprite bumperWalkA;
+        public Sprite bumperWalkB;
+        public Sprite bumperBump;
+        [Tooltip("Noir up on his hind legs pushing a stool over, and his tail lashing a stool (two frames).")]
+        public Sprite bumperRear;
+        public Sprite bumperTailA;
+        public Sprite bumperTailB;
+        [Tooltip("A stool that broke under Miro, in pieces on the floor.")]
+        public Sprite stepBroken;
 
         [Tooltip("One cup for every style: RETRO tints it (white sprite x order colour, GDD 3).")]
         public Sprite cup;

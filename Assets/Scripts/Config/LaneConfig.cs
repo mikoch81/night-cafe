@@ -34,15 +34,18 @@ namespace NightCafe.Config
         [Tooltip("K5: catch point at the rail end.")]
         public Vector2 leftUpEnd = new(-1.95f, 0.91f);
 
+        // The lower lanes end 0.4 further out than the upper ones (review 2026-09-26): down below
+        // Miro stands beside the footstool, not in front of it, and his tray still meets K5.
         public Vector2 leftDownStart = new(-5.84f, -0.45f);
-        public Vector2 leftDownBend = new(-3.19f, -1.12f);
-        public Vector2 leftDownEnd = new(-1.95f, -1.69f);
+        public Vector2 leftDownBend = new(-3.39f, -1.19f);
+        public Vector2 leftDownEnd = new(-2.35f, -1.69f);
 
         [Space]
         [Tooltip("Bottom edge of the ghost slot painted into screen_bg - the barista stands on it.")]
         public Vector2 leftUpSlot = new(-1.16f, -0.04f);
 
-        public Vector2 leftDownSlot = new(-1.16f, -2.64f);
+        [Tooltip("Beside the footstool (which stands under leftUpSlot), tray over the lower K5.")]
+        public Vector2 leftDownSlot = new(-1.60f, -2.64f);
 
         [Tooltip("The bar line baked into screen_bg; stains sit on it and the cat mops along it.")]
         public float barLineY = -3.67f;

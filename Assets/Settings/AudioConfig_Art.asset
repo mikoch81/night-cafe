@@ -19,6 +19,20 @@ MonoBehaviour:
   gameOver: {fileID: 8300000, guid: d8d7d827c54ae8a4d82d2c9ff765a94f, type: 3}
   brewAlarm: {fileID: 8300000, guid: 85a643706974e13438d09512b06647d0, type: 3}
   leverClick: {fileID: 8300000, guid: 5dd5e084b6046cb40a6b635b92a13fe5, type: 3}
+  rushBell: {fileID: 8300000, guid: 3f2dca764380a214bbf2df9a2b03b450, type: 3}
+  ladderCreak: {fileID: 8300000, guid: 9261e9b4896273547839d73589ca85d7, type: 3}
+  ladderBreak: {fileID: 8300000, guid: 339c6fa5ce88af84a843182334a42b6b, type: 3}
+  ladderKnock: {fileID: 8300000, guid: a4acd92b023069c428bb08bbd9006abe, type: 3}
+  catHiss: {fileID: 8300000, guid: 14120a751ba09ef41bf81522acae1e71, type: 3}
+  levelUp: {fileID: 8300000, guid: f2db116dfdb753645b7b55496cc14d95, type: 3}
+  machineFrenzy: {fileID: 8300000, guid: 4f9f31b5575a43d4ca04a2afb65a87af, type: 3}
+  rushCrowd:
+  - {fileID: 8300000, guid: 4d39c8a66398bbf4ab80658822b9451b, type: 3}
+  - {fileID: 8300000, guid: 4c7fd18cbe8abc9498677749fd4aac40, type: 3}
+  - {fileID: 8300000, guid: 8a3caa8dd124e8e438c5a0dc4f71c0dc, type: 3}
+  - {fileID: 8300000, guid: 0d27f00fa0c79db49a8d854fe2c26558, type: 3}
+  rushCrowdOffsetDb: -8
+  rushAmbienceBoostDb: 6
   lofiLoop: {fileID: 8300000, guid: cca789ca7fc09b84b8b82f6053eaef44, type: 3}
   musicOffsetDb: -18
   ambience: {fileID: 8300000, guid: a50c926f6f1072340b1da74b633d1eda, type: 3}

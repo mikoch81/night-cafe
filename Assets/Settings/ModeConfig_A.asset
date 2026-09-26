@@ -58,3 +58,47 @@ MonoBehaviour:
   orderedColorWeight: 0.55
   orderChangeCatches: 10
   orderChangeSeconds: 20
+  levelThresholds: 1900000032000000640000008c000000
+  levelEvery: 50
+  catOnLadderFromLevel: 2
+  laddersFromLevel: 3
+  rushHourFromLevel: 4
+  eventsSpeedUpFromLevel: 3
+  eventGap: 14
+  eventGapShrinkPerLevel: 3
+  eventGapMin: 8
+  eventIntroDelay: 3
+  firstRushDelay: 10
+  rushHourSeconds: 60
+  rushHourGap: 90
+  rushHourGapShrinkPerLevel: 15
+  rushHourGapMin: 60
+  rushStepFactor: 0.85
+  rushExtraCups: 1
+  eventsOverlapFromLevel: 5
+  quietFromLevel: 5
+  quietPoints: 20
+  quietGapMinPoints: 40
+  quietGapMaxPoints: 80
+  quietStepFactor: 1.35
+  quietExtraCups: -1
+  frenzyFromLevel: 5
+  firstFrenzyDelay: 15
+  frenzySeconds: 10
+  frenzyGap: 75
+  frenzyGapShrinkPerLevel: 5
+  frenzyGapMin: 50
+  frenzyBreather: 5
+  frenzyStepFactor: 0.65
+  frenzyStepFactorPerLevel: 0.05
+  frenzyStepFactorMin: 0.5
+  frenzyStepGap: 2
+  frenzyOtherCups: 1
+  ladderCreakSeconds: 6
+  ladderBreakAfterSeconds: 2
+  ladderBrokenSeconds: 10
+  ladderSlowSeconds: 12
+  ladderClimbDelay: 0.45
+  ladderRepairPresses: 2
+  ladderToppledMaxSeconds: 20
+  catOnLadderSeconds: 12

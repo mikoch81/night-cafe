@@ -24,9 +24,15 @@ namespace NightCafe.Services
 
         public int Level => _level;
 
-        /// <summary>Seconds a cup takes to travel one step, floored at MinStepTime.</summary>
+        /// <summary>Rush hour multiplies the step time by this (below 1 = faster); 1 otherwise.</summary>
+        public float StepFactor { get; set; } = 1f;
+
+        /// <summary>
+        /// Seconds a cup takes to travel one step, floored at MinStepTime - and then scaled by
+        /// the rush hour, which is the one thing allowed to go past the floor.
+        /// </summary>
         public float StepTime =>
-            Mathf.Max(_settings.MinStepTime, _settings.BaseStepTime - _settings.StepTimeDecrement * _level);
+            Mathf.Max(_settings.MinStepTime, _settings.BaseStepTime - _settings.StepTimeDecrement * _level) * StepFactor;
 
         public event Action<int> LevelChanged;
 

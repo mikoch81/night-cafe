@@ -40,6 +40,12 @@ namespace NightCafe.Services
 
         public event Action<int> OrderChanged;
 
+        /// <summary>
+        /// Held orders do not rotate (the terrible ten seconds in Mode B: the wild machine brews the
+        /// order, and a change halfway would turn its stream into a trap). Released, it carries on.
+        /// </summary>
+        public bool Held { get; set; }
+
         public bool IsWanted(int colour) => !Enabled || colour == CurrentOrder;
 
         /// <summary>Colour for a cup about to spawn: the order at OrderedWeight, the rest split evenly.</summary>
@@ -61,16 +67,22 @@ namespace NightCafe.Services
                 return;
 
             _correctCatches++;
-            if (_correctCatches >= _settings.ChangeAfterCatches)
+            if (!Held && _correctCatches >= _settings.ChangeAfterCatches)
                 Rotate();
         }
 
         public void Tick(float deltaSeconds)
         {
-            if (!Enabled)
+            if (!Enabled || Held)
                 return;
 
             _elapsed += deltaSeconds;
+            if (_correctCatches >= _settings.ChangeAfterCatches)
+            {
+                Rotate(); // catches made while it was held
+                return;
+            }
+
             if (_elapsed >= _settings.ChangeAfterSeconds)
                 Rotate();
         }
@@ -80,6 +92,7 @@ namespace NightCafe.Services
         {
             _correctCatches = 0;
             _elapsed = 0f;
+            Held = false;
 
             int previous = CurrentOrder;
             CurrentOrder = Enabled ? _rng.NextInt(0, _colours.Length) : 0;

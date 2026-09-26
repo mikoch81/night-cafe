@@ -682,12 +682,14 @@ namespace NightCafe.EditorTools
             label.transform.SetParent(root, false);
             label.transform.SetPositionAndRotation(MenuPillCentre + new Vector3(0f, -0.66f, -0.002f), Quaternion.identity);
             var text = label.AddComponent<TextMeshPro>();
-            text.text = "MENU";
-            text.fontSize = 2.8f;
-            text.characterSpacing = 8f;
+            // "PAUSE" too (review 2026-09-26): players look for a pause button, not a menu.
+            text.text = "MENU · PAUSE";
+            text.fontSize = 2.4f;
+            text.characterSpacing = 4f;
             text.alignment = TextAlignmentOptions.Center;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
             text.color = new Color(0.62f, 0.50f, 0.36f); // the cream inlay of the engraved brand
-            text.rectTransform.sizeDelta = new Vector2(2f, 0.5f);
+            text.rectTransform.sizeDelta = new Vector2(3.4f, 0.5f);
             if (font != null)
                 text.font = font;
 
