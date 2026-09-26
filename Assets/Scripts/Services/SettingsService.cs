@@ -1,4 +1,5 @@
 using System;
+using NightCafe.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,36 +33,31 @@ namespace NightCafe.Services
     }
 
     /// <summary>
-    /// Player toggles for music, sound effects, haptics (GDD 4, 5.3) and segment ghosts (GDD 5.2).
-    /// Everything defaults to on except the ghosts, which are an opt-in LCD affectation.
+    /// Player toggles for music, sound effects and haptics (GDD 4, 5.3). Everything defaults to on.
     /// </summary>
     public sealed class SettingsService
     {
         const string MusicKey = "nightcafe.music";
         const string SfxKey = "nightcafe.sfx";
         const string HapticsKey = "nightcafe.haptics";
-        const string GhostsKey = "nightcafe.ghosts";
-        const string RetroScreenKey = "nightcafe.retro";
+        const string PolishKey = "nightcafe.polish";
 
         readonly ISettingsStore _store;
 
-        public SettingsService(ISettingsStore store)
+        /// <param name="systemLanguage">The language on a first run (the phone's); a saved choice wins.</param>
+        public SettingsService(ISettingsStore store, Language systemLanguage = Language.English)
         {
             _store = store;
             MusicEnabled = _store.Load(MusicKey, true);
             SfxEnabled = _store.Load(SfxKey, true);
             HapticsEnabled = _store.Load(HapticsKey, true);
-            GhostsEnabled = _store.Load(GhostsKey, false);
-            RetroScreen = _store.Load(RetroScreenKey, false);
+            Language = _store.Load(PolishKey, systemLanguage == Language.Polish) ? Language.Polish : Language.English;
         }
 
         public bool MusicEnabled { get; private set; }
         public bool SfxEnabled { get; private set; }
         public bool HapticsEnabled { get; private set; }
-        public bool GhostsEnabled { get; private set; }
-
-        /// <summary>GDD 5.2a: the segmented Neo-LCD look instead of the painted default.</summary>
-        public bool RetroScreen { get; private set; }
+        public Language Language { get; private set; }
 
         public event Action Changed;
 
@@ -71,9 +67,12 @@ namespace NightCafe.Services
 
         public void ToggleHaptics() => Set(HapticsKey, HapticsEnabled = !HapticsEnabled);
 
-        public void ToggleGhosts() => Set(GhostsKey, GhostsEnabled = !GhostsEnabled);
-
-        public void ToggleRetroScreen() => Set(RetroScreenKey, RetroScreen = !RetroScreen);
+        /// <summary>English and Polish, one tap each way (review 2026-09-26).</summary>
+        public void ToggleLanguage()
+        {
+            Language = Language == Language.Polish ? Language.English : Language.Polish;
+            Set(PolishKey, Language == Language.Polish);
+        }
 
         void Set(string key, bool value)
         {

@@ -52,7 +52,7 @@ namespace NightCafe.Tests
 
             Assert.IsTrue(art.titleBaristaWipes, "Miro wipes the counter on the painted title");
             Assert.Greater(art.gameOverDim, 0.55f, "the lights go further down than on the LCD");
-            Assert.AreEqual(5, art.toggleOffsets.Length, "one pinned note per toggle");
+            Assert.AreEqual(4, art.toggleOffsets.Length, "one pinned note per toggle: music, sound, haptics, skin");
 
             foreach ((string slot, string file) in NightCafeSetup.ArtTitleSprites)
             {
@@ -71,20 +71,6 @@ namespace NightCafe.Tests
                     continue; // borrows frame A when absent
                 Assert.AreEqual(onDisk, sprite != null, $"{slot} must mirror {file} on disk");
             }
-        }
-
-        [Test]
-        public void RetroStyleKeepsTheAuthoredTitle()
-        {
-            var retro = AssetDatabase.LoadAssetAtPath<ScreenStyle>("Assets/Settings/ScreenStyle_Retro.asset");
-            Assert.IsNotNull(retro, "run NightCafe/Build Scene Setup first");
-            Assert.IsNull(retro.titleSign);
-            Assert.IsNull(retro.clockFace);
-            Assert.IsNull(retro.resultCard);
-            Assert.IsNull(retro.catAsleepA);
-            Assert.IsFalse(retro.titleBaristaWipes, "the LCD hides Miro so the clock stays readable");
-            Assert.AreEqual(0, retro.toggleOffsets.Length, "the authored row of toggles");
-            Assert.AreEqual(new Vector2(0f, -0.30f), retro.titlePosition);
         }
     }
 }

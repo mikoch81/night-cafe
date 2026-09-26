@@ -10,13 +10,20 @@ namespace NightCafe.Config
         CatMeow = 3,
         GameOver = 4,
         BrewAlarm = 5,
-        LeverClick = 6
+        LeverClick = 6,
+        RushBell = 7,
+        LadderCreak = 8,
+        LadderBreak = 9,
+        LadderKnock = 10,
+        CatHiss = 11,
+        LevelUp = 12,
+        MachineFrenzy = 13
     }
 
     /// <summary>
-    /// Clips and levels (GDD 5.3). One per screen style: the RETRO set is synthesised by
-    /// tools/gen_audio.py, the ART set is cut by tools/prep_audio.py from generated recordings
-    /// (art/audio/LICENSE.md). Haptics are read from the scene's base config only.
+    /// Clips and levels (GDD 5.3). The scene's base config holds the levels and haptics; the
+    /// screen style's set holds the clips, cut by tools/prep_audio.py from generated recordings
+    /// (art/audio/LICENSE.md).
     /// </summary>
     [CreateAssetMenu(menuName = "NightCafe/Audio Config", fileName = "AudioConfig")]
     public sealed class AudioConfig : ScriptableObject
@@ -29,6 +36,22 @@ namespace NightCafe.Config
         public AudioClip gameOver;
         public AudioClip brewAlarm;
         public AudioClip leverClick;
+
+        [Header("Café events (1.1.0)")]
+        public AudioClip rushBell;
+        public AudioClip ladderCreak;
+        public AudioClip ladderBreak;
+        public AudioClip ladderKnock;
+        public AudioClip catHiss;
+        public AudioClip levelUp;
+        [Tooltip("An espresso machine going haywire: the terrible ten seconds (level 5+).")]
+        public AudioClip machineFrenzy;
+        [Tooltip("Rush-hour walla: short takes scattered at random while it lasts.")]
+        public AudioClip[] rushCrowd = new AudioClip[0];
+        [Tooltip("Level of the walla takes relative to the SFX, in decibels.")]
+        public float rushCrowdOffsetDb = -8f;
+        [Tooltip("The room tone comes up by this much during a rush hour, in decibels.")]
+        public float rushAmbienceBoostDb = 6f;
 
         [Header("Music")]
         public AudioClip lofiLoop;
@@ -63,6 +86,13 @@ namespace NightCafe.Config
             GameSfx.GameOver => gameOver,
             GameSfx.BrewAlarm => brewAlarm,
             GameSfx.LeverClick => leverClick,
+            GameSfx.RushBell => rushBell,
+            GameSfx.LadderCreak => ladderCreak,
+            GameSfx.LadderBreak => ladderBreak,
+            GameSfx.LadderKnock => ladderKnock,
+            GameSfx.CatHiss => catHiss,
+            GameSfx.LevelUp => levelUp,
+            GameSfx.MachineFrenzy => machineFrenzy,
             _ => null
         };
     }

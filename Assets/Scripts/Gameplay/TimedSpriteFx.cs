@@ -3,7 +3,8 @@ using UnityEngine;
 namespace NightCafe.Gameplay
 {
     /// <summary>
-    /// One-shot sprite flash at a world position - the broken cup on a miss (GDD 2.5).
+    /// A sprite shown at a position for a while, or until hidden - the broken cup on a miss,
+    /// which stays on the floor until Sablé mops it up (GDD 2.5, review 2026-09-26).
     /// </summary>
     public sealed class TimedSpriteFx : MonoBehaviour
     {
@@ -12,6 +13,11 @@ namespace NightCafe.Gameplay
         float _timer;
 
         public bool IsBusy => _timer > 0f;
+
+        public Vector2 Position => transform.localPosition;
+
+        /// <summary>Shows the sprite until Hide is called.</summary>
+        public void Show(Vector2 localPosition) => Show(localPosition, float.PositiveInfinity);
 
         public void Show(Vector2 localPosition, float duration)
         {

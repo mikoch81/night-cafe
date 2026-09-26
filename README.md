@@ -3,8 +3,8 @@
 A one-screen arcade game for Android in the manner of the old LCD handhelds: barista **Miro**
 catches coffee cups sliding down four counters and hands them over the bar; three spills and the
 shift is over. Cat **Sablé** mops up. The game runs on a virtual handheld, the *Bréve Deck* — a
-real 3D walnut-and-aluminium body whose screen shows a painted night-café diorama (or, once
-unlocked, an amber Neo-LCD skin). Two modes: **A** catch everything, **B** serve only the colour
+real 3D walnut-and-aluminium body whose screen shows a painted night-café diorama, with a MENU
+button for pause, sound and the local top 10. Two modes: **A** catch everything, **B** serve only the colour
 on the order card. Real wall clock on the title screen, with a brew timer as an easter egg.
 
 Design source of truth: [docs/GDD.md](docs/GDD.md). Working notes and history for the
@@ -31,7 +31,7 @@ next session: [docs/CLAUDE_CODE_HANDOFF.md](docs/CLAUDE_CODE_HANDOFF.md).
 `tools/` rebuilds the generated assets: `shell_model.py` (Blender 5.2, the device model),
 `gen_art.py` / `gen_art_v3.py` (Inkscape, vector sprites), `cut_sheet.py` (ImageMagick, cutting
 Midjourney sheets), `clear_dial.py` / `clear_marks.py` / `lift_from_shelf.py` (Pillow retouch),
-`gen_icon.py` (Inkscape + Pillow, launcher icon and splash), `gen_audio.py` / `prep_audio.py`
+`gen_icon.py` (Inkscape + Pillow, launcher icon and splash), `prep_audio.py`
 (numpy, scipy, soundfile, pyloudnorm). Python 3.12. Prompts and cutting parameters live in
 [docs/references/PROMPTS.md](docs/references/PROMPTS.md).
 
@@ -41,12 +41,13 @@ Midjourney sheets), `clear_dial.py` / `clear_marks.py` / `lift_from_shelf.py` (P
 - Painted screen art and the title props: generated in Midjourney on a paid plan and cut/retouched
   by the tools above (`art/midjourney/LICENSE.md`). Vector sprites: original work in this repo.
 - Audio: lo-fi loop from Suno, effects and rain from ElevenLabs, both on paid plans
-  (`art/audio/LICENSE.md`); the RETRO chiptune set is synthesised by `tools/gen_audio.py`.
+  (`art/audio/LICENSE.md`).
 - Fonts (OFL): Cabin Sketch, Patrick Hand, DSEG7 / DSEG14, Liberation Mono; DejaVu Sans Bold for
   the engraving (`art/fonts/`). Licence texts sit next to the fonts.
 - Textures and HDRI: ambientCG and Poly Haven, CC0 (`art/textures/LICENSE.md`).
-- The game contains no ads, analytics or third-party SDKs and collects no data
-  ([docs/privacy.md](docs/privacy.md)).
+- The game contains no ads or analytics and collects no data itself; the one third-party SDK is Google
+  Play Games (plugin 2.2.1, Apache 2.0) for the optional online top 10 ([docs/privacy.md](docs/privacy.md),
+  setup in [docs/store/PLAY_GAMES_SETUP.md](docs/store/PLAY_GAMES_SETUP.md)).
 
 The game is an original work in the *catch-the-falling-objects* LCD genre; its characters,
 setting, art, sounds and names are its own (the checklist is GDD §7).

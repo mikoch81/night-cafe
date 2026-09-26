@@ -22,11 +22,11 @@ MonoBehaviour:
     baristaSlot: {x: -1.16, y: -0.04}
   - steps:
     - {x: -5.84, y: -0.45}
-    - {x: -4.846725, y: -0.70113}
-    - {x: -3.8534496, y: -0.95225996}
-    - {x: -2.88089, y: -1.2620909}
-    - {x: -1.95, y: -1.69}
-    baristaSlot: {x: -1.16, y: -2.64}
+    - {x: -4.951335, y: -0.7184132}
+    - {x: -4.0626698, y: -0.9868264}
+    - {x: -3.1866474, y: -1.2877657}
+    - {x: -2.35, y: -1.69}
+    baristaSlot: {x: -1.6, y: -2.64}
   - steps:
     - {x: 5.84, y: 2.14}
     - {x: 4.8407326, y: 1.9057395}
@@ -36,19 +36,19 @@ MonoBehaviour:
     baristaSlot: {x: 1.16, y: -0.04}
   - steps:
     - {x: 5.84, y: -0.45}
-    - {x: 4.846725, y: -0.70113}
-    - {x: 3.8534496, y: -0.95225996}
-    - {x: 2.88089, y: -1.2620909}
-    - {x: 1.95, y: -1.69}
-    baristaSlot: {x: 1.16, y: -2.64}
+    - {x: 4.951335, y: -0.7184132}
+    - {x: 4.0626698, y: -0.9868264}
+    - {x: 3.1866474, y: -1.2877657}
+    - {x: 2.35, y: -1.69}
+    baristaSlot: {x: 1.6, y: -2.64}
   leftUpStart: {x: -5.84, y: 2.14}
   leftUpBend: {x: -3.11, y: 1.5}
   leftUpEnd: {x: -1.95, y: 0.91}
   leftDownStart: {x: -5.84, y: -0.45}
-  leftDownBend: {x: -3.19, y: -1.12}
-  leftDownEnd: {x: -1.95, y: -1.69}
+  leftDownBend: {x: -3.39, y: -1.19}
+  leftDownEnd: {x: -2.35, y: -1.69}
   leftUpSlot: {x: -1.16, y: -0.04}
-  leftDownSlot: {x: -1.16, y: -2.64}
+  leftDownSlot: {x: -1.6, y: -2.64}
   barLineY: -3.67
   orderPanelPosition: {x: 4.1, y: -2.85}
   orderPanelScale: 0.5

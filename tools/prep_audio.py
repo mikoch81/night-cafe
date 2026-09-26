@@ -13,7 +13,7 @@ art/audio/LICENSE.md. This script does the cutting so the sources stay untouched
                 music offset)
   * ambience  - chain the rain variants with crossfades into one loop, -16 LUFS
 
-The synthesised RETRO set (tools/gen_audio.py -> Assets/Audio/) is not touched.
+  * crowd     - the rush-hour walla takes, soft-faded, -20 LUFS each
 """
 
 import os
@@ -39,7 +39,19 @@ SFX = {
     "sfx_gameover": ("sfx_gameover.wav", 2.0, -2.0),
     "sfx_brew_alarm": ("sfx_brew_alarm.wav", 1.0, -2.0),
     "sfx_click": ("sfx_click.wav", 0.4, -1.0),
+    # 1.1.0 café events (ElevenLabs, flow "Night Café 1.1.0 SFX", 2026-09-26)
+    "sfx_rush_bell": ("sfx_rush_bell.wav", 1.8, -3.0),
+    "sfx_ladder_creak": ("sfx_ladder_creak.wav", 1.6, -6.0),
+    "sfx_ladder_break": ("sfx_ladder_break.wav", 1.6, -4.0),
+    "sfx_ladder_knock": ("sfx_ladder_knock.wav", 0.6, -4.0),
+    "sfx_cat_hiss": ("sfx_cat_hiss.wav", 1.0, -8.0),
+    "sfx_level_up": ("sfx_level_up.wav", 1.0, -4.0),
+    "sfx_machine_frenzy": ("sfx_machine_frenzy.wav", 2.0, -4.0),   # 2026-09-26, the terrible ten seconds
 }
+# Rush-hour walla: short takes the game scatters at random over the room tone, so a
+# two-second clip never repeats audibly the way a two-second loop would.
+CROWD_RAW = ["ambience_crowd.wav", "ambience_crowd2.wav", "ambience_crowd3.wav", "ambience_crowd4.wav"]
+CROWD_LUFS = -20.0
 MUSIC_RAW = "lofi_loop.wav"
 AMBIENCE_RAW = ["ambience_rain_cafe.wav", "ambience_rain_cafe2.wav", "ambience_rain_cafe3.wav", "ambience_rain_cafe4.wav"]
 
@@ -222,7 +234,17 @@ def ambience():
     write("ambience_rain_cafe", out)
 
 
+# ---------------------------------------------------------------- rush-hour crowd
+
+def crowd():
+    print("crowd")
+    for i, raw in enumerate(CROWD_RAW, start=1):
+        buf = highpass(mono(load(raw)), 90.0)
+        buf = fade(buf, 0.25, 0.35)          # soft edges: the takes overlap in the game
+        write(f"sfx_crowd_{i}", to_lufs(buf, CROWD_LUFS))
+
+
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["effects", "music", "ambience"]
+    which = sys.argv[1:] or ["effects", "music", "ambience", "crowd"]
     for name in which:
         globals()[name]()

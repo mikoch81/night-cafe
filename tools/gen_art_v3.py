@@ -217,12 +217,36 @@ def step():
     return svg(60, 200, "".join(b))
 
 
+def step_broken():
+    """Canvas 200x44, pivot (0.5, 0.05) on the floor: the step ladder after it gave way under Miro
+    (1.1.0) - both legs snapped with splintered ends, the platform on its side, rungs scattered.
+    The same parts and line as step(), just lying in pieces."""
+    b = []
+    def leg(x0, x1, y, jag_left, jag_right, turn, cx, cy):
+        # A leg lying along x, 7 thick, with a zig-zag break at the snapped end(s).
+        right = "l4 2 l-3 1.5 l3 1.5 l-4 2" if jag_right else "v7"
+        left = "l-4 -2 l3 -1.5 l-3 -1.5 l4 -2" if jag_left else "v-7"
+        d = f"M{x0} {y} H{x1} {right} H{x0} {left} z"
+        return shape(d, WALNUT_FRONT, INK, 2.2, f'transform="rotate({turn} {cx} {cy})"')
+    b.append(leg(8, 86, 34, False, True, 0, 47, 37))                                                  # left leg, lower part
+    b.append(leg(92, 150, 34, True, False, -4, 121, 37))                                              # left leg, upper part
+    b.append(leg(60, 132, 24, False, True, 9, 96, 27))                                                # right leg, resting on the rest
+    b.append(shape("M22 30 h38 v6 h-38 z", WALNUT_TOP, INK, 1.8, 'transform="rotate(-14 41 33)"'))    # rungs
+    b.append(shape("M150 35 h34 v6 h-34 z", WALNUT_TOP, INK, 1.8, 'transform="rotate(6 167 38)"'))
+    b.append(shape("M104 36 h26 l-3 5 h-24 z", WALNUT_TOP, INK, 1.6))                                 # half a rung
+    b.append(shape("M150 14 h40 l2 8 h-44 z", WALNUT_TOP, INK, 2.2, 'transform="rotate(-22 170 20)"'))  # platform
+    for x, y, r in ((90, 40, -30), (138, 41, 20), (58, 41, 50), (186, 42, -10)):                      # splinters
+        b.append(shape(f"M{x} {y} l7 -1.5 l-6 3 z", WALNUT_TOP, INK, 1.0, f'transform="rotate({r} {x} {y})"'))
+    return svg(200, 44, "".join(b))
+
+
 def sprites():
     colours = order_colours()
     table = {
         "stain": (stain, 60, 34, SCALE),
         "order_panel": (order_panel, 130, 52, SCALE),
         "step": (step, 60, 200, SCALE),
+        "step_broken": (step_broken, 200, 44, SCALE),
         "scoreboard": (scoreboard, 110, 36, SCALE),
     }
     return table

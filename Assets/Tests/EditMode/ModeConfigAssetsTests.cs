@@ -97,6 +97,21 @@ namespace NightCafe.Tests
             Assert.AreEqual(a.breatherEvery, b.breatherEvery);
             Assert.AreEqual(a.breatherDuration, b.breatherDuration);
             Assert.AreEqual(a.maxStains, b.maxStains);
+
+            // 1.1.0: every level, quiet spell and event reaches Mode B at the same number of cups
+            // (2 points a cup, so the point thresholds double); the timed events are the same seconds.
+            for (int i = 0; i < a.levelThresholds.Length; i++)
+                Assert.AreEqual(a.levelThresholds[i] * 2, b.levelThresholds[i], $"level {i + 2}");
+            Assert.AreEqual(a.levelEvery * 2, b.levelEvery);
+            Assert.AreEqual(a.quietPoints * 2, b.quietPoints);
+            Assert.AreEqual(a.quietGapMinPoints * 2, b.quietGapMinPoints);
+            Assert.AreEqual(a.quietGapMaxPoints * 2, b.quietGapMaxPoints);
+            Assert.AreEqual(5, b.Events.LevelFor(280), "Mode B's level 5 at 140 cups, like Mode A's");
+            Assert.AreEqual(a.frenzyFromLevel, b.frenzyFromLevel);
+            Assert.AreEqual(a.frenzySeconds, b.frenzySeconds);
+            Assert.AreEqual(a.FrenzyStepFactorAt(7), b.FrenzyStepFactorAt(7));
+            Assert.AreEqual(a.eventGap, b.eventGap);
+            Assert.AreEqual(a.rushHourSeconds, b.rushHourSeconds);
         }
     }
 }

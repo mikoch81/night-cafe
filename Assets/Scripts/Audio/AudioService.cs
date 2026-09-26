@@ -5,9 +5,8 @@ using UnityEngine;
 namespace NightCafe.Audio
 {
     /// <summary>
-    /// Plays the SFX, the lo-fi bed and the room tone (GDD 5.3). The clips come from the
-    /// current sound set - each screen style brings its own, the chiptune for RETRO and the
-    /// recordings for ART - while levels and haptics stay with the scene's base config.
+    /// Plays the SFX, the lo-fi bed and the room tone (GDD 5.3), and the rush-hour walla. The
+    /// clips come from the screen style's sound set, levels and haptics from the scene's base config.
     /// Unity exposes no scripting API for creating an AudioMixer, so levels are plain
     /// AudioSource volumes; the offsets are applied as gain multipliers.
     /// </summary>
@@ -25,6 +24,10 @@ namespace NightCafe.Audio
 
         /// <summary>Silences effects only; the lo-fi bed keeps playing under the attract demo.</summary>
         public bool SfxMuted { get; set; }
+
+        bool _rush;
+        float _nextCrowdAt;
+        int _lastCrowd = -1;
 
         public void Initialise(SettingsService settings)
         {
@@ -78,7 +81,10 @@ namespace NightCafe.Audio
             sfxSource.volume = sfxOn ? config.sfxVolume : 0f;
             musicSource.volume = musicOn ? AudioLevels.LinearGain(config.musicOffsetDb) : 0f;
             if (ambienceSource != null)
-                ambienceSource.volume = musicOn ? AudioLevels.LinearGain(config.ambienceOffsetDb) : 0f;
+            {
+                float boost = _rush ? config.rushAmbienceBoostDb : 0f;
+                ambienceSource.volume = musicOn ? AudioLevels.LinearGain(config.ambienceOffsetDb + boost) : 0f;
+            }
 
             if (musicOn)
                 StartMusic();
@@ -97,6 +103,36 @@ namespace NightCafe.Audio
             AudioClip clip = Set.Clip(sfx);
             if (clip != null)
                 sfxSource.PlayOneShot(clip, config.sfxVolume);
+        }
+
+        /// <summary>
+        /// Rush hour: the room tone comes up and walla takes land at random every 1.2-2.6 s
+        /// (unscaled, so a paused game does not stack them up). Follows the sound toggle.
+        /// </summary>
+        public void SetRushHour(bool on)
+        {
+            _rush = on;
+            _nextCrowdAt = Time.unscaledTime;
+            ApplySettings();
+        }
+
+        void Update()
+        {
+            if (!_rush || Time.timeScale == 0f || Time.unscaledTime < _nextCrowdAt)
+                return;
+
+            AudioClip[] takes = Set.rushCrowd;
+            _nextCrowdAt = Time.unscaledTime + Random.Range(1.2f, 2.6f);
+            if (takes == null || takes.Length == 0 || SfxMuted || (_settings != null && !_settings.SfxEnabled))
+                return;
+
+            // Never the same take twice running.
+            int pick = Random.Range(0, takes.Length);
+            if (pick == _lastCrowd && takes.Length > 1)
+                pick = (pick + 1) % takes.Length;
+            _lastCrowd = pick;
+            if (takes[pick] != null)
+                sfxSource.PlayOneShot(takes[pick], config.sfxVolume * AudioLevels.LinearGain(config.rushCrowdOffsetDb));
         }
 
         /// <summary>The bed and the room tone together; either is skipped when its set has none.</summary>

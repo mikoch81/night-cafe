@@ -63,7 +63,23 @@ namespace NightCafe.Config
             { "cup_decaf", new Vector2(0.5000f, 0.0300f) },
             { "cup_broken", new Vector2(0.5000f, 0.5000f) },
             { "stain", new Vector2(0.4375f, 0.3934f) },
-            { "step", new Vector2(0.5000f, 0.9550f) }
+            { "step", new Vector2(0.5000f, 0.9550f) },
+            { "speech_tail", new Vector2(0.5670f, 0.8545f) }, // the middle of the join, 16 px under its top (tools/gen_bubble.py)
+            // 1.1.0 cast (tools/finish_cast.py): feet from the alpha; Paprika lounges on his belly
+            // (the tail hangs below it), his leap spins about its middle.
+            { "miro_shoo_a", new Vector2(0.6377f, 0.0075f) },
+            { "miro_shoo_b", new Vector2(0.2467f, 0.0083f) },
+            { "paprika_trot_a", new Vector2(0.4757f, 0.0234f) },
+            { "paprika_trot_b", new Vector2(0.4824f, 0.0229f) },
+            { "paprika_lounge", new Vector2(0.5800f, 0.3621f) },
+            { "paprika_leap", new Vector2(0.5000f, 0.5000f) },
+            { "noir_walk_a", new Vector2(0.4842f, 0.0204f) },
+            { "noir_walk_b", new Vector2(0.5052f, 0.0204f) },
+            { "noir_bump", new Vector2(0.3330f, 0.0173f) },
+            { "noir_rear", new Vector2(0.4484f, 0.0142f) },
+            { "noir_tail_a", new Vector2(0.6491f, 0.0213f) },
+            { "noir_tail_b", new Vector2(0.5755f, 0.0169f) },
+            { "step_broken", new Vector2(0.5000f, 0.0400f) } // the pieces rest on the floor
         };
 
         /// <summary>Returns false for sprites that should keep a centred pivot.</summary>

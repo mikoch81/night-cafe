@@ -26,6 +26,21 @@ namespace NightCafe.EditorTools
 
             TMP_Text best = WorldText("BestText", root, new Vector2(-4.30f, 3.55f), "BEST 000", 4.6f, letterFont,
                 ActiveAmber, 0, new Vector2(3.9f, 1.2f));
+
+            // 1.1.0: the level beside the mode letter, and a banner strip for LEVEL n / RUSH HOUR.
+            TMP_Text level = WorldText("LevelText", root, new Vector2(3.25f, 3.55f), "LV 1", 4.6f, letterFont,
+                ActiveAmber, 0, new Vector2(1.9f, 1.2f));
+            level.gameObject.SetActive(false);
+            GameObject banner = Child("Banner", root);
+            var bannerBackGo = Child("BannerBacking", banner.transform, new Vector2(0f, 2.55f));
+            bannerBackGo.transform.localScale = new Vector3(7.4f, 1.0f, 1f);
+            var bannerBack = bannerBackGo.AddComponent<SpriteRenderer>();
+            bannerBack.sprite = WhitePixelSprite();
+            bannerBack.color = new Color(GlassBlack.r, GlassBlack.g, GlassBlack.b, 0.6f);
+            SetSorting(bannerBack, Core.SortingLayers.Hud, PropOrder);
+            TMP_Text bannerText = WorldText("BannerText", banner.transform, new Vector2(0f, 2.55f),
+                "RUSH HOUR", 5.4f, monoFont, ActiveAmber, 0, new Vector2(7f, 0.9f));
+            banner.SetActive(false);
             best.wordSpacing = 12f; // DSEG's space is a bare segment gap; open it up between BEST and the digits
 
             // --- Title ---------------------------------------------------------
@@ -61,31 +76,28 @@ namespace NightCafe.EditorTools
                 "NIGHT CAFÉ\nTAP TO START", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 2.6f));
 
             GameObject togglesGo = Child("Toggles", titlePanel.transform, new Vector2(0f, -2.30f));
-            // Five toggles across the 12.7-wide LCD: sound, haptics, ghosts, shell skin, screen style.
+            // Four toggles across the 12.7-wide LCD: music, sound effects, haptics, shell skin.
             const float toggleStep = 2.45f;
             const float toggleSize = 5.2f;
-            var toggleCards = new SpriteRenderer[5];
+            var toggleCards = new SpriteRenderer[4];
             for (int i = 0; i < toggleCards.Length; i++)
-                toggleCards[i] = Prop($"Card_{i}", togglesGo.transform, new Vector2((i - 2) * toggleStep, 0f));
-            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-2f * toggleStep, 0f),
+                toggleCards[i] = Prop($"Card_{i}", togglesGo.transform, new Vector2((i - 1.5f) * toggleStep, 0f));
+            TMP_Text musicLabel = WorldText("MusicToggle", togglesGo.transform, new Vector2(-1.5f * toggleStep, 0f),
                 "♪ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(-toggleStep, 0f),
+            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-0.5f * toggleStep, 0f),
+                "SFX ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(0.5f * toggleStep, 0f),
                 "~ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text ghostsLabel = WorldText("GhostsToggle", togglesGo.transform, new Vector2(0f, 0f),
-                "░ OFF", toggleSize, monoFont, InactiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(toggleStep, 0f),
+            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(1.5f * toggleStep, 0f),
                 "WALNUT", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text screenLabel = WorldText("ScreenToggle", togglesGo.transform, new Vector2(2f * toggleStep, 0f),
-                "RETRO", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
 
             var toggles = togglesGo.AddComponent<TitleToggleView>();
             SetSerialized(toggles, so =>
             {
+                so.FindProperty("musicLabel").objectReferenceValue = musicLabel;
                 so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
                 so.FindProperty("hapticsLabel").objectReferenceValue = hapticsLabel;
-                so.FindProperty("ghostsLabel").objectReferenceValue = ghostsLabel;
                 so.FindProperty("skinLabel").objectReferenceValue = skinLabel;
-                so.FindProperty("screenLabel").objectReferenceValue = screenLabel;
                 so.FindProperty("hitSize").vector2Value = new Vector2(2.3f, 0.9f);
                 so.FindProperty("onColor").colorValue = ActiveAmber;
                 so.FindProperty("offColor").colorValue = InactiveAmber;
@@ -120,6 +132,12 @@ namespace NightCafe.EditorTools
                 "TAP TO RESTART", 4.2f, monoFont, ActiveAmber, 0, new Vector2(8f, 1.4f));
             gameOverPanel.SetActive(false);
 
+            // --- Menu (review 2026-09-26) ---------------------------------------
+            (PauseMenuView menu, SpriteRenderer menuCard, TMP_Text[] menuTexts) = BuildMenu(root, monoFont);
+
+            // --- Miro's speech bubble (1.1.0) -------------------------------------
+            (SpeechBubbleView bubble, TMP_Text bubbleText) = BuildSpeechBubble(root, monoFont);
+
             // --- Debug overlay --------------------------------------------------
             TMP_Text fps = BuildDebugCanvas(monoFont);
 
@@ -130,6 +148,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("bestText").objectReferenceValue = best;
                 so.FindProperty("modeText").objectReferenceValue = mode;
                 so.FindProperty("titlePanel").objectReferenceValue = titlePanel;
+                so.FindProperty("titleText").objectReferenceValue = titleText;
                 so.FindProperty("demoPanel").objectReferenceValue = demoPanel;
                 so.FindProperty("demoText").objectReferenceValue = demoText;
                 so.FindProperty("gameOverPanel").objectReferenceValue = gameOverPanel;
@@ -138,22 +157,29 @@ namespace NightCafe.EditorTools
                 so.FindProperty("gameOverRecord").objectReferenceValue = gameOverRecord;
                 so.FindProperty("gameOverFooter").objectReferenceValue = gameOverFooter;
                 so.FindProperty("fpsText").objectReferenceValue = fps;
+                so.FindProperty("levelText").objectReferenceValue = level;
+                so.FindProperty("bannerRoot").objectReferenceValue = banner;
+                so.FindProperty("bannerText").objectReferenceValue = bannerText;
             });
 
             return (hud, toggles, clockWidget, new TitleProps
             {
+                menu = menu,
+                bubble = bubble,
+                menuCard = menuCard,
+                menuTexts = menuTexts,
                 titleGroup = titleGroup.transform,
                 clockGroup = clockGroup.transform,
                 togglesGroup = togglesGo.transform,
                 resultGroup = resultGroup.transform,
                 brewTag = brewTag.transform,
                 titleSign = titleSign,
-                toggleLabels = new[] { soundLabel, hapticsLabel, ghostsLabel, skinLabel, screenLabel },
+                toggleLabels = new[] { musicLabel, soundLabel, hapticsLabel, skinLabel },
                 toggleCards = toggleCards,
                 demoBacking = demoBacking,
                 resultCard = resultCard,
                 signTexts = new[] { titleText },
-                cardTexts = new[] { gameOverHeader, gameOverScore, gameOverFooter },
+                cardTexts = new[] { gameOverHeader, gameOverScore, gameOverFooter, bubbleText },
             });
         }
 
@@ -165,9 +191,131 @@ namespace NightCafe.EditorTools
         internal sealed class TitleProps
         {
             public Transform titleGroup, clockGroup, togglesGroup, resultGroup, brewTag;
-            public SpriteRenderer titleSign, demoBacking, resultCard;
+            public SpriteRenderer titleSign, demoBacking, resultCard, menuCard;
             public SpriteRenderer[] toggleCards;
-            public TMP_Text[] toggleLabels, signTexts, cardTexts;
+            public TMP_Text[] toggleLabels, signTexts, cardTexts, menuTexts;
+            public PauseMenuView menu;
+            public SpeechBubbleView bubble;
+        }
+
+        // The bubble sits over the HUD lettering and under the menu.
+        const int BubbleOrder = 20;
+
+        /// <summary>
+        /// Miro's speech bubble: a 9-sliced paper body, a tail and a line of hand lettering
+        /// (tools/gen_bubble.py). The game loop points it at the barista.
+        /// </summary>
+        static (SpeechBubbleView view, TMP_Text text) BuildSpeechBubble(Transform hudRoot, TMP_FontAsset font)
+        {
+            GameObject go = Child("SpeechBubble", hudRoot);
+
+            var bodyGo = Child("BubbleBody", go.transform);
+            var body = bodyGo.AddComponent<SpriteRenderer>();
+            body.sprite = LoadSprite(ScreenV3Dir + "/speech_bubble.png");
+            body.drawMode = SpriteDrawMode.Sliced;
+            body.size = new Vector2(3f, 1f);
+            body.enabled = false;
+            SetSorting(body, Core.SortingLayers.Hud, BubbleOrder);
+
+            var tailGo = Child("BubbleTail", go.transform);
+            var tail = tailGo.AddComponent<SpriteRenderer>();
+            tail.sprite = LoadSprite(ScreenV3Dir + "/speech_tail.png");
+            tail.enabled = false;
+            SetSorting(tail, Core.SortingLayers.Hud, BubbleOrder + 1); // covers the body's outline at the join
+
+            TMP_Text text = WorldText("BubbleText", go.transform, Vector2.zero, "", 3.4f, font,
+                new Color(0.23f, 0.16f, 0.11f), BubbleOrder + 2, new Vector2(3.4f, 1f));
+            text.textWrappingMode = TextWrappingModes.Normal;
+            text.lineSpacing = -12f;
+            text.enabled = false;
+
+            var view = go.AddComponent<SpeechBubbleView>();
+            SetSerialized(view, so =>
+            {
+                so.FindProperty("body").objectReferenceValue = body;
+                so.FindProperty("tail").objectReferenceValue = tail;
+                so.FindProperty("text").objectReferenceValue = text;
+            });
+            return (view, text);
+        }
+
+        // The menu draws over everything else in the LCD, the HUD digits included.
+        const int MenuDimOrder = 40;
+        const int MenuCardOrder = 45;
+        const int MenuTextOrder = 50;
+
+        /// <summary>
+        /// The MENU card: a dark veil over the whole screen, a paper card (the receipt sprite,
+        /// 9-sliced by the style applier) and the rows. Two pages share the header: the rows,
+        /// and the local top 10 with a BACK row.
+        /// </summary>
+        static (PauseMenuView view, SpriteRenderer card, TMP_Text[] texts) BuildMenu(Transform hudRoot, TMP_FontAsset font)
+        {
+            GameObject host = Child("Menu", hudRoot);
+            GameObject panel = Child("MenuPanel", host.transform);
+
+            var veilGo = Child("MenuVeil", panel.transform);
+            veilGo.transform.localScale = new Vector3(12.72f, 8.92f, 1f);
+            var veil = veilGo.AddComponent<SpriteRenderer>();
+            veil.sprite = WhitePixelSprite();
+            veil.color = new Color(GlassBlack.r, GlassBlack.g, GlassBlack.b, 0.6f);
+            SetSorting(veil, Core.SortingLayers.Hud, MenuDimOrder);
+
+            var cardGo = Child("MenuCard", panel.transform);
+            var card = cardGo.AddComponent<SpriteRenderer>();
+            card.enabled = false; // the applier fits the paper
+            SetSorting(card, Core.SortingLayers.Hud, MenuCardOrder);
+
+            var rowSize = new Vector2(6f, 0.8f);
+            const float rowFont = 5.2f;
+            TMP_Text Row(string name, Transform parent, float y, string text, float size = rowFont) =>
+                WorldText(name, parent, new Vector2(0f, y), text, size, font, ActiveAmber, MenuTextOrder, rowSize);
+
+            TMP_Text header = Row("MenuHeader", panel.transform, 3.3f, "PAUSED", 6f);
+
+            GameObject main = Child("MainPage", panel.transform);
+            // Nine rows 0.72 apart (1.1.0 added ONLINE TOP 10 and LANGUAGE); the view sets the words.
+            const float step = 0.72f;
+            float y = 2.5f;
+            TMP_Text resume = Row("ResumeRow", main.transform, y, "RESUME");
+            TMP_Text music = Row("MusicRow", main.transform, y -= step, "MUSIC  ON");
+            TMP_Text sound = Row("SoundRow", main.transform, y -= step, "SOUND  ON");
+            TMP_Text mode = Row("ModeRow", main.transform, y -= step, "MODE  A");
+            TMP_Text scores = Row("ScoresRow", main.transform, y -= step, "TOP 10");
+            TMP_Text online = Row("OnlineRow", main.transform, y -= step, "ONLINE TOP 10");
+            TMP_Text language = Row("LanguageRow", main.transform, y -= step, "LANGUAGE  EN");
+            TMP_Text endShift = Row("EndShiftRow", main.transform, y -= step, "END SHIFT");
+            TMP_Text quit = Row("QuitRow", main.transform, y - step, "QUIT GAME");
+
+            GameObject scoresPage = Child("ScoresPage", panel.transform);
+            TMP_Text list = WorldText("ScoresText", scoresPage.transform, new Vector2(0f, -0.1f), "NO SHIFTS YET", 3.9f,
+                font, ActiveAmber, MenuTextOrder, new Vector2(6f, 5.8f));
+            list.alignment = TextAlignmentOptions.Top;
+            TMP_Text back = Row("BackRow", scoresPage.transform, -3.4f, "BACK");
+            scoresPage.SetActive(false);
+            panel.SetActive(false);
+
+            var view = host.AddComponent<PauseMenuView>();
+            SetSerialized(view, so =>
+            {
+                so.FindProperty("root").objectReferenceValue = panel;
+                so.FindProperty("header").objectReferenceValue = header;
+                so.FindProperty("resumeRow").objectReferenceValue = resume;
+                so.FindProperty("musicRow").objectReferenceValue = music;
+                so.FindProperty("soundRow").objectReferenceValue = sound;
+                so.FindProperty("modeRow").objectReferenceValue = mode;
+                so.FindProperty("scoresRow").objectReferenceValue = scores;
+                so.FindProperty("endShiftRow").objectReferenceValue = endShift;
+                so.FindProperty("quitRow").objectReferenceValue = quit;
+                so.FindProperty("languageRow").objectReferenceValue = language;
+                so.FindProperty("onlineRow").objectReferenceValue = online;
+                so.FindProperty("mainPage").objectReferenceValue = main;
+                so.FindProperty("scoresPage").objectReferenceValue = scoresPage;
+                so.FindProperty("scoresText").objectReferenceValue = list;
+                so.FindProperty("backRow").objectReferenceValue = back;
+            });
+
+            return (view, card, new[] { header, resume, music, sound, mode, scores, online, language, endShift, quit, list, back });
         }
 
         /// <summary>A hidden sprite slot the applier fills from the style (Hud layer, under the text).</summary>

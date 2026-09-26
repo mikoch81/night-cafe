@@ -45,7 +45,17 @@ namespace NightCafe.Gameplay
         float _wobblePhase;    // per launch, so a rack of cups does not rock in unison
         float _travelled;      // seconds sliding, drives the wobble
 
+        // A missed cup leaves the rail end and drops to the floor before it breaks.
+        bool _falling;
+        float _floorY;
+        float _gravity;
+        Vector2 _velocity;
+        float _spin;           // degrees per second while falling
+
         public int Lane { get; private set; }
+
+        /// <summary>True between leaving the rail end and hitting the floor: no longer in play.</summary>
+        public bool IsFalling => _falling;
 
         /// <summary>Index of the step the cup has last reached; 0 = K1.</summary>
         public int StepIndex { get; private set; }
@@ -61,6 +71,9 @@ namespace NightCafe.Gameplay
 
         public event Action<CupController> ReachedCatchPoint;
 
+        /// <summary>Raised when a dropped cup reaches the floor; the caller breaks it there.</summary>
+        public event Action<CupController> Landed;
+
         public void Launch(int lane, IReadOnlyList<Vector2> steps, Func<float> stepTimeProvider, float tiltDegrees = 0f)
         {
             Lane = lane;
@@ -68,6 +81,7 @@ namespace NightCafe.Gameplay
             _stepTimeProvider = stepTimeProvider;
             Serial = ++_nextSerial;
             StepIndex = 0;
+            _falling = false;
             _elapsed = 0f;
             _stepDuration = Mathf.Max(0.0001f, stepTimeProvider());
             _running = true;
@@ -166,13 +180,56 @@ namespace NightCafe.Gameplay
         {
             Paint(0, CupSkin.Style != null ? CupSkin.DefaultTint : _defaultTint); // Mode A never paints, so a cup last used in Mode B must not keep its colour
             _running = false;
+            _falling = false;
             _steps = null;
             _stepTimeProvider = null;
             gameObject.SetActive(false);
         }
 
+        /// <summary>
+        /// Sends a cup that nobody caught off the end of its rail: it keeps a little of its slide,
+        /// tumbles under gravity and raises Landed when its foot reaches `floorY`.
+        /// </summary>
+        public void Drop(float floorY, float gravity, float carrySpeed, float spinDegreesPerSecond)
+        {
+            if (_steps == null)
+                return;
+
+            Vector2 first = _steps[0], last = _steps[_steps.Count - 1];
+            float direction = last.x < first.x ? -1f : 1f;
+            _velocity = new Vector2(direction * carrySpeed, 0f);
+            _spin = -direction * spinDegreesPerSecond;
+            _floorY = floorY;
+            _gravity = Mathf.Max(0.01f, gravity);
+            _running = false;
+            _falling = true;
+        }
+
+        void UpdateFall(float dt)
+        {
+            _velocity.y -= _gravity * dt;
+            Vector3 p = transform.localPosition + (Vector3)(_velocity * dt);
+            transform.localRotation *= Quaternion.Euler(0f, 0f, _spin * dt);
+
+            if (p.y > _floorY)
+            {
+                transform.localPosition = p;
+                return;
+            }
+
+            transform.localPosition = new Vector3(p.x, _floorY, p.z);
+            _falling = false;
+            Landed?.Invoke(this);
+        }
+
         void Update()
         {
+            if (_falling)
+            {
+                UpdateFall(Time.deltaTime);
+                return;
+            }
+
             if (!_running)
                 return;
 

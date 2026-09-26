@@ -4,9 +4,9 @@ using UnityEngine;
 namespace NightCafe.Config
 {
     /// <summary>
-    /// Everything the LCD scene looks like, as one swappable asset (GDD 5.2 / 5.2a): the
-    /// painted "ART" diorama and the segmented "RETRO" Neo-LCD. Geometry, timing and rules
-    /// live elsewhere; a style only says which sprite, colour and font goes where.
+    /// Everything the LCD scene looks like, as one asset (GDD 5.2): the painted diorama.
+    /// Geometry, timing and rules live elsewhere; the style only says which sprite, colour
+    /// and font goes where. (The segmented RETRO look was dropped after the closed test.)
     /// Built by the scene setup, never edited by hand.
     /// </summary>
     [CreateAssetMenu(menuName = "NightCafe/Screen Style", fileName = "ScreenStyle")]
@@ -15,15 +15,8 @@ namespace NightCafe.Config
         public string id = "art";
         public string label = "ART";
 
-        [Tooltip("Set by the setup when every sprite the style needs exists. An incomplete style is never shown; the loop falls back to RETRO.")]
+        [Tooltip("Set by the setup when every sprite the style needs exists; missing slots fall back to the vector sprites.")]
         public bool complete;
-
-        [Header("Look")]
-        [Tooltip("RETRO: sprites are single-colour masks tinted amber, unlit slots dim amber. ART: full-colour sprites, tint white, unlit slots hidden.")]
-        public bool monochrome = false;
-        public bool bloom = false;
-        [Tooltip("Segment ghosts are an LCD affectation: only a monochrome style may show them.")]
-        public bool ghostsAllowed = false;
 
         [Header("Scene")]
         public Sprite background;
@@ -67,8 +60,30 @@ namespace NightCafe.Config
         public Sprite baristaCatch;
         public Sprite baristaMiss;
         public Sprite baristaWipe;
+        [Tooltip("Arms up: shooing Sablé off a stool, lifting a knocked-over one (1.1.0). Falls back to the catch pose.")]
+        public Sprite baristaReach;
         public Sprite catA;
         public Sprite catB;
+
+        [Header("Café troublemakers (1.1.0) - optional; without them Sablé stands in")]
+        [Tooltip("Miro shooing a cat with a tea towel: over his head, then whipped forward.")]
+        public Sprite baristaShooA;
+        public Sprite baristaShooB;
+        [Tooltip("Paprika, the ginger stray who naps on the stools: trot A/B, lounging, thrown.")]
+        public Sprite strayTrotA;
+        public Sprite strayTrotB;
+        public Sprite strayLounge;
+        public Sprite strayLeap;
+        [Tooltip("Noir, the black cat who bumps the stools: walk A/B, the shove.")]
+        public Sprite bumperWalkA;
+        public Sprite bumperWalkB;
+        public Sprite bumperBump;
+        [Tooltip("Noir up on his hind legs pushing a stool over, and his tail lashing a stool (two frames).")]
+        public Sprite bumperRear;
+        public Sprite bumperTailA;
+        public Sprite bumperTailB;
+        [Tooltip("A stool that broke under Miro, in pieces on the floor.")]
+        public Sprite stepBroken;
 
         [Tooltip("One cup for every style: RETRO tints it (white sprite x order colour, GDD 3).")]
         public Sprite cup;
@@ -95,6 +110,8 @@ namespace NightCafe.Config
         public Sprite resultCard;
         [Tooltip("Size of the receipt in LCD units; 9-sliced like the sign.")]
         public Vector2 resultCardSize = new(6.5f, 4.6f);
+        [Tooltip("The MENU card is the same paper, taller: seven rows under a heading.")]
+        public Vector2 menuCardSize = new(6.8f, 8.5f);
         [Tooltip("Sablé asleep on the counter after the shift; two frames breathe slowly. Empty = no cat.")]
         public Sprite catAsleepA;
         public Sprite catAsleepB;

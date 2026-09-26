@@ -30,6 +30,12 @@ namespace NightCafe.Gameplay
 
         public bool IsBusy => _running;
 
+        /// <summary>Where the mop is while crossing (LCD units): a little ahead of the cat, which walks left to right.</summary>
+        public float MopX => transform.localPosition.x + mopLead;
+
+        [Tooltip("How far ahead of the cat's pivot the mop head sweeps, in LCD units.")]
+        [SerializeField] float mopLead = 0.35f;
+
         /// <summary>Fires when a crossing actually starts, so the meow can be rolled for.</summary>
         public event Action CrossingStarted;
 

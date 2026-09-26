@@ -8,28 +8,16 @@ using UnityEngine;
 
 namespace NightCafe.Tests
 {
-    /// <summary>GDD 5.2 / 5.2a: two screen styles, RETRO always whole, ART honest about what it has.</summary>
+    /// <summary>GDD 5.2: one painted screen style, honest about what it has; RETRO is gone.</summary>
     public sealed class ScreenStyleTests
     {
         const string ArtPath = "Assets/Settings/ScreenStyle_Art.asset";
         const string RetroPath = "Assets/Settings/ScreenStyle_Retro.asset";
 
         [Test]
-        public void RetroStyleIsTheCompleteSegmentedLook()
+        public void RetroStyleIsGone()
         {
-            var retro = AssetDatabase.LoadAssetAtPath<ScreenStyle>(RetroPath);
-            Assert.IsNotNull(retro, "run NightCafe/Build Scene Setup first");
-            Assert.IsTrue(retro.complete);
-            Assert.IsTrue(retro.monochrome);
-            Assert.IsTrue(retro.bloom, "GDD 5.2a keeps the bloom on the LCD look");
-            Assert.IsTrue(retro.ghostsAllowed);
-            Assert.IsFalse(retro.HasPaintedCups, "RETRO tints one white cup mask");
-            foreach (Sprite sprite in new[] { retro.background, retro.machineHead, retro.baristaUp, retro.baristaDown,
-                         retro.baristaCatch, retro.baristaMiss, retro.baristaWipe, retro.catA, retro.catB, retro.cup,
-                         retro.cupBroken, retro.stain, retro.orderPanel })
-                Assert.IsNotNull(sprite, "a RETRO slot is empty");
-            Assert.IsNotNull(retro.digitFont, "DSEG7 digits");
-            Assert.IsNotNull(retro.letterFont, "DSEG14 letters");
+            Assert.IsFalse(File.Exists(RetroPath), "the segmented RETRO style was dropped after the closed test");
         }
 
         [Test]
@@ -37,9 +25,6 @@ namespace NightCafe.Tests
         {
             var art = AssetDatabase.LoadAssetAtPath<ScreenStyle>(ArtPath);
             Assert.IsNotNull(art, "run NightCafe/Build Scene Setup first");
-            Assert.IsFalse(art.monochrome);
-            Assert.IsFalse(art.bloom, "GDD 5.2: no bloom on the painted diorama");
-            Assert.IsFalse(art.ghostsAllowed);
 
             bool allFiles = true;
             foreach ((string _, string file) in NightCafeSetup.ArtSprites)
@@ -50,13 +35,11 @@ namespace NightCafe.Tests
         }
 
         [Test]
-        public void EachStyleBringsItsOwnSoundSet()
+        public void TheStyleBringsTheRecordedSoundSet()
         {
-            var retro = AssetDatabase.LoadAssetAtPath<ScreenStyle>(RetroPath);
             var art = AssetDatabase.LoadAssetAtPath<ScreenStyle>(ArtPath);
-            Assert.IsNotNull(retro); Assert.IsNotNull(art);
+            Assert.IsNotNull(art);
 
-            Assert.IsNull(retro.sounds, "RETRO plays the scene's base set, the chiptune");
             Assert.IsNotNull(art.sounds, "ART has the recorded set");
             Assert.AreNotEqual(AssetDatabase.GetAssetPath(art.sounds), "Assets/Settings/AudioConfig.asset");
 
@@ -65,21 +48,6 @@ namespace NightCafe.Tests
             Assert.IsNotNull(art.sounds.lofiLoop, "ART lo-fi loop");
             Assert.IsNotNull(art.sounds.ambience, "ART room tone");
             Assert.That(art.sounds.lofiLoop.length, Is.InRange(60f, 90f), "GDD 5.3: a 60-90 s loop");
-        }
-
-        [Test]
-        public void RetroScreenSettingPersistsAndDefaultsToThePaintedLook()
-        {
-            var store = new InMemorySettingsStore();
-            var settings = new NightCafe.Services.SettingsService(store);
-            Assert.IsFalse(settings.RetroScreen);
-
-            int changes = 0;
-            settings.Changed += () => changes++;
-            settings.ToggleRetroScreen();
-            Assert.IsTrue(settings.RetroScreen);
-            Assert.AreEqual(1, changes);
-            Assert.IsTrue(new NightCafe.Services.SettingsService(store).RetroScreen, "the choice survives a restart");
         }
 
         [Test]

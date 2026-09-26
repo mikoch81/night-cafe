@@ -76,16 +76,35 @@ namespace NightCafe.Services
         public void Save(string json) => Json = json;
     }
 
+    /// <summary>One finished shift on the local score list.</summary>
+    [Serializable]
+    public struct ScoreEntry
+    {
+        public int mode;
+        public int score;
+        /// <summary>Local date, yyyy-MM-dd.</summary>
+        public string date;
+
+        public ScoreEntry(GameMode mode, int score, DateTime when)
+        {
+            this.mode = (int)mode;
+            this.score = score;
+            date = when.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        }
+    }
+
     /// <summary>Serialised shape; public fields because JsonUtility ignores properties.</summary>
     [Serializable]
     public sealed class ProfileData
     {
-        public const int CurrentSchema = 1;
+        /// <summary>2: the local top-10 list per mode (1.1.0). A schema-1 file simply has no list yet.</summary>
+        public const int CurrentSchema = 2;
 
         /// <summary>Bumped when the shape changes, so a later build can migrate instead of guessing.</summary>
         public int schemaVersion = CurrentSchema;
 
         public int[] bestScores = new int[GameModeExtensions.Count];
+        public List<ScoreEntry> topScores = new();
         public List<string> unlockedSkins = new();
         public string selectedSkin = "";
         public int selectedMode;
@@ -125,15 +144,85 @@ namespace NightCafe.Services
             Persist();
         }
 
-        /// <summary>Records a finished round; true when it set a new record.</summary>
-        public bool SubmitScore(GameMode mode, int totalScore)
-        {
-            if (totalScore <= Best(mode))
-                return false;
+        /// <summary>Length of the local score list, per mode.</summary>
+        public const int TopScoreCount = 10;
 
-            _data.bestScores[(int)mode] = totalScore;
-            Persist();
-            return true;
+        /// <summary>Records a finished round; true when it set a new record.</summary>
+        public bool SubmitScore(GameMode mode, int totalScore) => SubmitScore(mode, totalScore, DateTime.Now, out _);
+
+        /// <summary>
+        /// Records a finished round on the record and the local top list. `rank` is its place
+        /// on the list (1 = best), or 0 when it did not make the list. Returns true on a new record.
+        /// A zero-point shift is not worth a line.
+        /// </summary>
+        public bool SubmitScore(GameMode mode, int totalScore, DateTime when, out int rank)
+        {
+            rank = 0;
+            bool record = totalScore > Best(mode);
+            if (record)
+                _data.bestScores[(int)mode] = totalScore;
+
+            if (totalScore > 0)
+                rank = InsertTopScore(new ScoreEntry(mode, totalScore, when));
+
+            if (record || rank > 0)
+                Persist();
+            return record;
+        }
+
+        /// <summary>The mode's list, best first.</summary>
+        public IReadOnlyList<ScoreEntry> TopScores(GameMode mode)
+        {
+            var list = new List<ScoreEntry>(TopScoreCount);
+            foreach (ScoreEntry entry in _data.topScores)
+            {
+                if (entry.mode == (int)mode)
+                    list.Add(entry);
+            }
+
+            return list;
+        }
+
+        /// <summary>Keeps the list sorted (ties: the older shift stays ahead) and trimmed per mode.</summary>
+        int InsertTopScore(ScoreEntry entry)
+        {
+            int rank = 1;
+            int at = _data.topScores.Count;
+            for (int i = 0; i < _data.topScores.Count; i++)
+            {
+                ScoreEntry other = _data.topScores[i];
+                if (other.mode != entry.mode)
+                    continue;
+
+                if (other.score >= entry.score)
+                {
+                    rank++;
+                    continue;
+                }
+
+                at = i;
+                break;
+            }
+
+            if (rank > TopScoreCount)
+                return 0;
+
+            _data.topScores.Insert(at, entry);
+            TrimTopScores(entry.mode);
+            return rank;
+        }
+
+        void TrimTopScores(int mode)
+        {
+            int kept = 0;
+            for (int i = 0; i < _data.topScores.Count; i++)
+            {
+                if (_data.topScores[i].mode != mode)
+                    continue;
+
+                if (++kept > TopScoreCount)
+                    _data.topScores.RemoveAt(i--);
+            }
         }
 
         public bool IsUnlocked(string skinId) =>
@@ -210,6 +299,18 @@ namespace NightCafe.Services
                 Array.Resize(ref data.bestScores, GameModeExtensions.Count);
 
             data.unlockedSkins ??= new List<string>();
+            data.topScores ??= new List<ScoreEntry>();
+            if (data.schemaVersion < ProfileData.CurrentSchema)
+            {
+                // A 1.0.0 profile only knew the records: they open the list, dated unknown.
+                for (int mode = 0; mode < data.bestScores.Length; mode++)
+                {
+                    if (data.bestScores[mode] > 0 && !data.topScores.Exists(e => e.mode == mode))
+                        data.topScores.Add(new ScoreEntry { mode = mode, score = data.bestScores[mode], date = "" });
+                }
+
+                data.schemaVersion = ProfileData.CurrentSchema;
+            }
             data.selectedSkin ??= "";
             return data;
         }

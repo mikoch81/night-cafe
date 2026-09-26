@@ -144,7 +144,7 @@ namespace NightCafe.Tests
         }
 
         [Test]
-        public void RolloverWrapsDisplayAndReArmsMercy()
+        public void RolloverKeepsCountingAndReArmsMercy()
         {
             var service = new ScoreService(DefaultSettings());
             int rollovers = 0;
@@ -163,7 +163,7 @@ namespace NightCafe.Tests
                 service.RegisterCatch();
 
             Assert.AreEqual(1, rollovers);
-            Assert.AreEqual(0, service.DisplayScore, "counter wraps to 0");
+            Assert.AreEqual(1000, service.DisplayScore, "the counter grows a fourth digit instead of wrapping to 000");
             Assert.AreEqual(1000, service.TotalScore, "running total keeps climbing");
 
             while (service.TotalScore < 1200)

@@ -43,8 +43,8 @@ namespace NightCafe.Config
         [Tooltip("Seconds of an untouched title screen before the demo starts.")]
         public float attractDelay = 8f;
 
-        [Tooltip("Seconds an untouched game over screen stays before handing back to the title, where the lever and settings live.")]
-        public float gameOverIdleSeconds = 6f;
+        [Tooltip("Seconds an untouched game over screen stays before handing back to the title. Testers found 6 s too long; the MENU pill and the lever work on the result screen too.")]
+        public float gameOverIdleSeconds = 4f;
 
         [Tooltip("Presses in the first moments of game over are ignored, so a tap already in flight cannot skip the result.")]
         public float gameOverRestartLockout = 0.8f;

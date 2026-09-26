@@ -6,15 +6,25 @@ namespace NightCafe.UI
 {
     /// <summary>
     /// The shell hardware, now real geometry: four button caps that sink and light on a press
-    /// (GDD 4, 1:1 feedback), the A/B mode lever whose knob slides between the ends (GDD 5.1),
-    /// and the finish (GDD 6). Caps and knob move along their own local axes, so the device
-    /// root may tilt freely (parallax) without breaking the motion.
+    /// (GDD 4, 1:1 feedback), the MENU pill, the A/B mode lever whose knob slides between the
+    /// ends (GDD 5.1), and the finish (GDD 6). Caps and knob move along their own local axes, so
+    /// the device root may tilt freely (parallax) without breaking the motion. A touch is a
+    /// button press only when its ray hits that button's collider: the rest of the body is dead.
+    /// The hardware animates in unscaled time, so it still answers while the game is paused.
     /// </summary>
     public sealed class DeviceShellView : MonoBehaviour
     {
+        /// <summary>Index of the MENU pill in the cap arrays, after the four lane caps.</summary>
+        const int MenuIndex = LanePositionExtensions.Count;
+
         [Header("Buttons")]
         [SerializeField] Transform[] caps = new Transform[LanePositionExtensions.Count];
         [SerializeField] Renderer[] capRenderers = new Renderer[LanePositionExtensions.Count];
+        [Tooltip("Hit volumes of the four caps, a little wider than the cap (the collar ring) and no more.")]
+        [SerializeField] Collider[] capColliders = new Collider[LanePositionExtensions.Count];
+        [SerializeField] Transform menuCap;
+        [SerializeField] Renderer menuCapRenderer;
+        [SerializeField] Collider menuCollider;
         [SerializeField] float capTravel = 0.08f;
         [SerializeField] float pressSeconds = 0.04f;
         [SerializeField] float releaseSeconds = 0.09f;
@@ -49,8 +59,10 @@ namespace NightCafe.UI
 
         static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
-        readonly float[] _pressAge = new float[LanePositionExtensions.Count];
-        readonly bool[] _pressing = new bool[LanePositionExtensions.Count];
+        readonly float[] _pressAge = new float[LanePositionExtensions.Count + 1];
+        readonly bool[] _pressing = new bool[LanePositionExtensions.Count + 1];
+        Transform[] _caps;    // the lane caps, then the MENU pill
+        Renderer[] _capRenderers;
         Vector3[] _capRest;
         Vector3[] _capDown;   // "into the device" (world +Z at rest) in each cap's parent space
         MaterialPropertyBlock _block;
@@ -63,17 +75,27 @@ namespace NightCafe.UI
         void Awake()
         {
             _block = new MaterialPropertyBlock();
-            _capRest = new Vector3[caps.Length];
-            _capDown = new Vector3[caps.Length];
-            for (int i = 0; i < caps.Length; i++)
+            _caps = new Transform[MenuIndex + 1];
+            _capRenderers = new Renderer[MenuIndex + 1];
+            for (int i = 0; i < MenuIndex && i < caps.Length; i++)
             {
-                if (caps[i] == null)
+                _caps[i] = caps[i];
+                _capRenderers[i] = i < capRenderers.Length ? capRenderers[i] : null;
+            }
+            _caps[MenuIndex] = menuCap;
+            _capRenderers[MenuIndex] = menuCapRenderer;
+
+            _capRest = new Vector3[_caps.Length];
+            _capDown = new Vector3[_caps.Length];
+            for (int i = 0; i < _caps.Length; i++)
+            {
+                if (_caps[i] == null)
                     continue;
 
                 // Directions are taken from the world axes while the device is at rest and kept
                 // in parent space, so a tilting root (parallax) carries them along.
-                _capRest[i] = caps[i].localPosition;
-                Transform parent = caps[i].parent;
+                _capRest[i] = _caps[i].localPosition;
+                Transform parent = _caps[i].parent;
                 _capDown[i] = parent != null ? parent.InverseTransformDirection(Vector3.forward).normalized : Vector3.forward;
             }
 
@@ -100,10 +122,13 @@ namespace NightCafe.UI
             _knobInitialised = true;
         }
 
-        public void Press(LanePosition position)
+        public void Press(LanePosition position) => PressCap((int)position);
+
+        public void PressMenu() => PressCap(MenuIndex);
+
+        void PressCap(int index)
         {
-            int index = (int)position;
-            if (index < 0 || index >= caps.Length || caps[index] == null)
+            if (_caps == null || index < 0 || index >= _caps.Length || _caps[index] == null)
                 return;
 
             _pressing[index] = true;
@@ -112,13 +137,40 @@ namespace NightCafe.UI
 
         public void ResetAll()
         {
-            for (int i = 0; i < caps.Length; i++)
+            if (_caps == null)
+                return;
+
+            for (int i = 0; i < _caps.Length; i++)
             {
                 _pressing[i] = false;
                 _pressAge[i] = 0f;
                 ApplyCap(i, 0f, 0f);
             }
         }
+
+        /// <summary>The lane cap under a ray from the device camera, if any.</summary>
+        public bool TryCapHit(Ray ray, out LanePosition lane)
+        {
+            lane = LanePosition.LeftUp;
+            float nearest = float.MaxValue;
+            bool found = false;
+            for (int i = 0; i < capColliders.Length; i++)
+            {
+                Collider collider = capColliders[i];
+                if (collider == null || !collider.Raycast(ray, out RaycastHit hit, 200f) || hit.distance >= nearest)
+                    continue;
+
+                nearest = hit.distance;
+                lane = (LanePosition)i;
+                found = true;
+            }
+
+            return found;
+        }
+
+        /// <summary>True when a ray from the device camera lands on the MENU pill.</summary>
+        public bool MenuHit(Ray ray) =>
+            menuCollider != null && menuCollider.Raycast(ray, out _, 200f);
 
         /// <summary>Slides the knob to the A or B end of its slot.</summary>
         public void SetMode(GameMode mode)
@@ -175,9 +227,9 @@ namespace NightCafe.UI
 
         void Update()
         {
-            float dt = Time.deltaTime;
+            float dt = Time.unscaledDeltaTime;
 
-            for (int i = 0; i < caps.Length; i++)
+            for (int i = 0; i < _caps.Length; i++)
             {
                 if (!_pressing[i])
                     continue;
@@ -209,17 +261,17 @@ namespace NightCafe.UI
 
         void ApplyCap(int i, float depth, float lit)
         {
-            if (caps[i] == null)
+            if (_caps[i] == null)
                 return;
 
-            caps[i].localPosition = _capRest[i] + _capDown[i] * (capTravel * depth);
+            _caps[i].localPosition = _capRest[i] + _capDown[i] * (capTravel * depth);
 
-            if (capRenderers[i] == null)
+            if (_capRenderers[i] == null)
                 return;
 
-            capRenderers[i].GetPropertyBlock(_block);
+            _capRenderers[i].GetPropertyBlock(_block);
             _block.SetColor(EmissionColorId, litColor * lit);
-            capRenderers[i].SetPropertyBlock(_block);
+            _capRenderers[i].SetPropertyBlock(_block);
         }
 
         float KnobX()

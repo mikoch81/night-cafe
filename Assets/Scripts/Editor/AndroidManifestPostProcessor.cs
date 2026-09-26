@@ -6,10 +6,11 @@ using UnityEngine;
 namespace NightCafe.EditorTools
 {
     /// <summary>
-    /// Adds android.permission.VIBRATE to the generated Gradle project, and strips the network
-    /// permissions Unity merges in on its own (INTERNET, and ACCESS_LOCAL_NETWORK since API 36):
-    /// the game never touches the network and the privacy policy says so, so the launcher
-    /// manifest removes them with tools:node="remove" before the merge.
+    /// Adds android.permission.VIBRATE to the generated Gradle project, and strips the
+    /// ACCESS_LOCAL_NETWORK permission Unity merges in on its own since API 36 - the game never
+    /// looks at the local network. INTERNET and ACCESS_NETWORK_STATE stay since 1.1.0: the
+    /// online top 10 (Google Play Games) needs them (docs/privacy.md says so). The launcher
+    /// manifest removes the rest with tools:node="remove" before the merge.
     ///
     /// Unity only auto-adds that permission when it sees Handheld.Vibrate in the assemblies.
     /// Our haptics go through the platform Vibrator via JNI (Handheld.Vibrate cannot honour a
@@ -26,9 +27,7 @@ namespace NightCafe.EditorTools
         const string ToolsNamespace = "http://schemas.android.com/tools";
         static readonly string[] RemovedPermissions =
         {
-            "android.permission.INTERNET",
             "android.permission.ACCESS_LOCAL_NETWORK",
-            "android.permission.ACCESS_NETWORK_STATE",
         };
 
         public int callbackOrder => 1;

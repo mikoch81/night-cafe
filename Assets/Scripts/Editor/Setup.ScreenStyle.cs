@@ -40,53 +40,39 @@ namespace NightCafe.EditorTools
             ("catAsleepA", "sable_sleep_a.png"), ("catAsleepB", "sable_sleep_b.png"),
         };
 
+        /// <summary>
+        /// The 1.1.0 cast (art/generated 20-22, tools/finish_cast.py) and the broken stool
+        /// (tools/gen_art_v3.py). Optional like the title props: without them Sablé plays both cats.
+        /// </summary>
+        public static readonly (string slot, string file)[] ArtCastSprites =
+        {
+            ("baristaShooA", "miro_shoo_a.png"), ("baristaShooB", "miro_shoo_b.png"),
+            ("strayTrotA", "paprika_trot_a.png"), ("strayTrotB", "paprika_trot_b.png"),
+            ("strayLounge", "paprika_lounge.png"), ("strayLeap", "paprika_leap.png"),
+            ("bumperWalkA", "noir_walk_a.png"), ("bumperWalkB", "noir_walk_b.png"), ("bumperBump", "noir_bump.png"),
+            ("bumperRear", "noir_rear.png"), ("bumperTailA", "noir_tail_a.png"), ("bumperTailB", "noir_tail_b.png"),
+            ("stepBroken", "step_broken.png"),
+        };
+
         const string HandBoldFontPath = FontDir + "/CabinSketch-Bold.ttf";
         const string HandBoldFontAssetPath = FontDir + "/CabinSketch-Bold SDF.asset";
         const string HandFontPath = FontDir + "/PatrickHand-Regular.ttf";
         const string HandFontAssetPath = FontDir + "/PatrickHand-Regular SDF.asset";
 
         /// <summary>
-        /// The two screen styles as assets. RETRO is the segmented art this project shipped with;
-        /// ART is filled from Assets/Art/screen_v3 and marked complete only when every file is
-        /// there - until then the loop keeps showing RETRO, and missing ART slots borrow the
-        /// RETRO sprite so a half-delivered set can still be previewed by hand.
+        /// The screen style as an asset, filled from Assets/Art/screen_v3 and marked complete
+        /// only when every file is there. A missing slot borrows the vector sprite from
+        /// Assets/Art/sprites, so a half-delivered set can still be previewed. (The segmented
+        /// RETRO style was removed after the closed test; its asset is deleted here.)
         /// </summary>
         static void CreateScreenStyles(AudioConfig artSounds, LaneConfig laneConfig)
         {
-            var retro = ResetToDefaults<ScreenStyle>(RetroStylePath);
-            retro.sounds = null;                         // the scene's base set: the chiptune from gen_audio.py
-            retro.id = "retro";
-            retro.label = "RETRO";
-            retro.monochrome = true;
-            retro.bloom = true;
-            retro.ghostsAllowed = true;
-            retro.background = LoadSprite("Assets/Art/screen/screen_bg.png");
-            retro.plank = null;
-            retro.machineHead = LoadSprite("Assets/Art/sprites/machine_head.png");
-            retro.baristaUp = LoadSprite("Assets/Art/sprites/barista_up.png");
-            retro.baristaDown = LoadSprite("Assets/Art/sprites/barista_down.png");
-            retro.baristaCatch = LoadSprite("Assets/Art/sprites/barista_catch.png");
-            retro.baristaMiss = LoadSprite("Assets/Art/sprites/barista_miss.png");
-            retro.baristaWipe = LoadSprite("Assets/Art/sprites/barista_wipe.png");
-            retro.catA = LoadSprite("Assets/Art/sprites/cat_a.png");
-            retro.catB = LoadSprite("Assets/Art/sprites/cat_b.png");
-            retro.cup = LoadSprite("Assets/Art/sprites/cup.png");
-            retro.cupsByOrder = new Sprite[0];
-            retro.cupBroken = LoadSprite("Assets/Art/sprites/cup_broken.png");
-            retro.stain = LoadSprite("Assets/Art/sprites/stain.png");
-            retro.orderPanel = LoadSprite("Assets/Art/sprites/order_panel.png");
-            retro.digitFont = Segment7Font;
-            retro.letterFont = Segment14Font;
-            retro.textFont = null;
-            retro.complete = true;
-            EditorUtility.SetDirty(retro);
+            if (File.Exists(RetroStylePath))
+                AssetDatabase.DeleteAsset(RetroStylePath);
 
             var art = ResetToDefaults<ScreenStyle>(ArtStylePath);
             art.id = "art";
             art.label = "ART";
-            art.monochrome = false;
-            art.bloom = false;
-            art.ghostsAllowed = false;
             var found = new Dictionary<string, Sprite>();
             bool complete = true;
             foreach ((string slot, string file) in ArtSprites)
@@ -98,32 +84,34 @@ namespace NightCafe.EditorTools
                 found[slot] = sprite;
             }
 
-            art.background = found["background"] ?? retro.background;
+            art.background = found["background"] ?? Fallback("Assets/Art/screen/screen_bg.png");
             art.plank = found["plank"];
-            art.machineHead = found["machineHead"] ?? retro.machineHead;
+            art.machineHead = found["machineHead"] ?? Fallback("Assets/Art/sprites/machine_head.png");
             // Both idle slots use the tray-down pose: the painted Miro reaches the upper shelf from
             // the footstool, not by raising the tray (which would put it well above the rail end).
-            art.baristaUp = found["baristaDown"] ?? retro.baristaUp;
-            art.baristaDown = found["baristaDown"] ?? retro.baristaDown;
-            art.baristaCatch = found["baristaCatch"] ?? retro.baristaCatch;
-            art.baristaMiss = found["baristaMiss"] ?? retro.baristaMiss;
-            art.baristaWipe = found["baristaWipe"] ?? retro.baristaWipe;
-            art.catA = found["catA"] ?? retro.catA;
-            art.catB = found["catB"] ?? retro.catB;
-            art.cup = found["cup0"] ?? retro.cup;
+            art.baristaUp = found["baristaDown"] ?? Fallback("Assets/Art/sprites/barista_up.png");
+            art.baristaDown = found["baristaDown"] ?? Fallback("Assets/Art/sprites/barista_down.png");
+            art.baristaCatch = found["baristaCatch"] ?? Fallback("Assets/Art/sprites/barista_catch.png");
+            art.baristaMiss = found["baristaMiss"] ?? Fallback("Assets/Art/sprites/barista_miss.png");
+            art.baristaWipe = found["baristaWipe"] ?? Fallback("Assets/Art/sprites/barista_wipe.png");
+            // The tray-up pose has his arms raised: shooing the cat off a stool, lifting a fallen one.
+            art.baristaReach = found["baristaUp"] ?? art.baristaCatch;
+            art.catA = found["catA"] ?? Fallback("Assets/Art/sprites/cat_a.png");
+            art.catB = found["catB"] ?? Fallback("Assets/Art/sprites/cat_b.png");
+            art.cup = found["cup0"] ?? Fallback("Assets/Art/sprites/cup.png");
             art.cupsByOrder = found["cup0"] != null
                 ? new[] { found["cup0"], found["cup1"], found["cup2"], found["cup3"] }
                 : new Sprite[0];
-            art.cupBroken = found["cupBroken"] ?? retro.cupBroken;
-            art.stain = found["stain"] ?? retro.stain;
-            art.orderPanel = found["orderPanel"] ?? retro.orderPanel;
+            art.cupBroken = found["cupBroken"] ?? Fallback("Assets/Art/sprites/cup_broken.png");
+            art.stain = found["stain"] ?? Fallback("Assets/Art/sprites/stain.png");
+            art.orderPanel = found["orderPanel"] ?? Fallback("Assets/Art/sprites/order_panel.png");
             art.step = found["step"];
             art.scoreBoard = found["scoreBoard"];
             art.moveSeconds = 0.12f;
             art.catBob = 0.08f;
             art.catTilt = 4f;
             // The plank is one straight board from K1 to K5; the lane's bent steps (drawn for
-            // the RETRO rail) would float a cup 0.2 above it mid-way. Cups slide along the
+            // the old LCD rail) would float a cup 0.2 above it mid-way. Cups slide along the
             // board instead, rocking as they go.
             art.cupsRideStraightRail = true;
             art.cupWobble = 3f;
@@ -147,15 +135,43 @@ namespace NightCafe.EditorTools
             art.plankHeight = 0.6f;
             art.plankOffset = new Vector2(0f, -0.27f);   // cups rest on the top face
             art.orderCupScale = new Vector2(0.6f, 0.6f);
-            // Ceramic, rain and a real lo-fi record for the diorama; the chiptune stays with RETRO.
+            // Ceramic, rain and a real lo-fi record for the diorama.
             art.sounds = artSounds;
             art.complete = complete;
             ApplyArtTitleDressing(art, laneConfig);
+            ApplyArtCast(art);
             EditorUtility.SetDirty(art);
 
             if (!complete)
-                Debug.Log($"[NightCafe] ScreenStyle ART incomplete: {ScreenV3Dir} is missing files, RETRO stays on screen.");
+                Debug.LogWarning($"[NightCafe] ScreenStyle ART incomplete: {ScreenV3Dir} is missing files, vector sprites stand in.");
         }
+
+        static void ApplyArtCast(ScreenStyle art)
+        {
+            var found = new Dictionary<string, Sprite>();
+            foreach ((string slot, string file) in ArtCastSprites)
+            {
+                string path = $"{ScreenV3Dir}/{file}";
+                found[slot] = File.Exists(path) ? AssetDatabase.LoadAssetAtPath<Sprite>(path) : null;
+            }
+
+            art.baristaShooA = found["baristaShooA"];
+            art.baristaShooB = found["baristaShooB"] ?? found["baristaShooA"];
+            art.strayTrotA = found["strayTrotA"];
+            art.strayTrotB = found["strayTrotB"] ?? found["strayTrotA"];
+            art.strayLounge = found["strayLounge"];
+            art.strayLeap = found["strayLeap"] ?? found["strayTrotB"];
+            art.bumperWalkA = found["bumperWalkA"];
+            art.bumperWalkB = found["bumperWalkB"] ?? found["bumperWalkA"];
+            art.bumperBump = found["bumperBump"] ?? found["bumperWalkA"];
+            art.bumperRear = found["bumperRear"] ?? art.bumperBump;
+            art.bumperTailA = found["bumperTailA"] ?? art.bumperBump;
+            art.bumperTailB = found["bumperTailB"] ?? art.bumperTailA;
+            art.stepBroken = found["stepBroken"];
+        }
+
+        /// <summary>A vector sprite standing in for a painted one that has not been delivered.</summary>
+        static Sprite Fallback(string path) => LoadSprite(path);
 
         /// <summary>
         /// The painted title: a chalk sign and the clock's dial in the middle row, the settings
@@ -198,7 +214,7 @@ namespace NightCafe.EditorTools
             art.gameOverDim = 0.72f;                           // lights down for the night
 
             // Layout: sign and clock share the row under the score; the notes stagger down the
-            // left wall in two overlapping rows (sound, haptics, ghosts / skin, screen), clear of
+            // left wall in two overlapping rows (music, sound, haptics / skin), clear of
             // Miro wiping on the right. The lettering sits low on each note, under its pin.
             art.titlePosition = new Vector2(-1.4f, 1.45f);
             art.clockPosition = new Vector2(4.4f, 1.45f);
@@ -207,7 +223,7 @@ namespace NightCafe.EditorTools
             art.toggleOffsets = new[]
             {
                 new Vector2(-4.9f, -1.05f), new Vector2(-2.9f, -1.05f), new Vector2(-0.9f, -1.05f),
-                new Vector2(-3.9f, -3.05f), new Vector2(-1.9f, -3.05f),
+                new Vector2(-3.9f, -3.05f),
             };
             art.toggleLabelOffset = new Vector2(0f, -0.25f);
             art.resultPosition = new Vector2(0f, -0.3f);
@@ -296,6 +312,7 @@ namespace NightCafe.EditorTools
                         break;
                     case "BestText":
                     case "ModeText":
+                    case "LevelText":
                         letters.Add(text);
                         break;
                     default:
@@ -304,22 +321,18 @@ namespace NightCafe.EditorTools
                 }
             }
 
-            var volume = Object.FindFirstObjectByType<Volume>();
             var plankRoot = screenRoot.Find("Props");
             SpriteRenderer scoreBoard = BuildScoreBoard(screenRoot);
 
             SetSerialized(applier, so =>
             {
                 so.FindProperty("activeAmber").colorValue = ActiveAmber;
-                so.FindProperty("brightAmber").colorValue = BrightAmber;
-                so.FindProperty("inactiveAmber").colorValue = InactiveAmber;
                 so.FindProperty("background").objectReferenceValue = screenRoot.Find("ScreenBG").GetComponent<SpriteRenderer>();
                 so.FindProperty("plankRoot").objectReferenceValue = plankRoot != null ? plankRoot.gameObject : null;
                 Fill(so.FindProperty("planks"), planks);
                 Fill(so.FindProperty("steps"), steps);
                 so.FindProperty("scoreBoard").objectReferenceValue = scoreBoard;
                 Fill(so.FindProperty("machineHeads"), heads);
-                so.FindProperty("lcdVolume").objectReferenceValue = volume;
                 so.FindProperty("barista").objectReferenceValue = barista;
                 so.FindProperty("baristaRenderer").objectReferenceValue = barista.GetComponent<SpriteRenderer>();
                 so.FindProperty("cat").objectReferenceValue = cat;
@@ -343,6 +356,8 @@ namespace NightCafe.EditorTools
                 Fill(so.FindProperty("toggleCards"), titleProps.toggleCards);
                 so.FindProperty("demoBacking").objectReferenceValue = titleProps.demoBacking;
                 so.FindProperty("resultCard").objectReferenceValue = titleProps.resultCard;
+                so.FindProperty("menu").objectReferenceValue = titleProps.menu;
+                so.FindProperty("menuCard").objectReferenceValue = titleProps.menuCard;
                 Fill(so.FindProperty("signTexts"), titleProps.signTexts);
                 Fill(so.FindProperty("cardTexts"), titleProps.cardTexts);
                 so.FindProperty("baristaScale").floatValue = laneConfig.baristaScale;

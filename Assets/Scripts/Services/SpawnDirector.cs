@@ -51,16 +51,25 @@ namespace NightCafe.Services
         /// Returns false when nothing may spawn right now; the caller retries next frame
         /// so a blocked spawn happens as soon as a slot frees up.
         /// </summary>
-        public bool TryPickLane(ILaneOccupancy occupancy, int tempoLevel, out int laneIndex)
+        public bool TryPickLane(ILaneOccupancy occupancy, int tempoLevel, out int laneIndex) =>
+            TryPickLane(occupancy, tempoLevel, 0, null, out laneIndex);
+
+        /// <param name="extraCups">Raises the on-screen limit (rush hour).</param>
+        /// <param name="laneClosed">Lanes that get no cups right now (a broken ladder's); null = all open.</param>
+        public bool TryPickLane(ILaneOccupancy occupancy, int tempoLevel, int extraCups, System.Func<int, bool> laneClosed,
+            out int laneIndex)
         {
             laneIndex = -1;
 
-            if (occupancy.TotalActiveCups >= _settings.ScreenLimitFor(tempoLevel))
+            if (occupancy.TotalActiveCups >= _settings.ScreenLimitFor(tempoLevel) + extraCups)
                 return false;
 
             _eligible.Clear();
             for (int lane = 0; lane < LanePositionExtensions.Count; lane++)
             {
+                if (laneClosed != null && laneClosed(lane))
+                    continue;
+
                 int cups = occupancy.CupsOnLane(lane);
                 if (cups >= _settings.MaxCupsPerLane)
                     continue;

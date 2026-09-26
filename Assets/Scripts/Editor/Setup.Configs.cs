@@ -53,6 +53,12 @@ namespace NightCafe.EditorTools
             config.catchesPerTempoLevel = 10;
             config.unlockSkinId = Services.SkinCatalog.OnyxId;
             config.unlockSkinScore = 500;
+            // 2 points a cup: the same number of cups per level and per quiet spell as Mode A.
+            config.levelThresholds = new[] { 50, 100, 200, 280 };
+            config.levelEvery = 100;
+            config.quietPoints = 40;
+            config.quietGapMinPoints = 80;
+            config.quietGapMaxPoints = 160;
             EditorUtility.SetDirty(config);
             return config;
         }
@@ -132,24 +138,29 @@ namespace NightCafe.EditorTools
             return existing;
         }
 
+        /// <summary>
+        /// The scene's base config: levels and haptics only. Its clips were the RETRO chiptune
+        /// (tools/gen_audio.py), removed with that style; the screen style brings the recordings.
+        /// </summary>
         static AudioConfig CreateAudioConfig()
         {
             var config = LoadOrCreate<AudioConfig>(AudioConfigPath);
 
-            config.catchBlip = LoadClip("sfx_catch");
-            config.comboArpeggio = LoadClip("sfx_combo");
-            config.missClink = LoadClip("sfx_miss");
-            config.catMeow = LoadClip("sfx_cat");
-            config.gameOver = LoadClip("sfx_gameover");
-            config.brewAlarm = LoadClip("sfx_brew_alarm");
-            config.leverClick = LoadClip("sfx_click");
-            config.lofiLoop = LoadClip("music_lofi_loop");
+            config.catchBlip = null;
+            config.comboArpeggio = null;
+            config.missClink = null;
+            config.catMeow = null;
+            config.gameOver = null;
+            config.brewAlarm = null;
+            config.leverClick = null;
+            config.lofiLoop = null;
+            config.ambience = null;
 
             EditorUtility.SetDirty(config);
             return config;
         }
 
-        static AudioClip LoadClip(string name, string dir = AudioDir, string tool = "tools/gen_audio.py")
+        static AudioClip LoadClip(string name, string dir, string tool)
         {
             string path = $"{dir}/{name}.wav";
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
@@ -178,6 +189,18 @@ namespace NightCafe.EditorTools
             config.leverClick = LoadClip("sfx_click", ArtAudioDir, tool);
             config.lofiLoop = LoadClip("music_lofi_loop", ArtAudioDir, tool);
             config.ambience = LoadClip("ambience_rain_cafe", ArtAudioDir, tool);
+            config.rushBell = LoadClip("sfx_rush_bell", ArtAudioDir, tool);
+            config.ladderCreak = LoadClip("sfx_ladder_creak", ArtAudioDir, tool);
+            config.ladderBreak = LoadClip("sfx_ladder_break", ArtAudioDir, tool);
+            config.ladderKnock = LoadClip("sfx_ladder_knock", ArtAudioDir, tool);
+            config.catHiss = LoadClip("sfx_cat_hiss", ArtAudioDir, tool);
+            config.levelUp = LoadClip("sfx_level_up", ArtAudioDir, tool);
+            config.machineFrenzy = LoadClip("sfx_machine_frenzy", ArtAudioDir, tool);
+            config.rushCrowd = new[]
+            {
+                LoadClip("sfx_crowd_1", ArtAudioDir, tool), LoadClip("sfx_crowd_2", ArtAudioDir, tool),
+                LoadClip("sfx_crowd_3", ArtAudioDir, tool), LoadClip("sfx_crowd_4", ArtAudioDir, tool),
+            };
 
             EditorUtility.SetDirty(config);
             return config;

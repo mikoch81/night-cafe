@@ -2,8 +2,12 @@
 
 Category: **Games → Arcade**. Contains ads: **no**. In-app purchases: **no**.
 Content rating (IARC questionnaire): no violence, no user interaction, no data sharing → expected
-**PEGI 3 / Everyone**. Data safety: **no data collected, no data shared**; privacy policy URL →
+**PEGI 3 / Everyone**. Data safety: **no data collected, no data shared** (1.0.0); privacy policy URL →
 `docs/privacy.md` published on GitHub Pages (see below). Target audience: 13+ (not designed for children).
+**From 1.1.0** the optional online top 10 runs on Google Play Games Services: update Data safety as
+Google's PGS guidance says (player id and scores processed by Play Games) and re-check the IARC answers
+(players see each other's Play Games names on the leaderboard) before publishing — see
+`docs/store/PLAY_GAMES_SETUP.md`.
 
 ## Assets
 
@@ -11,7 +15,7 @@ Content rating (IARC questionnaire): no violence, no user interaction, no data s
 |---|---|---|
 | App icon | 512×512 PNG, no alpha needed | `Assets/Art/icon/icon_legacy.png` |
 | Feature graphic | 1024×500 PNG/JPG | Midjourney prompt 05 (`docs/references/PROMPTS.md`) + the wordmark from `splash_logo.png` |
-| Phone screenshots | 4–8, 16:9 landscape, min 1080 px | `adb exec-out screencap -p > shot.png` on the Pixel: title, mode A mid-round, mode B with an order, end of shift with NEW BEST, RETRO skin |
+| Phone screenshots | 4–8, 16:9 landscape, min 1080 px | `adb exec-out screencap -p > shot.png` on the Pixel: title, mode A mid-round, mode B with an order, end of shift with NEW BEST, the MENU card |
 | 7" / 10" tablet screenshots | optional | same captures |
 
 ## Short description (max 80 characters)
@@ -33,11 +37,11 @@ mess — and every so often takes pity on you.
 
 - Two modes: **A** — catch everything; **B** — serve only the colour on the order card.
 - The tempo climbs with every catch, the way it did on the old handhelds. Breathers every hundred.
-- Roll the counter past 999 and the neon does something special.
+- Roll the counter past 999 and the neon does something special — then keep going for four digits.
 - A real wall clock on the title screen, and a brew timer for your actual coffee.
-- Unlock console finishes — ash, onyx, neon — and the amber Neo-LCD screen skin.
+- Unlock console finishes — ash, onyx, neon. Your ten best shifts per mode, kept on the phone.
 - Hand-painted diorama, a lo-fi record on loop, rain on the window. Haptics you can turn off.
-- No ads, no accounts, no internet, no data collected. Plays offline, forever.
+- No ads, no purchases. Plays offline, forever - with an optional online top 10 on Google Play Games.
 
 ### PL
 
@@ -50,16 +54,21 @@ krawędzi. Trzy stłuczki i zmiana skończona. Kot Sablé sprząta — i czasem 
 
 - Dwa tryby: **A** — łap wszystko; **B** — podawaj tylko kolor z karty zamówienia.
 - Tempo rośnie z każdym złapaniem, jak na starych handheldach. Oddech co setkę.
-- Przekręć licznik za 999, a neon zrobi coś specjalnego.
+- Przekręć licznik za 999, a neon zrobi coś specjalnego — i graj dalej na czterech cyfrach.
 - Prawdziwy zegar na ekranie tytułowym i minutnik parzenia do Twojej własnej kawy.
-- Odblokuj wykończenia konsoli — jesion, onyks, neon — i bursztynowy skin ekranu Neo-LCD.
+- Odblokuj wykończenia konsoli — jesion, onyks, neon. Dziesięć najlepszych zmian w każdym trybie, zapisanych w telefonie.
 - Malowana diorama, lo-fi na pętli, deszcz za szybą. Wibracje do wyłączenia.
-- Bez reklam, kont, internetu i zbierania danych. Działa offline, zawsze.
+- Bez reklam i zakupów. Działa offline, zawsze - a ranking online w Grach Google Play jest opcjonalny.
 
 ## Release notes 1.0.0
 
 - EN: `First shift. Modes A and B, four console finishes, the Neo-LCD skin, a brew timer.`
 - PL: `Pierwsza zmiana. Tryby A i B, cztery wykończenia konsoli, skin Neo-LCD, minutnik parzenia.`
+
+## Release notes 1.1.0 (draft)
+
+- EN: `Levels, and a café that fights back: Paprika naps on the stools, Noir knocks them over, rush hours, and from level 5 the terrible ten seconds. Miro talks you through it. A MENU/PAUSE button, your top 10, cups that fall to the floor, a counter past 999 - and the game now speaks Polish too.`
+- PL: `Poziomy i kawiarnia, która się broni: Paprika wyleguje się na stołkach, Noir je przewraca, godziny szczytu, a od poziomu 5 straszna dziesiątka. Miro podpowiada, co robić. Przycisk MENU/PAUZA, Twoje top 10, kubki spadające na podłogę, licznik po 999 - i gra mówi teraz po polsku.`
 
 ## Publishing the privacy policy
 
