@@ -247,7 +247,15 @@ Commit `fdfc9f9` (2026-09-26, wypchnięty na `release/1.1.0`); APK etapu 2 zains
   (9 wierszy co 0,72; wyszarzony bez konfiguracji; niezalogowanego najpierw prosi o logowanie).
 - Manifest: zdejmujemy już tylko `ACCESS_LOCAL_NETWORK`; `INTERNET` i `ACCESS_NETWORK_STATE` zostają.
   `docs/privacy.md` przepisane (obowiązuje od 1.1.0 — na `master` dopiero z wydaniem), `LISTING.md`, `README`.
-- **Czeka na Michała:** konfiguracja w Play Console wg `docs/store/PLAY_GAMES_SETUP.md` (odciski SHA-1
+- **2026-09-26 noc — skonfigurowane (commit `068579c`):** projekt usług gier „Night Cafe” (app id / projekt
+  Cloud `213977721513`), ekran zgody OAuth w trybie **Testowanie** z 12 użytkownikami testowymi (publikacja
+  ekranu zgody wymaga strony głównej + polityki na autoryzowanej domenie → GitHub Pages
+  `mikoch81.github.io`, zrobić przed wydaniem), 3 klienty OAuth Android (sklep `B1:EA:…`, upload, debug),
+  tabele „Night Café · Tryb A” `CgkIqdXDkJ0GEAIQAw` i „Tryb B” `CgkIqdXDkJ0GEAIQBA` (ikony
+  `docs/store/leaderboard_a/b.png`), zasoby w `docs/store/games-ids.xml` zastosowane. Na Pixelu (APK debug)
+  ciche logowanie przy starcie udane. Uwaga: APK spadł ze 110 do 82 MB po dodaniu szablonów Gradle — do
+  sprawdzenia, czy to tylko kompresja.
+- (Instrukcja dla Michała, jak było:) konfiguracja w Play Console wg `docs/store/PLAY_GAMES_SETUP.md` (odciski SHA-1
   upload i debug są tam wpisane; app signing trzeba odczytać w konsoli) i plik zasobów XML →
   `docs/store/games-ids.xml` → menu **NightCafe/Apply Play Games Resources** (`Editor/PlayGamesSetup.cs`:
   setup wtyczki + `PlayGamesIds`). Potem test na Pixelu (APK deweloperski — klucz debug musi być w
