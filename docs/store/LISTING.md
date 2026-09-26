@@ -2,8 +2,12 @@
 
 Category: **Games → Arcade**. Contains ads: **no**. In-app purchases: **no**.
 Content rating (IARC questionnaire): no violence, no user interaction, no data sharing → expected
-**PEGI 3 / Everyone**. Data safety: **no data collected, no data shared**; privacy policy URL →
+**PEGI 3 / Everyone**. Data safety: **no data collected, no data shared** (1.0.0); privacy policy URL →
 `docs/privacy.md` published on GitHub Pages (see below). Target audience: 13+ (not designed for children).
+**From 1.1.0** the optional online top 10 runs on Google Play Games Services: update Data safety as
+Google's PGS guidance says (player id and scores processed by Play Games) and re-check the IARC answers
+(players see each other's Play Games names on the leaderboard) before publishing — see
+`docs/store/PLAY_GAMES_SETUP.md`.
 
 ## Assets
 
@@ -37,7 +41,7 @@ mess — and every so often takes pity on you.
 - A real wall clock on the title screen, and a brew timer for your actual coffee.
 - Unlock console finishes — ash, onyx, neon. Your ten best shifts per mode, kept on the phone.
 - Hand-painted diorama, a lo-fi record on loop, rain on the window. Haptics you can turn off.
-- No ads, no accounts, no internet, no data collected. Plays offline, forever.
+- No ads, no purchases. Plays offline, forever - with an optional online top 10 on Google Play Games.
 
 ### PL
 
@@ -54,7 +58,7 @@ krawędzi. Trzy stłuczki i zmiana skończona. Kot Sablé sprząta — i czasem 
 - Prawdziwy zegar na ekranie tytułowym i minutnik parzenia do Twojej własnej kawy.
 - Odblokuj wykończenia konsoli — jesion, onyks, neon. Dziesięć najlepszych zmian w każdym trybie, zapisanych w telefonie.
 - Malowana diorama, lo-fi na pętli, deszcz za szybą. Wibracje do wyłączenia.
-- Bez reklam, kont, internetu i zbierania danych. Działa offline, zawsze.
+- Bez reklam i zakupów. Działa offline, zawsze - a ranking online w Grach Google Play jest opcjonalny.
 
 ## Release notes 1.0.0
 

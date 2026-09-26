@@ -274,15 +274,18 @@ namespace NightCafe.EditorTools
             TMP_Text header = Row("MenuHeader", panel.transform, 3.3f, "PAUSED", 6f);
 
             GameObject main = Child("MainPage", panel.transform);
-            // Eight rows 0.8 apart (1.1.0 added LANGUAGE / JĘZYK); the view sets the words.
-            TMP_Text resume = Row("ResumeRow", main.transform, 2.4f, "RESUME");
-            TMP_Text music = Row("MusicRow", main.transform, 1.6f, "MUSIC  ON");
-            TMP_Text sound = Row("SoundRow", main.transform, 0.8f, "SOUND  ON");
-            TMP_Text mode = Row("ModeRow", main.transform, 0.0f, "MODE  A");
-            TMP_Text scores = Row("ScoresRow", main.transform, -0.8f, "TOP 10");
-            TMP_Text language = Row("LanguageRow", main.transform, -1.6f, "LANGUAGE  EN");
-            TMP_Text endShift = Row("EndShiftRow", main.transform, -2.4f, "END SHIFT");
-            TMP_Text quit = Row("QuitRow", main.transform, -3.2f, "QUIT GAME");
+            // Nine rows 0.72 apart (1.1.0 added ONLINE TOP 10 and LANGUAGE); the view sets the words.
+            const float step = 0.72f;
+            float y = 2.5f;
+            TMP_Text resume = Row("ResumeRow", main.transform, y, "RESUME");
+            TMP_Text music = Row("MusicRow", main.transform, y -= step, "MUSIC  ON");
+            TMP_Text sound = Row("SoundRow", main.transform, y -= step, "SOUND  ON");
+            TMP_Text mode = Row("ModeRow", main.transform, y -= step, "MODE  A");
+            TMP_Text scores = Row("ScoresRow", main.transform, y -= step, "TOP 10");
+            TMP_Text online = Row("OnlineRow", main.transform, y -= step, "ONLINE TOP 10");
+            TMP_Text language = Row("LanguageRow", main.transform, y -= step, "LANGUAGE  EN");
+            TMP_Text endShift = Row("EndShiftRow", main.transform, y -= step, "END SHIFT");
+            TMP_Text quit = Row("QuitRow", main.transform, y - step, "QUIT GAME");
 
             GameObject scoresPage = Child("ScoresPage", panel.transform);
             TMP_Text list = WorldText("ScoresText", scoresPage.transform, new Vector2(0f, -0.1f), "NO SHIFTS YET", 3.9f,
@@ -305,13 +308,14 @@ namespace NightCafe.EditorTools
                 so.FindProperty("endShiftRow").objectReferenceValue = endShift;
                 so.FindProperty("quitRow").objectReferenceValue = quit;
                 so.FindProperty("languageRow").objectReferenceValue = language;
+                so.FindProperty("onlineRow").objectReferenceValue = online;
                 so.FindProperty("mainPage").objectReferenceValue = main;
                 so.FindProperty("scoresPage").objectReferenceValue = scoresPage;
                 so.FindProperty("scoresText").objectReferenceValue = list;
                 so.FindProperty("backRow").objectReferenceValue = back;
             });
 
-            return (view, card, new[] { header, resume, music, sound, mode, scores, language, endShift, quit, list, back });
+            return (view, card, new[] { header, resume, music, sound, mode, scores, online, language, endShift, quit, list, back });
         }
 
         /// <summary>A hidden sprite slot the applier fills from the style (Hud layer, under the text).</summary>

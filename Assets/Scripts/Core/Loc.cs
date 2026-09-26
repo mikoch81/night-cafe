@@ -37,6 +37,7 @@ namespace NightCafe.Core
         Off,
         Mode,
         TopTen,
+        OnlineTopTen,
         EndShift,
         QuitGame,
         NoShiftsYet,
@@ -90,6 +91,7 @@ namespace NightCafe.Core
             Add(Txt.Off, "OFF", "WYŁ.");
             Add(Txt.Mode, "MODE", "TRYB");
             Add(Txt.TopTen, "TOP 10", "TOP 10");
+            Add(Txt.OnlineTopTen, "ONLINE TOP 10", "RANKING ONLINE");
             Add(Txt.EndShift, "END SHIFT", "ZAKOŃCZ ZMIANĘ");
             Add(Txt.QuitGame, "QUIT GAME", "WYJDŹ Z GRY");
             Add(Txt.NoShiftsYet, "NO SHIFTS YET", "JESZCZE ŻADNEJ ZMIANY");

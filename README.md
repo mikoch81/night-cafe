@@ -45,8 +45,9 @@ Midjourney sheets), `clear_dial.py` / `clear_marks.py` / `lift_from_shelf.py` (P
 - Fonts (OFL): Cabin Sketch, Patrick Hand, DSEG7 / DSEG14, Liberation Mono; DejaVu Sans Bold for
   the engraving (`art/fonts/`). Licence texts sit next to the fonts.
 - Textures and HDRI: ambientCG and Poly Haven, CC0 (`art/textures/LICENSE.md`).
-- The game contains no ads, analytics or third-party SDKs and collects no data
-  ([docs/privacy.md](docs/privacy.md)).
+- The game contains no ads or analytics and collects no data itself; the one third-party SDK is Google
+  Play Games (plugin 2.2.1, Apache 2.0) for the optional online top 10 ([docs/privacy.md](docs/privacy.md),
+  setup in [docs/store/PLAY_GAMES_SETUP.md](docs/store/PLAY_GAMES_SETUP.md)).
 
 The game is an original work in the *catch-the-falling-objects* LCD genre; its characters,
 setting, art, sounds and names are its own (the checklist is GDD §7).

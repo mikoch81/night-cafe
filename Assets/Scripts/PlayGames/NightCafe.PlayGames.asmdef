@@ -1,0 +1,20 @@
+{
+    "name": "NightCafe.PlayGames",
+    "rootNamespace": "NightCafe.PlayGames",
+    "references": [
+        "NightCafe.Runtime",
+        "Google.Play.Games"
+    ],
+    "includePlatforms": [
+        "Android",
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

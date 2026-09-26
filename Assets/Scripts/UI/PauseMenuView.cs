@@ -19,7 +19,8 @@ namespace NightCafe.UI
         Back,
         EndShift,
         Quit,
-        ToggleLanguage
+        ToggleLanguage,
+        OnlineScores
     }
 
     /// <summary>
@@ -40,16 +41,19 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text endShiftRow;
         [SerializeField] TMP_Text quitRow;
         [SerializeField] TMP_Text languageRow;
+        [Tooltip("Google Play Games leaderboard (stage 3); faded when the online board is not set up.")]
+        [SerializeField] TMP_Text onlineRow;
         [SerializeField] GameObject mainPage;
         [SerializeField] GameObject scoresPage;
         [SerializeField] TMP_Text scoresText;
         [SerializeField] TMP_Text backRow;
         [Tooltip("Tap box around a row, in LCD units.")]
-        [SerializeField] Vector2 rowHitSize = new(5.6f, 0.8f);
+        [SerializeField] Vector2 rowHitSize = new(5.6f, 0.7f);
         [SerializeField] Color ink = new(0.23f, 0.16f, 0.11f);
         [SerializeField] Color fadedInk = new(0.63f, 0.55f, 0.45f);
 
         bool _inRound;
+        bool _online;
 
         public bool IsOpen => root != null && root.activeSelf;
 
@@ -69,9 +73,11 @@ namespace NightCafe.UI
         }
 
         /// <param name="inRound">A live shift is paused under the card: RESUME and END SHIFT apply.</param>
-        public void Open(bool inRound, SettingsService settings, GameMode mode)
+        /// <param name="online">The online leaderboard exists (Play Games set up): its row is live.</param>
+        public void Open(bool inRound, SettingsService settings, GameMode mode, bool online = false)
         {
             _inRound = inRound;
+            _online = online;
             if (root != null)
                 root.SetActive(true);
             ShowMain();
@@ -98,6 +104,7 @@ namespace NightCafe.UI
             Set(soundRow, $"{Loc.T(Txt.Sound)}  {Loc.OnOff(settings.SfxEnabled)}", settings.SfxEnabled ? ink : fadedInk);
             Set(modeRow, $"{Loc.T(Txt.Mode)}  {mode.Letter()}", ink);
             Set(scoresRow, Loc.T(Txt.TopTen), ink);
+            Set(onlineRow, Loc.T(Txt.OnlineTopTen), _online ? ink : fadedInk);
             Set(languageRow, Loc.T(Txt.LanguageRow), ink);
             Set(endShiftRow, Loc.T(Txt.EndShift), _inRound ? ink : fadedInk);
             Set(quitRow, Loc.T(Txt.QuitGame), ink);
@@ -148,6 +155,7 @@ namespace NightCafe.UI
             if (LcdHit.Hits(soundRow, lcdPoint, rowHitSize)) return MenuAction.ToggleSound;
             if (LcdHit.Hits(modeRow, lcdPoint, rowHitSize)) return MenuAction.FlipMode;
             if (LcdHit.Hits(scoresRow, lcdPoint, rowHitSize)) return MenuAction.ShowScores;
+            if (_online && LcdHit.Hits(onlineRow, lcdPoint, rowHitSize)) return MenuAction.OnlineScores;
             if (LcdHit.Hits(languageRow, lcdPoint, rowHitSize)) return MenuAction.ToggleLanguage;
             if (_inRound && LcdHit.Hits(endShiftRow, lcdPoint, rowHitSize)) return MenuAction.EndShift;
             if (LcdHit.Hits(quitRow, lcdPoint, rowHitSize)) return MenuAction.Quit;

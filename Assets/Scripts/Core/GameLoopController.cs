@@ -219,6 +219,9 @@ namespace NightCafe.Core
 
         void Start()
         {
+            // Stage 3: signs in to Play Games in the background if the player already uses it.
+            if (OnlineScores.Backend.Available)
+                OnlineScores.Backend.SignInSilently();
             EnterTitle();
         }
 
@@ -917,7 +920,7 @@ namespace NightCafe.Core
 
             _menuPausedRound = State is GameState.Playing or GameState.Breather;
             Time.timeScale = 0f;
-            menu.Open(_menuPausedRound, _settings, _mode);
+            menu.Open(_menuPausedRound, _settings, _mode, OnlineScores.Backend.Available);
             audioService.Play(GameSfx.LeverClick);
         }
 
@@ -954,6 +957,9 @@ namespace NightCafe.Core
                 case MenuAction.FlipMode:
                     SwitchModeFromMenu();
                     break;
+                case MenuAction.OnlineScores:
+                    ShowOnlineScores();
+                    return;
                 case MenuAction.ToggleLanguage:
                     _settings.ToggleLanguage();
                     break;
@@ -984,14 +990,41 @@ namespace NightCafe.Core
         void SwitchModeFromMenu()
         {
             if (_menuPausedRound)
+            {
                 _profile.SubmitScore(_mode, _score.TotalScore, System.DateTime.Now, out _);
+                OnlineScores.Backend.Submit(_mode, _score.TotalScore);
+            }
 
             FlipMode();
             if (State != GameState.Title)
                 EnterTitle();
 
-            menu.Open(false, _settings, _mode);
+            menu.Open(false, _settings, _mode, OnlineScores.Backend.Available);
             _menuPausedRound = false;
+        }
+
+        /// <summary>
+        /// Google's leaderboard for the current mode; a player who is not signed in is asked first
+        /// (the sign-in sheet and the board both open over the paused game).
+        /// </summary>
+        void ShowOnlineScores()
+        {
+            IOnlineScores online = OnlineScores.Backend;
+            if (!online.Available)
+                return;
+
+            if (online.SignedIn)
+            {
+                online.ShowBoard(_mode);
+                return;
+            }
+
+            GameMode mode = _mode;
+            online.SignIn(ok =>
+            {
+                if (ok)
+                    online.ShowBoard(mode);
+            });
         }
 
         static void Quit()
@@ -1162,6 +1195,7 @@ namespace NightCafe.Core
 
             int total = _score.TotalScore;
             bool newRecord = _profile.SubmitScore(_mode, total, System.DateTime.Now, out int rank);
+            OnlineScores.Backend.Submit(_mode, total); // Play Games; dropped quietly when offline or signed out
             string unlockedName = UnlockSkins(total);
 
             hud.SetBest(_profile.Best(_mode));

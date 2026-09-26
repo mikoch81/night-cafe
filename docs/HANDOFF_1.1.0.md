@@ -231,8 +231,27 @@ wyrzuca filiżanki w super tempie („niektórym testerom brakuje emocji"). Zrob
   B ma progi/chwile spokoju ×2 i te same wydarzenia. Obejrzane na zrzucie (B, seria espresso).
 - Testy 190/190.
 
-### Otwarte w etapie 2
-- Kolejna ocena Michała → akceptacja → commit etapu 2 → dopiero wtedy APK na telefon.
+### Etap 2 zamknięty
+Commit `fdfc9f9` (2026-09-26, wypchnięty na `release/1.1.0`); APK etapu 2 zainstalowany na Pixelu.
+
+## 5a. Etap 3 — ranking online (w toku, NIESCOMMITOWANY)
+- Wtyczka **Google Play Games 2.2.1** (Apache 2.0, z `current-build` repo playgameservices) + EDM4U 1.2.182:
+  `Assets/GooglePlayGames`, `Assets/ExternalDependencyManager`, `Assets/Plugins/Android`
+  (`mainTemplate.gradle` z `play-services-games-v2:22.0.0` i `play-services-nearby:18.5.0` — Force Resolve,
+  `gradleTemplate.properties`, `GooglePlayGamesManifest.androidlib`), `ProjectSettings/GvhProjectSettings.xml`,
+  `GooglePlayGameSettings.txt`. Zagnieżdżoną starą paczkę 2.2.0 z `current-build` usunięto.
+- Kod: `Services/OnlineScores.cs` (interfejs `IOnlineScores`, `OfflineScores`), `Scripts/PlayGames/`
+  (osobny asmdef Android+Editor: `PlayGamesScores` instaluje się przed sceną tylko na urządzeniu i tylko gdy
+  jest app id i `PlayGamesIds` — inaczej gra zostaje offline). Ciche logowanie w `Start`, wynik wysyłany w
+  `EnterGameOver` (i przy zmianie trybu w trakcie zmiany), wiersz menu `ONLINE TOP 10` / `RANKING ONLINE`
+  (9 wierszy co 0,72; wyszarzony bez konfiguracji; niezalogowanego najpierw prosi o logowanie).
+- Manifest: zdejmujemy już tylko `ACCESS_LOCAL_NETWORK`; `INTERNET` i `ACCESS_NETWORK_STATE` zostają.
+  `docs/privacy.md` przepisane (obowiązuje od 1.1.0 — na `master` dopiero z wydaniem), `LISTING.md`, `README`.
+- **Czeka na Michała:** konfiguracja w Play Console wg `docs/store/PLAY_GAMES_SETUP.md` (odciski SHA-1
+  upload i debug są tam wpisane; app signing trzeba odczytać w konsoli) i plik zasobów XML →
+  `docs/store/games-ids.xml` → menu **NightCafe/Apply Play Games Resources** (`Editor/PlayGamesSetup.cs`:
+  setup wtyczki + `PlayGamesIds`). Potem test na Pixelu (APK deweloperski — klucz debug musi być w
+  danych logowania), Data safety i IARC w konsoli, publikacja konfiguracji usług gier z wydaniem.
 
 ## 6. Etap 3 i wydanie — do zrobienia
 
