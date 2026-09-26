@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Google Play game services IDs. Save this file as res/values/games-ids.xml in your project.-->
+<resources>
+  <!--app_id-->
+  <string name="app_id" translatable="false">213977721513</string>
+  <!--package_name-->
+  <string name="package_name" translatable="false">com.mikoch81.nightcafe</string>
+  <!--leaderboard Night Café · Tryb A-->
+  <string name="leaderboard_night_caf__tryb_a" translatable="false">CgkIqdXDkJ0GEAIQAw</string>
+  <!--leaderboard Night Café · Tryb B-->
+  <string name="leaderboard_night_caf__tryb_b" translatable="false">CgkIqdXDkJ0GEAIQBA</string>
+</resources>

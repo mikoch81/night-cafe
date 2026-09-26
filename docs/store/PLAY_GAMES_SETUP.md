@@ -9,7 +9,7 @@ zrobi. Na końcu potrzebny jest **plik zasobów (XML)** z punktu 6.
 
 | Klucz | Do czego | SHA-1 |
 |---|---|---|
-| **App signing key** (Google) | wersja ze Sklepu Play (internal / closed / produkcja) | Play Console → *Test i publikowanie* → *Integralność aplikacji* → *Podpisywanie aplikacji* → „Certyfikat klucza podpisywania aplikacji”, SHA-1 |
+| **App signing key** (Google) | wersja ze Sklepu Play (internal / closed / produkcja) | `B1:EA:87:4E:F2:18:64:3B:21:0A:DC:50:F3:19:1E:25:50:1B:EF:5B` (Play Console → *Chronione przez Google Play* → *Ochrona w Sklepie Play* ⌄ → *Podpisywanie aplikacji w Google Play*) |
 | Upload key (`C:\NIGHT\keys\nightcafe-upload.jks`) | AAB zainstalowany ręcznie przez bundletool | `09:A5:07:15:5F:14:0D:5C:EE:E4:43:89:8A:E9:7D:F5:57:61:98:2A` |
 | Debug keystore tego PC | deweloperski APK z edytora (testy na Pixelu) | `2C:62:5D:79:41:28:55:58:72:95:BC:39:EF:DE:80:EE:99:6F:EE:82` |
 
@@ -18,8 +18,11 @@ Pakiet: `com.mikoch81.nightcafe`.
 ## Kroki
 
 1. **Play Console → Night Café → *Rozwój* (Grow users) → *Usługi gier Play* → *Konfiguracja i zarządzanie*
-   → *Konfiguracja*.** Na pytanie o Google APIs: „Nie, moja gra nie używa interfejsów Google API” →
-   utwórz nowy projekt usług gier, nazwa **Night Café**. Zapisz.
+   → *Konfiguracja*.** Wybierz „Utwórz nowy projekt w usługach gier Play”. Pole **„Projekt w chmurze”**
+   pyta o projekt **Google Cloud**, nie o grę — przy pierwszej konfiguracji lista jest pusta. Kliknij
+   „Utwórz nowy projekt w chmurze” → w Google Cloud (to samo konto Google) nazwa **Night Cafe**, lokalizacja
+   „Brak organizacji” → Utwórz → wróć do Play Console → „Odśwież projekty w chmurze” → wybierz go → „Użyj”.
+   (Jeden projekt w chmurze = jeden projekt usług gier; widać tylko projekty, których jesteś właścicielem.)
 2. **Ekran zgody OAuth.** Konsola podsunie link do Google Cloud → *OAuth consent screen*: typ **External**,
    nazwa aplikacji „Night Café”, e-mail pomocy, e-mail dewelopera; zakresy domyślne (nic nie dodawać);
    polityka prywatności: `https://github.com/mikoch81/night-cafe/blob/master/docs/privacy.md`. Opublikuj
