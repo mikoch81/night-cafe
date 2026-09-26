@@ -24,9 +24,12 @@ namespace NightCafe.Core
             NewRecord = newRecord;
         }
 
-        public static GameOverCopy Build(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin)
+        /// <param name="rank">Place on the local top-10 list, 0 when the shift did not make it.</param>
+        public static GameOverCopy Build(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank = 0)
         {
-            string record = newRecord ? "NEW BEST!" : $"BEST {bestDisplay:000}";
+            string record = newRecord ? "NEW BEST!"
+                : rank > 0 ? $"#{rank} ON LIST · BEST {bestDisplay:000}"
+                : $"BEST {bestDisplay:000}";
             string footer = string.IsNullOrEmpty(unlockedSkin)
                 ? "TAP TO RESTART"
                 : $"{unlockedSkin.ToUpperInvariant()} UNLOCKED\nTAP TO RESTART";

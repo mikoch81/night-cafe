@@ -11,7 +11,7 @@ Content rating (IARC questionnaire): no violence, no user interaction, no data s
 |---|---|---|
 | App icon | 512×512 PNG, no alpha needed | `Assets/Art/icon/icon_legacy.png` |
 | Feature graphic | 1024×500 PNG/JPG | Midjourney prompt 05 (`docs/references/PROMPTS.md`) + the wordmark from `splash_logo.png` |
-| Phone screenshots | 4–8, 16:9 landscape, min 1080 px | `adb exec-out screencap -p > shot.png` on the Pixel: title, mode A mid-round, mode B with an order, end of shift with NEW BEST, RETRO skin |
+| Phone screenshots | 4–8, 16:9 landscape, min 1080 px | `adb exec-out screencap -p > shot.png` on the Pixel: title, mode A mid-round, mode B with an order, end of shift with NEW BEST, the MENU card |
 | 7" / 10" tablet screenshots | optional | same captures |
 
 ## Short description (max 80 characters)
@@ -33,9 +33,9 @@ mess — and every so often takes pity on you.
 
 - Two modes: **A** — catch everything; **B** — serve only the colour on the order card.
 - The tempo climbs with every catch, the way it did on the old handhelds. Breathers every hundred.
-- Roll the counter past 999 and the neon does something special.
+- Roll the counter past 999 and the neon does something special — then keep going for four digits.
 - A real wall clock on the title screen, and a brew timer for your actual coffee.
-- Unlock console finishes — ash, onyx, neon — and the amber Neo-LCD screen skin.
+- Unlock console finishes — ash, onyx, neon. Your ten best shifts per mode, kept on the phone.
 - Hand-painted diorama, a lo-fi record on loop, rain on the window. Haptics you can turn off.
 - No ads, no accounts, no internet, no data collected. Plays offline, forever.
 
@@ -50,9 +50,9 @@ krawędzi. Trzy stłuczki i zmiana skończona. Kot Sablé sprząta — i czasem 
 
 - Dwa tryby: **A** — łap wszystko; **B** — podawaj tylko kolor z karty zamówienia.
 - Tempo rośnie z każdym złapaniem, jak na starych handheldach. Oddech co setkę.
-- Przekręć licznik za 999, a neon zrobi coś specjalnego.
+- Przekręć licznik za 999, a neon zrobi coś specjalnego — i graj dalej na czterech cyfrach.
 - Prawdziwy zegar na ekranie tytułowym i minutnik parzenia do Twojej własnej kawy.
-- Odblokuj wykończenia konsoli — jesion, onyks, neon — i bursztynowy skin ekranu Neo-LCD.
+- Odblokuj wykończenia konsoli — jesion, onyks, neon. Dziesięć najlepszych zmian w każdym trybie, zapisanych w telefonie.
 - Malowana diorama, lo-fi na pętli, deszcz za szybą. Wibracje do wyłączenia.
 - Bez reklam, kont, internetu i zbierania danych. Działa offline, zawsze.
 
@@ -60,6 +60,11 @@ krawędzi. Trzy stłuczki i zmiana skończona. Kot Sablé sprząta — i czasem 
 
 - EN: `First shift. Modes A and B, four console finishes, the Neo-LCD skin, a brew timer.`
 - PL: `Pierwsza zmiana. Tryby A i B, cztery wykończenia konsoli, skin Neo-LCD, minutnik parzenia.`
+
+## Release notes 1.1.0 (draft)
+
+- EN: `A MENU button: pause, music and sound, mode A/B, your top 10, quit. The side buttons answer only where they are. Cups fall all the way to the floor. The counter keeps going past 999. The Neo-LCD skin is retired.`
+- PL: `Przycisk MENU: pauza, muzyka i dźwięk, tryb A/B, Twoje top 10, wyjście. Boczne przyciski działają tylko tam, gdzie są. Kubki spadają aż na podłogę. Licznik liczy dalej po 999. Skin Neo-LCD przeszedł na emeryturę.`
 
 ## Publishing the privacy policy
 

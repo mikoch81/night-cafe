@@ -2,22 +2,18 @@ using NightCafe.Config;
 using NightCafe.Gameplay;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace NightCafe.UI
 {
     /// <summary>
     /// Pushes a ScreenStyle into every renderer of the LCD scene: sprites, tints, fonts, the
-    /// bloom volume and the counter planks. The scene generator wires the references; the game
-    /// loop calls Apply when the player flips ART / RETRO on the title screen. Colours for the
-    /// monochrome style come from the palette the setup serialised here.
+    /// counter planks and the title props. The scene generator wires the references; the game
+    /// loop calls Apply once at start.
     /// </summary>
     public sealed class ScreenStyleApplier : MonoBehaviour
     {
-        [Header("Palette (RETRO tints)")]
+        [Header("Palette (lettering without a paper prop under it)")]
         [SerializeField] Color activeAmber = new(1f, 0.788f, 0.4f);
-        [SerializeField] Color brightAmber = new(1f, 0.824f, 0.478f);
-        [SerializeField] Color inactiveAmber = new(0.227f, 0.173f, 0.094f);
 
         [Header("Scene")]
         [SerializeField] SpriteRenderer background;
@@ -26,7 +22,6 @@ namespace NightCafe.UI
         [SerializeField] SpriteRenderer[] steps = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer[] machineHeads = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer scoreBoard;
-        [SerializeField] Volume lcdVolume;
 
         [Header("Actors")]
         [SerializeField] PlayerPositionController barista;
@@ -52,11 +47,14 @@ namespace NightCafe.UI
         [SerializeField] Transform resultGroup;
         [SerializeField] Transform brewTag;
         [SerializeField] SpriteRenderer titleSign;
-        [Tooltip("Toggle labels and the cards under them, in the same order (sound, haptics, ghosts, skin, screen).")]
+        [Tooltip("Toggle labels and the cards under them, in the same order (music, sound, haptics, skin).")]
         [SerializeField] TMP_Text[] toggleLabels = new TMP_Text[0];
         [SerializeField] SpriteRenderer[] toggleCards = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer demoBacking;
         [SerializeField] SpriteRenderer resultCard;
+        [SerializeField] PauseMenuView menu;
+        [Tooltip("The MENU card: the receipt paper, 9-sliced to ScreenStyle.menuCardSize.")]
+        [SerializeField] SpriteRenderer menuCard;
         [Tooltip("Lettering that sits on the chalk sign (signInk in the painted style).")]
         [SerializeField] TMP_Text[] signTexts = new TMP_Text[0];
         [Tooltip("Lettering that sits on paper (cardInk in the painted style).")]
@@ -85,8 +83,8 @@ namespace NightCafe.UI
             Current = style;
             RememberFonts();
 
-            Color actor = style.monochrome ? activeAmber : Color.white;
-            Color unlit = style.monochrome ? inactiveAmber : Color.clear;
+            Color actor = Color.white;
+            Color unlit = Color.clear;
 
             if (background != null && style.background != null)
                 background.sprite = style.background;
@@ -126,7 +124,7 @@ namespace NightCafe.UI
             {
                 if (head == null) continue;
                 if (style.machineHead != null) head.sprite = style.machineHead;
-                head.color = style.monochrome ? inactiveAmber : Color.white;
+                head.color = Color.white;
                 Vector3 s = head.transform.localScale;
                 float magnitude = machineHeadScale * style.machineHeadScale;
                 head.transform.localScale = new Vector3(Mathf.Sign(s.x) * magnitude, magnitude, 1f);
@@ -167,16 +165,13 @@ namespace NightCafe.UI
             if (orderPanel != null)
                 orderPanel.SetStyle(style.orderPanel, style.HasPaintedCups ? style.cupsByOrder : null, style.orderCupScale);
 
-            CupSkin.Set(style, style.monochrome ? brightAmber : Color.white, cupScale * style.cupScale);
+            CupSkin.Set(style, Color.white, cupScale * style.cupScale);
 
             ApplyFonts(digitTexts, _digitDefaults, style.digitFont);
             ApplyFonts(letterTexts, _letterDefaults, style.letterFont);
             ApplyFonts(bodyTexts, _bodyDefaults, style.textFont);
 
             ApplyTitleProps(style);
-
-            if (lcdVolume != null)
-                lcdVolume.weight = style.bloom ? 1f : 0f;
         }
 
         /// <summary>
@@ -196,6 +191,7 @@ namespace NightCafe.UI
 
             FitSliced(titleSign, style.titleSign, style.titleSignSize);
             FitSliced(resultCard, style.resultCard, style.resultCardSize);
+            FitSliced(menuCard, style.resultCard, style.menuCardSize);
 
             _toggleHomes ??= System.Array.ConvertAll(toggleLabels, l => l != null ? l.transform.localPosition : Vector3.zero);
             for (int i = 0; i < toggleLabels.Length; i++)
@@ -213,7 +209,7 @@ namespace NightCafe.UI
 
             // The demo prompt has no prop of its own: a strip of dark glass keeps it legible over the painting.
             if (demoBacking != null)
-                demoBacking.enabled = !style.monochrome;
+                demoBacking.enabled = true;
 
             if (clock != null)
                 clock.SetDial(style.clockFace, style.clockFaceWidth, style.cardInk);
@@ -227,9 +223,12 @@ namespace NightCafe.UI
                 if (text != null) text.color = cardInk;
 
             if (toggles != null)
-                toggles.SetColors(paper ? style.cardInk : activeAmber, paper ? style.cardInkFaded : inactiveAmber);
+                toggles.SetColors(paper ? style.cardInk : activeAmber, paper ? style.cardInkFaded : activeAmber * 0.5f);
             if (hud != null)
                 hud.SetRecordColors(cardInk, paper ? style.accentInk : activeAmber);
+            if (menu != null)
+                menu.SetColors(style.resultCard != null ? style.cardInk : activeAmber,
+                    style.resultCard != null ? style.cardInkFaded : activeAmber * 0.5f);
         }
 
         /// <summary>Shows `sprite` scaled to `width` LCD units, or hides the renderer when there is none.</summary>

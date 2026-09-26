@@ -61,31 +61,28 @@ namespace NightCafe.EditorTools
                 "NIGHT CAFÉ\nTAP TO START", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 2.6f));
 
             GameObject togglesGo = Child("Toggles", titlePanel.transform, new Vector2(0f, -2.30f));
-            // Five toggles across the 12.7-wide LCD: sound, haptics, ghosts, shell skin, screen style.
+            // Four toggles across the 12.7-wide LCD: music, sound effects, haptics, shell skin.
             const float toggleStep = 2.45f;
             const float toggleSize = 5.2f;
-            var toggleCards = new SpriteRenderer[5];
+            var toggleCards = new SpriteRenderer[4];
             for (int i = 0; i < toggleCards.Length; i++)
-                toggleCards[i] = Prop($"Card_{i}", togglesGo.transform, new Vector2((i - 2) * toggleStep, 0f));
-            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-2f * toggleStep, 0f),
+                toggleCards[i] = Prop($"Card_{i}", togglesGo.transform, new Vector2((i - 1.5f) * toggleStep, 0f));
+            TMP_Text musicLabel = WorldText("MusicToggle", togglesGo.transform, new Vector2(-1.5f * toggleStep, 0f),
                 "♪ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(-toggleStep, 0f),
+            TMP_Text soundLabel = WorldText("SoundToggle", togglesGo.transform, new Vector2(-0.5f * toggleStep, 0f),
+                "SFX ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text hapticsLabel = WorldText("HapticsToggle", togglesGo.transform, new Vector2(0.5f * toggleStep, 0f),
                 "~ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text ghostsLabel = WorldText("GhostsToggle", togglesGo.transform, new Vector2(0f, 0f),
-                "░ OFF", toggleSize, monoFont, InactiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(toggleStep, 0f),
+            TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(1.5f * toggleStep, 0f),
                 "WALNUT", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
-            TMP_Text screenLabel = WorldText("ScreenToggle", togglesGo.transform, new Vector2(2f * toggleStep, 0f),
-                "RETRO", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
 
             var toggles = togglesGo.AddComponent<TitleToggleView>();
             SetSerialized(toggles, so =>
             {
+                so.FindProperty("musicLabel").objectReferenceValue = musicLabel;
                 so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
                 so.FindProperty("hapticsLabel").objectReferenceValue = hapticsLabel;
-                so.FindProperty("ghostsLabel").objectReferenceValue = ghostsLabel;
                 so.FindProperty("skinLabel").objectReferenceValue = skinLabel;
-                so.FindProperty("screenLabel").objectReferenceValue = screenLabel;
                 so.FindProperty("hitSize").vector2Value = new Vector2(2.3f, 0.9f);
                 so.FindProperty("onColor").colorValue = ActiveAmber;
                 so.FindProperty("offColor").colorValue = InactiveAmber;
@@ -120,6 +117,9 @@ namespace NightCafe.EditorTools
                 "TAP TO RESTART", 4.2f, monoFont, ActiveAmber, 0, new Vector2(8f, 1.4f));
             gameOverPanel.SetActive(false);
 
+            // --- Menu (review 2026-09-26) ---------------------------------------
+            (PauseMenuView menu, SpriteRenderer menuCard, TMP_Text[] menuTexts) = BuildMenu(root, monoFont);
+
             // --- Debug overlay --------------------------------------------------
             TMP_Text fps = BuildDebugCanvas(monoFont);
 
@@ -142,13 +142,16 @@ namespace NightCafe.EditorTools
 
             return (hud, toggles, clockWidget, new TitleProps
             {
+                menu = menu,
+                menuCard = menuCard,
+                menuTexts = menuTexts,
                 titleGroup = titleGroup.transform,
                 clockGroup = clockGroup.transform,
                 togglesGroup = togglesGo.transform,
                 resultGroup = resultGroup.transform,
                 brewTag = brewTag.transform,
                 titleSign = titleSign,
-                toggleLabels = new[] { soundLabel, hapticsLabel, ghostsLabel, skinLabel, screenLabel },
+                toggleLabels = new[] { musicLabel, soundLabel, hapticsLabel, skinLabel },
                 toggleCards = toggleCards,
                 demoBacking = demoBacking,
                 resultCard = resultCard,
@@ -165,9 +168,82 @@ namespace NightCafe.EditorTools
         internal sealed class TitleProps
         {
             public Transform titleGroup, clockGroup, togglesGroup, resultGroup, brewTag;
-            public SpriteRenderer titleSign, demoBacking, resultCard;
+            public SpriteRenderer titleSign, demoBacking, resultCard, menuCard;
             public SpriteRenderer[] toggleCards;
-            public TMP_Text[] toggleLabels, signTexts, cardTexts;
+            public TMP_Text[] toggleLabels, signTexts, cardTexts, menuTexts;
+            public PauseMenuView menu;
+        }
+
+        // The menu draws over everything else in the LCD, the HUD digits included.
+        const int MenuDimOrder = 40;
+        const int MenuCardOrder = 45;
+        const int MenuTextOrder = 50;
+
+        /// <summary>
+        /// The MENU card: a dark veil over the whole screen, a paper card (the receipt sprite,
+        /// 9-sliced by the style applier) and the rows. Two pages share the header: the rows,
+        /// and the local top 10 with a BACK row.
+        /// </summary>
+        static (PauseMenuView view, SpriteRenderer card, TMP_Text[] texts) BuildMenu(Transform hudRoot, TMP_FontAsset font)
+        {
+            GameObject host = Child("Menu", hudRoot);
+            GameObject panel = Child("MenuPanel", host.transform);
+
+            var veilGo = Child("MenuVeil", panel.transform);
+            veilGo.transform.localScale = new Vector3(12.72f, 8.92f, 1f);
+            var veil = veilGo.AddComponent<SpriteRenderer>();
+            veil.sprite = WhitePixelSprite();
+            veil.color = new Color(GlassBlack.r, GlassBlack.g, GlassBlack.b, 0.6f);
+            SetSorting(veil, Core.SortingLayers.Hud, MenuDimOrder);
+
+            var cardGo = Child("MenuCard", panel.transform);
+            var card = cardGo.AddComponent<SpriteRenderer>();
+            card.enabled = false; // the applier fits the paper
+            SetSorting(card, Core.SortingLayers.Hud, MenuCardOrder);
+
+            var rowSize = new Vector2(6f, 0.8f);
+            const float rowFont = 5.2f;
+            TMP_Text Row(string name, Transform parent, float y, string text, float size = rowFont) =>
+                WorldText(name, parent, new Vector2(0f, y), text, size, font, ActiveAmber, MenuTextOrder, rowSize);
+
+            TMP_Text header = Row("MenuHeader", panel.transform, 3.3f, "PAUSED", 6f);
+
+            GameObject main = Child("MainPage", panel.transform);
+            TMP_Text resume = Row("ResumeRow", main.transform, 2.3f, "RESUME");
+            TMP_Text music = Row("MusicRow", main.transform, 1.4f, "MUSIC  ON");
+            TMP_Text sound = Row("SoundRow", main.transform, 0.5f, "SOUND  ON");
+            TMP_Text mode = Row("ModeRow", main.transform, -0.4f, "MODE  A");
+            TMP_Text scores = Row("ScoresRow", main.transform, -1.3f, "TOP 10");
+            TMP_Text endShift = Row("EndShiftRow", main.transform, -2.2f, "END SHIFT");
+            TMP_Text quit = Row("QuitRow", main.transform, -3.1f, "QUIT GAME");
+
+            GameObject scoresPage = Child("ScoresPage", panel.transform);
+            TMP_Text list = WorldText("ScoresText", scoresPage.transform, new Vector2(0f, -0.1f), "NO SHIFTS YET", 3.9f,
+                font, ActiveAmber, MenuTextOrder, new Vector2(6f, 5.8f));
+            list.alignment = TextAlignmentOptions.Top;
+            TMP_Text back = Row("BackRow", scoresPage.transform, -3.4f, "BACK");
+            scoresPage.SetActive(false);
+            panel.SetActive(false);
+
+            var view = host.AddComponent<PauseMenuView>();
+            SetSerialized(view, so =>
+            {
+                so.FindProperty("root").objectReferenceValue = panel;
+                so.FindProperty("header").objectReferenceValue = header;
+                so.FindProperty("resumeRow").objectReferenceValue = resume;
+                so.FindProperty("musicRow").objectReferenceValue = music;
+                so.FindProperty("soundRow").objectReferenceValue = sound;
+                so.FindProperty("modeRow").objectReferenceValue = mode;
+                so.FindProperty("scoresRow").objectReferenceValue = scores;
+                so.FindProperty("endShiftRow").objectReferenceValue = endShift;
+                so.FindProperty("quitRow").objectReferenceValue = quit;
+                so.FindProperty("mainPage").objectReferenceValue = main;
+                so.FindProperty("scoresPage").objectReferenceValue = scoresPage;
+                so.FindProperty("scoresText").objectReferenceValue = list;
+                so.FindProperty("backRow").objectReferenceValue = back;
+            });
+
+            return (view, card, new[] { header, resume, music, sound, mode, scores, endShift, quit, list, back });
         }
 
         /// <summary>A hidden sprite slot the applier fills from the style (Hud layer, under the text).</summary>

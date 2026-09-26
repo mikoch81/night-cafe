@@ -36,10 +36,9 @@ namespace NightCafe.Core
         [SerializeField] StainStripView stainStrip;
         [SerializeField] CatCrossingView cat;
         [SerializeField] OrderPanelView orderPanel;
-        [SerializeField] GameObject ghostRoot;
         [SerializeField] ScreenStyleApplier styleApplier;
         [SerializeField] ScreenStyle artStyle;
-        [SerializeField] ScreenStyle retroStyle;
+        [SerializeField] PauseMenuView menu;
         [SerializeField] FlashFx neonFlash;
         [SerializeField] FlashFx screenDim;
         [SerializeField] SpriteSequenceFx neonCat;
@@ -51,6 +50,13 @@ namespace NightCafe.Core
         [Header("Platform")]
         [SerializeField] int targetFrameRate = 60;
         [SerializeField] float gameOverDimAlpha = 0.55f;
+
+        [Header("A missed cup falls to the floor, then breaks (review 2026-09-26)")]
+        [Tooltip("LCD units per second squared.")]
+        [SerializeField] float cupFallGravity = 30f;
+        [Tooltip("Sideways speed the cup keeps from its slide as it leaves the rail end.")]
+        [SerializeField] float cupFallCarry = 1.5f;
+        [SerializeField] float cupFallSpin = 420f;
 
         readonly List<PilotCup> _pilotCups = new(8);
         readonly List<string> _unlocks = new(2);
@@ -73,6 +79,8 @@ namespace NightCafe.Core
 
         RoundStateMachine _flow;
         bool _rolledOver;
+        bool _menuPausedRound; // the open menu is holding a live shift
+        float _lastMopX = float.NegativeInfinity;
 
         public GameState State => _flow.State;
 
@@ -105,11 +113,12 @@ namespace NightCafe.Core
             _profile.Changed += OnProfileChanged;
 
             spawner.CupReachedCatchPoint += ResolveCup;
+            spawner.CupLanded += BreakCup;
             spawner.CupSpawned += PaintCup;
 
             barista.Initialise(laneConfig);
             audioService.Initialise(_settings);
-            titleToggles.Initialise(_settings, _profile, ArtAvailable);
+            titleToggles.Initialise(_settings, _profile);
             cat.CrossingStarted += OnCatCrossingStarted;
 
             laneInput.Pressed += OnPressed;
@@ -119,11 +128,8 @@ namespace NightCafe.Core
             ApplyScreenStyle();
         }
 
-        bool ArtAvailable => artStyle != null && artStyle.complete;
-
-        /// <summary>GDD 5.2 / 5.2a: the painted diorama unless the player chose RETRO or the painted assets are absent.</summary>
-        public ScreenStyle EffectiveStyle =>
-            !ArtAvailable || _settings.RetroScreen ? (retroStyle != null ? retroStyle : artStyle) : artStyle;
+        /// <summary>GDD 5.2: the painted diorama, the one screen style since RETRO was dropped.</summary>
+        public ScreenStyle EffectiveStyle => artStyle;
 
         void ApplyScreenStyle()
         {
@@ -131,7 +137,6 @@ namespace NightCafe.Core
                 styleApplier.Apply(EffectiveStyle);
             if (audioService != null)
                 audioService.SetSoundSet(EffectiveStyle != null ? EffectiveStyle.sounds : null);
-            ApplyGhosts();
 
             // The applier parks Miro back on his lane slot; on the title he belongs at the counter.
             if (_flow != null && State == GameState.Title)
@@ -181,8 +186,11 @@ namespace NightCafe.Core
             if (spawner != null)
             {
                 spawner.CupReachedCatchPoint -= ResolveCup;
+                spawner.CupLanded -= BreakCup;
                 spawner.CupSpawned -= PaintCup;
             }
+
+            Time.timeScale = 1f; // never leave the editor frozen behind a menu
 
             if (cat != null)
                 cat.CrossingStarted -= OnCatCrossingStarted;
@@ -221,7 +229,7 @@ namespace NightCafe.Core
             spawner.Initialise(_config, laneConfig, _tempo, new UnityRandom());
 
             hud.SetMode(mode);
-            hud.SetBest(_profile.Best(mode), _config.rolloverModulo);
+            hud.SetBest(_profile.Best(mode));
             deviceShell.SetMode(mode);
         }
 
@@ -280,6 +288,7 @@ namespace NightCafe.Core
             if (State is GameState.Playing or GameState.Breather)
             {
                 _orders.Tick(dt);
+                SweepBrokenCups();
                 if (IsDemo)
                     UpdateDemo(dt);
             }
@@ -314,7 +323,10 @@ namespace NightCafe.Core
             _pilotCups.Clear();
             IReadOnlyList<CupController> cups = spawner.ActiveCups;
             for (int i = 0; i < cups.Count; i++)
-                _pilotCups.Add(new PilotCup(cups[i].Serial, cups[i].Lane, cups[i].StepIndex, _orders.IsWanted(cups[i].Colour)));
+            {
+                if (!cups[i].IsFalling) // already missed, nothing left to decide
+                    _pilotCups.Add(new PilotCup(cups[i].Serial, cups[i].Lane, cups[i].StepIndex, _orders.IsWanted(cups[i].Colour)));
+            }
 
             int lane = _pilot.Decide(_pilotCups, (int)barista.Current, dt);
             if (lane < 0)
@@ -330,11 +342,38 @@ namespace NightCafe.Core
         /// <summary>
         /// The single entry point for a press. Where it goes depends only on the state, so there
         /// is no "was this tap already consumed" bookkeeping across events to get out of sync.
+        /// A touch moves Miro only when it lands on a cap (review 2026-09-26: the old screen
+        /// quadrants fired from anywhere on the phone).
         /// </summary>
         void OnPressed(Press press)
         {
+            press = ResolveDeviceButton(press, out bool menuButton);
+
+            if (menuButton)
+            {
+                if (menu.IsOpen)
+                    CloseMenu();
+                else
+                    OpenMenu();
+                return;
+            }
+
+            if (menu.IsOpen)
+            {
+                HandleMenuTap(press);
+                return;
+            }
+
             if (press.Lane.HasValue)
                 deviceShell.Press(press.Lane.Value);
+
+            // On the result screen the lever still flips the mode, and takes you to the title in it.
+            if (State == GameState.GameOver && LeverPressed(press))
+            {
+                FlipMode();
+                Apply(RoundTransition.EnterTitle);
+                return;
+            }
 
             // The toggles hide during the demo, but the lever is still there to be flipped.
             bool consumed = (_flow.TitleUiActive || _flow.IsDemo) && TitleScreenConsumed(press);
@@ -342,6 +381,150 @@ namespace NightCafe.Core
 
             if (_flow.AcceptsLaneMoves && press.Lane.HasValue)
                 barista.MoveTo(press.Lane.Value);
+        }
+
+        /// <summary>
+        /// Maps a touch onto the device: the MENU pill, a lane cap, or nothing. Keyboard presses
+        /// already know their lane (or that they are the back button).
+        /// </summary>
+        Press ResolveDeviceButton(Press press, out bool menuButton)
+        {
+            menuButton = press.Menu;
+            if (!press.HasScreenPosition || pointer == null)
+                return press;
+
+            Ray ray = pointer.ScreenRay(press.ScreenPosition);
+            if (deviceShell.MenuHit(ray))
+            {
+                deviceShell.PressMenu();
+                menuButton = true;
+                return press;
+            }
+
+            return deviceShell.TryCapHit(ray, out LanePosition lane) ? press.WithLane(lane) : press;
+        }
+
+        bool LeverPressed(in Press press) =>
+            press.HasScreenPosition && pointer != null && deviceShell.LeverHit(pointer.ScreenRay(press.ScreenPosition));
+
+        // ------------------------------------------------------------------ menu
+
+        /// <summary>
+        /// Opens the MENU card and freezes the game under it: every system runs on scaled time,
+        /// so a zero time scale holds the cups, the flow's timers and the animations exactly
+        /// where they were. The attract demo is not a shift to pause; it hands back the title.
+        /// </summary>
+        void OpenMenu()
+        {
+            if (_flow.IsDemo)
+                EnterTitle();
+
+            _menuPausedRound = State is GameState.Playing or GameState.Breather;
+            Time.timeScale = 0f;
+            menu.Open(_menuPausedRound, _settings, _mode);
+            audioService.Play(GameSfx.LeverClick);
+        }
+
+        void CloseMenu()
+        {
+            menu.Close();
+            Time.timeScale = 1f;
+            _menuPausedRound = false;
+            if (State == GameState.Title)
+                _flow.EnteredTitle(Time.time); // the attract delay starts over
+        }
+
+        void HandleMenuTap(in Press press)
+        {
+            if (!press.HasScreenPosition || pointer == null || !pointer.TryLcdPoint(press.ScreenPosition, out Vector3 lcdPoint))
+                return;
+
+            MenuAction action = menu.Hit(lcdPoint);
+            if (action == MenuAction.None)
+                return;
+
+            audioService.Play(GameSfx.LeverClick);
+            switch (action)
+            {
+                case MenuAction.Resume:
+                    CloseMenu();
+                    break;
+                case MenuAction.ToggleMusic:
+                    _settings.ToggleMusic();
+                    break;
+                case MenuAction.ToggleSound:
+                    _settings.ToggleSfx();
+                    break;
+                case MenuAction.FlipMode:
+                    SwitchModeFromMenu();
+                    break;
+                case MenuAction.ShowScores:
+                    menu.ShowScores(_mode, _profile.TopScores(_mode));
+                    return;
+                case MenuAction.Back:
+                    menu.ShowMain();
+                    break;
+                case MenuAction.EndShift:
+                    CloseMenu();
+                    Apply(_flow.PenaltyGameOver());
+                    return;
+                case MenuAction.Quit:
+                    Quit();
+                    return;
+            }
+
+            if (menu.IsOpen)
+                menu.Render(_settings, _mode);
+            titleToggles.Render();
+        }
+
+        /// <summary>
+        /// A shift belongs to one mode, so switching mid-shift ends it: the score so far still
+        /// goes on the list, and the menu stays open over the title in the new mode.
+        /// </summary>
+        void SwitchModeFromMenu()
+        {
+            if (_menuPausedRound)
+                _profile.SubmitScore(_mode, _score.TotalScore, System.DateTime.Now, out _);
+
+            FlipMode();
+            if (State != GameState.Title)
+                EnterTitle();
+
+            menu.Open(false, _settings, _mode);
+            _menuPausedRound = false;
+        }
+
+        static void Quit()
+        {
+            Time.timeScale = 1f;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        /// <summary>Android sends the app to the background mid-shift: come back to a paused game, not to three stains.</summary>
+        void OnApplicationPause(bool paused)
+        {
+            if (paused)
+                PauseForInterruption();
+        }
+
+        void OnApplicationFocus(bool focused)
+        {
+            if (!focused)
+                PauseForInterruption();
+        }
+
+        void PauseForInterruption()
+        {
+            if (_flow == null || menu == null || menu.IsOpen || _flow.IsDemo)
+                return;
+
+            if (State is GameState.Playing or GameState.Breather)
+                OpenMenu();
         }
 
         /// <summary>Toggles and the lever take the tap before it can start a round.</summary>
@@ -473,11 +656,11 @@ namespace NightCafe.Core
             orderPanel.Hide();
 
             int total = _score.TotalScore;
-            bool newRecord = _profile.SubmitScore(_mode, total);
+            bool newRecord = _profile.SubmitScore(_mode, total, System.DateTime.Now, out int rank);
             string unlockedName = UnlockSkins(total);
 
-            hud.SetBest(_profile.Best(_mode), _config.rolloverModulo);
-            hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode) % _config.rolloverModulo, newRecord, unlockedName);
+            hud.SetBest(_profile.Best(_mode));
+            hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode), newRecord, unlockedName, rank);
 
             // Lights down for the night; in the painted diorama Sablé curls up on the counter.
             ScreenStyle style = EffectiveStyle;
@@ -527,12 +710,10 @@ namespace NightCafe.Core
         {
             bool present = (int)barista.Current == cup.Lane;
             CatchOutcome outcome = CatchRules.Resolve(present, _orders.IsWanted(cup.Colour));
-            Vector2 landing = cup.transform.localPosition;
-
-            spawner.ReturnCup(cup);
 
             if (outcome == CatchOutcome.Caught)
             {
+                spawner.ReturnCup(cup);
                 _score.RegisterCatch();
                 _tempo.RegisterCatch();
                 _orders.RegisterCorrectCatch();
@@ -543,11 +724,24 @@ namespace NightCafe.Core
             }
 
             if (!CatchRules.IsPenalised(outcome))
-                return; // an unwanted colour was correctly let through
+            {
+                spawner.ReturnCup(cup); // an unwanted colour was correctly let through
+                return;
+            }
 
-            // Missed or WrongCatch: the cup ends up on the floor either way.
+            // Missed or WrongCatch: the cup ends up on the floor either way. The combo breaks
+            // now; the crash, the stain and the cat wait until it actually hits the floor.
             _score.RegisterMiss();
             barista.ShowMissPose(_config.missPoseDuration);
+            cup.Drop(laneConfig.barLineY, cupFallGravity, cupFallCarry, cupFallSpin);
+        }
+
+        /// <summary>A dropped cup reached the floor: it breaks where it landed (review 2026-09-26).</summary>
+        void BreakCup(CupController cup)
+        {
+            Vector2 landing = cup.transform.localPosition;
+            spawner.ReturnCup(cup);
+
             ShowBrokenCup(landing);
             audioService.Play(GameSfx.Miss);
             _haptics.OneShot(audioConfig.missHapticMs);
@@ -555,6 +749,10 @@ namespace NightCafe.Core
             _penalty.AddStain();
         }
 
+        /// <summary>
+        /// The shards stay on the floor until Sablé's mop reaches them (review 2026-09-26: they
+        /// used to vanish on their own). With every slot taken the oldest pile is reused.
+        /// </summary>
         void ShowBrokenCup(Vector2 position)
         {
             foreach (TimedSpriteFx fx in brokenCupFx)
@@ -562,9 +760,40 @@ namespace NightCafe.Core
                 if (fx.IsBusy)
                     continue;
 
-                fx.Show(position, _config.brokenCupDuration);
+                fx.Show(position);
                 return;
             }
+
+            if (brokenCupFx.Length > 0)
+                brokenCupFx[0].Show(position);
+        }
+
+        /// <summary>
+        /// The cat walks left to right; a pile vanishes as the mop passes it. A cup that broke
+        /// behind a crossing already under way waits for the next one, which starts on its own.
+        /// </summary>
+        void SweepBrokenCups()
+        {
+            // Only what the mop passed since the last frame: a pile that lands just behind it stays.
+            float mop = cat.IsBusy ? cat.MopX : float.NegativeInfinity;
+            float from = mop >= _lastMopX ? _lastMopX : float.NegativeInfinity; // a new crossing restarts on the left
+            _lastMopX = mop;
+
+            bool anyLeft = false;
+            foreach (TimedSpriteFx fx in brokenCupFx)
+            {
+                if (!fx.IsBusy)
+                    continue;
+
+                float x = fx.Position.x;
+                if (cat.IsBusy && x > from && x <= mop)
+                    fx.Hide();
+                else
+                    anyLeft = true;
+            }
+
+            if (anyLeft && !cat.IsBusy)
+                cat.Play();
         }
 
         // ------------------------------------------------------------------ events
@@ -639,14 +868,6 @@ namespace NightCafe.Core
         {
             SkinCatalog.TryGet(_profile.SelectedSkin, out Skin skin);
             deviceShell.ApplySkin(skin);
-        }
-
-        void ApplyGhosts()
-        {
-            ScreenStyle style = EffectiveStyle;
-            bool allowed = style == null || style.ghostsAllowed;
-            if (ghostRoot != null)
-                ghostRoot.SetActive(_settings.GhostsEnabled && allowed);
         }
     }
 }

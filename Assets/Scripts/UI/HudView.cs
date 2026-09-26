@@ -51,11 +51,11 @@ namespace NightCafe.UI
                 scoreText.text = displayScore.ToString("000");
         }
 
-        /// <summary>The record wears the same three-digit counter, so it is shown modulo the rollover.</summary>
-        public void SetBest(int bestTotal, int rolloverModulo)
+        /// <summary>The whole record, three digits at least, like the counter.</summary>
+        public void SetBest(int bestTotal)
         {
             if (bestText != null)
-                bestText.text = $"BEST {bestTotal % rolloverModulo:000}";
+                bestText.text = $"BEST {bestTotal:000}";
         }
 
         public void SetMode(GameMode mode)
@@ -86,13 +86,13 @@ namespace NightCafe.UI
             SetPanel(gameOverPanel, false);
         }
 
-        public void ShowGameOver(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin)
+        public void ShowGameOver(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank)
         {
             SetPanel(titlePanel, false);
             SetPanel(demoPanel, false);
             SetPanel(gameOverPanel, true);
 
-            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin);
+            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin, rank);
             SetText(gameOverHeader, copy.Header);
             SetText(gameOverScore, copy.Score);
             SetText(gameOverRecord, copy.Record);

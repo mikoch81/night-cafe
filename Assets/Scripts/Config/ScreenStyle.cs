@@ -4,9 +4,9 @@ using UnityEngine;
 namespace NightCafe.Config
 {
     /// <summary>
-    /// Everything the LCD scene looks like, as one swappable asset (GDD 5.2 / 5.2a): the
-    /// painted "ART" diorama and the segmented "RETRO" Neo-LCD. Geometry, timing and rules
-    /// live elsewhere; a style only says which sprite, colour and font goes where.
+    /// Everything the LCD scene looks like, as one asset (GDD 5.2): the painted diorama.
+    /// Geometry, timing and rules live elsewhere; the style only says which sprite, colour
+    /// and font goes where. (The segmented RETRO look was dropped after the closed test.)
     /// Built by the scene setup, never edited by hand.
     /// </summary>
     [CreateAssetMenu(menuName = "NightCafe/Screen Style", fileName = "ScreenStyle")]
@@ -15,15 +15,8 @@ namespace NightCafe.Config
         public string id = "art";
         public string label = "ART";
 
-        [Tooltip("Set by the setup when every sprite the style needs exists. An incomplete style is never shown; the loop falls back to RETRO.")]
+        [Tooltip("Set by the setup when every sprite the style needs exists; missing slots fall back to the vector sprites.")]
         public bool complete;
-
-        [Header("Look")]
-        [Tooltip("RETRO: sprites are single-colour masks tinted amber, unlit slots dim amber. ART: full-colour sprites, tint white, unlit slots hidden.")]
-        public bool monochrome = false;
-        public bool bloom = false;
-        [Tooltip("Segment ghosts are an LCD affectation: only a monochrome style may show them.")]
-        public bool ghostsAllowed = false;
 
         [Header("Scene")]
         public Sprite background;
@@ -95,6 +88,8 @@ namespace NightCafe.Config
         public Sprite resultCard;
         [Tooltip("Size of the receipt in LCD units; 9-sliced like the sign.")]
         public Vector2 resultCardSize = new(6.5f, 4.6f);
+        [Tooltip("The MENU card is the same paper, taller: seven rows under a heading.")]
+        public Vector2 menuCardSize = new(6.8f, 8.5f);
         [Tooltip("Sablé asleep on the counter after the shift; two frames breathe slowly. Empty = no cat.")]
         public Sprite catAsleepA;
         public Sprite catAsleepB;

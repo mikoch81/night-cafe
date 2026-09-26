@@ -132,24 +132,29 @@ namespace NightCafe.EditorTools
             return existing;
         }
 
+        /// <summary>
+        /// The scene's base config: levels and haptics only. Its clips were the RETRO chiptune
+        /// (tools/gen_audio.py), removed with that style; the screen style brings the recordings.
+        /// </summary>
         static AudioConfig CreateAudioConfig()
         {
             var config = LoadOrCreate<AudioConfig>(AudioConfigPath);
 
-            config.catchBlip = LoadClip("sfx_catch");
-            config.comboArpeggio = LoadClip("sfx_combo");
-            config.missClink = LoadClip("sfx_miss");
-            config.catMeow = LoadClip("sfx_cat");
-            config.gameOver = LoadClip("sfx_gameover");
-            config.brewAlarm = LoadClip("sfx_brew_alarm");
-            config.leverClick = LoadClip("sfx_click");
-            config.lofiLoop = LoadClip("music_lofi_loop");
+            config.catchBlip = null;
+            config.comboArpeggio = null;
+            config.missClink = null;
+            config.catMeow = null;
+            config.gameOver = null;
+            config.brewAlarm = null;
+            config.leverClick = null;
+            config.lofiLoop = null;
+            config.ambience = null;
 
             EditorUtility.SetDirty(config);
             return config;
         }
 
-        static AudioClip LoadClip(string name, string dir = AudioDir, string tool = "tools/gen_audio.py")
+        static AudioClip LoadClip(string name, string dir, string tool)
         {
             string path = $"{dir}/{name}.wav";
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);

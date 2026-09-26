@@ -1,6 +1,6 @@
 # Night Café — Game Design Document (v1.0)
 
-Gra mobilna 2D, Unity (URP 2D), Android, orientacja **landscape**. Wirtualny handheld „Bréve Deck" z ekranem Neo-LCD. Inspiracja gatunkiem LCD „catch falling objects" — własny świat, postacie i wyrażenie.
+Gra mobilna 2D, Unity (URP 2D), Android, orientacja **landscape**. Wirtualny handheld „Bréve Deck" z malowanym ekranem-dioramą. Inspiracja gatunkiem LCD „catch falling objects" — własny świat, postacie i wyrażenie.
 
 ---
 
@@ -41,7 +41,8 @@ Nocna kawiarnia w deszczowym mieście. Barista **Miro** łapie na tacę kubki zj
 - Po każdym pełnym 100 pkt: **2.5s przerwy** spawnów (kubki w locie kończą bieg). Neon za oknem mruga, barista wyciera ręce (użyj `barista_down` idle).
 
 ### 2.7 Rollover 999
-- Licznik 3-cyfrowy; po 999 → 0, tempo zostaje na T9. Sekretna animacja: neony miasta za oknem układają się w kota (2s). Bez odniesień do 1984.
+- Przy 1000 sekretna animacja: neony miasta za oknem układają się w kota (2s); próg litości kota uzbraja się co 1000. Bez odniesień do 1984.
+- Od 1.1.0 licznik **nie zeruje się**: po 999 dostaje czwartą cyfrę (testerzy brali 000 za błąd, a rekord powyżej 1000 był nieczytelny).
 
 ## 3. Tryby
 
@@ -54,7 +55,9 @@ Nocna kawiarnia w deszczowym mieście. Barista **Miro** łapie na tacę kubki zj
 
 ## 4. Sterowanie
 
-- **4 strefy dotyku** = ćwiartki ekranu telefonu (lewa-góra/lewa-dół/prawa-góra/prawa-dół). Tap = przeskok baristy na tę pozycję (natychmiast, bez tweena pozycji — LCD-owy „teleport", 1 klatka przejścia).
+- **4 przyciski** na obudowie = 4 pozycje baristy. Od 1.1.0 liczy się tylko dotyk w nakładkę (do pierścienia wokół niej) — tap w inne miejsce obudowy nic nie robi (wcześniej ćwiartki całego ekranu telefonu). Tap = przeskok baristy na tę pozycję (natychmiast, bez tweena pozycji — LCD-owy „teleport", 1 klatka przejścia). Ekran tytułowy startuje zmianę tapnięciem w dowolne miejsce.
+- **MENU** (pastylka pod prawym dolnym przyciskiem; także systemowe „Wstecz”): pauza (zamrożony czas gry), muzyka, dźwięk, tryb A/B (w trakcie zmiany kończy ją i zapisuje wynik), top 10, zakończ zmianę, wyjdź z gry. Zejście aplikacji w tło w trakcie zmiany otwiera MENU.
+- Ekran końca zmiany: tap = restart, dźwignia = tryb + ekran tytułowy, bez dotyku powrót do tytułu po 4 s.
 - Wirtualne przyciski Bréve Deck podświetlają się przy tapnięciu strefy (feedback 1:1).
 - Haptyka (Android): złapanie 15 ms, pudło 60 ms, game over 3×80 ms. Wyłączalna w opcjach.
 - Brak sterowania grawitacją/swipe — decyzja: prostota klasyka.
@@ -84,28 +87,26 @@ Obudowa, przyciski i wajcha nie są już sprite'ami — to mesh'e na warstwie `D
   `tools/cut_sheet.py`; kubki w 4 kolorach zamówień, rozbity kubek, plamy, tablica zamówienia —
   wektory w tej samej kresce (`tools/gen_art.py`, styl `ink`). Kubek w locie ma dokładnie kolor
   z §3 (osobne sprite'y, nie tint).
-- Ruch 60 fps (tween), postacie zmieniają **pozy skokowo** — bez zmian względem Neo-LCD.
+- Ruch 60 fps (tween), postacie zmieniają **pozy skokowo**.
 - Bez bloomu i bez duchów segmentów; szkło ekranu (winieta, delikatny odblask) zostaje, bo to szyba okna.
 - HUD: font ręczny/kredowy zamiast segmentowego (OFL; wybór po pierwszym zrzucie), kolor `#ffc966`.
 
-### 5.2a Skin ekranu „RETRO" (Neo-LCD, dawny domyślny)
-- Przełączany na ekranie tytułowym (toggle obok skinu obudowy), zapisywany w ustawieniach.
-  Odblokowanie: 250 pkt w trybie A, razem z Jesionem (propozycja).
-- Sprite'y jednokolorowe, segmentowe (`tools/gen_art.py`, styl `lcd`), glow wypalony w PNG + bloom URP
-  (intensity 0.15) na warstwach Segments/HUD, kubki tint (biały sprite × kolor zamówienia),
-  font DSEG7/DSEG14, opcja „Duchy segmentów" (5 % we wszystkich slotach) tylko w tym skinie.
+### 5.2a Skin ekranu „RETRO" — usunięty w 1.1.0
+- Segmentowy Neo-LCD (dawny domyślny) wypadł po teście zamkniętym razem z opcją duchów segmentów i
+  chiptune'em z `gen_audio.py`. Wektorowe sprite'y z `Assets/Art/sprites` zostają jako zapas dla
+  brakujących plików dioramy i dla animacji neonowego kota.
 
 ### 5.3 Audio
 - Złapanie: blip 1050 Hz, 40 ms (jsfxr, square, decay krótki); co 25 combo: arpeggio 3 nut.
-- Pudło: brzęk ceramiki (SFX generator) + niski buzz 120 ms.
+- Pudło: kubek spada z końca lady na podłogę (~0,4 s) i dopiero tam brzęk ceramiki, plama i kot (od 1.1.0).
 - Kot: miękkie „mrau" 300 ms (rzadko, 30% przejść).
 - Tło: lo-fi loop 60–90s, −18 LUFS względem SFX, wyłączalny.
 - Game over: opadająca tercja, 600 ms.
 
 ## 6. Meta i easter eggi
 
-- **Rekordy:** highscore per tryb (JSON w `Application.persistentDataPath`).
-- **Skiny obudowy:** Orzech (start), Jesion (250 pkt A), Onyks (500 pkt B), Neon (999 rollover). Materiały korpusu (drewno/onyks/neonowa obwódka); **skin ekranu** ART/RETRO osobno (§5.2a).
+- **Rekordy:** highscore per tryb i lokalna lista **top 10** per tryb z datą (JSON w `Application.persistentDataPath`, schemat 2; profil z 1.0.0 dostaje swój rekord jako pierwszy wpis). Karta końca zmiany pokazuje miejsce na liście.
+- **Skiny obudowy:** Orzech (start), Jesion (250 pkt A), Onyks (500 pkt B), Neon (999 rollover). Materiały korpusu (drewno/onyks/neonowa obwódka).
 - **Zegar nocny:** na ekranie tytułowym urządzenie pokazuje prawdziwą godzinę; **minutnik parzenia** (1–5 min) z alarmem-blipem — funkcjonalny easter egg.
 - Ekran tytułowy = urządzenie z demo attract-mode (AI gra samo, jak stare LCD).
 

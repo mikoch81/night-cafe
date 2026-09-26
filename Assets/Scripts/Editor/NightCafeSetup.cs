@@ -248,7 +248,10 @@ namespace NightCafe.EditorTools
             PlayerSettings.productName = "Night Café";
             PlayerSettings.companyName = "mikoch81";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.mikoch81.nightcafe");
-            PlayerSettings.bundleVersion = "1.0.0";
+            // 1.1.0 = the closed-test review round (menu, buttons, falling cups, top 10, no RETRO).
+            // Every upload to Play needs a higher versionCode than the last one (1.0.0 was 1).
+            PlayerSettings.bundleVersion = "1.1.0";
+            PlayerSettings.Android.bundleVersionCode = 2;
 
             // Play wants new uploads to target the current API (36 in 2026); 26 stays the floor.
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;

@@ -50,7 +50,8 @@ namespace NightCafe.Tests
         {
             var android = NamedBuildTarget.Android;
             Assert.AreEqual("com.mikoch81.nightcafe", PlayerSettings.GetApplicationIdentifier(android));
-            Assert.AreEqual("1.0.0", PlayerSettings.bundleVersion);
+            Assert.AreEqual("1.1.0", PlayerSettings.bundleVersion);
+            Assert.AreEqual(2, PlayerSettings.Android.bundleVersionCode, "above 1.0.0's versionCode 1 on Play");
             Assert.AreEqual(ScriptingImplementation.IL2CPP, PlayerSettings.GetScriptingBackend(android));
             Assert.AreEqual(AndroidArchitecture.ARM64, PlayerSettings.Android.targetArchitectures);
             Assert.IsTrue(PlayerSettings.stripEngineCode);

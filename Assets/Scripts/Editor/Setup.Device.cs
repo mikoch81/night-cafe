@@ -4,6 +4,7 @@ using NightCafe.Config;
 using NightCafe.Core;
 using NightCafe.Services;
 using NightCafe.UI;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -351,6 +352,7 @@ namespace NightCafe.EditorTools
             // sharedProfile is the serialised reference; Volume.profile is a runtime clone that
             // never reaches the saved scene, which is how M2 shipped without any bloom at all.
             volume.sharedProfile = profile;
+            volume.weight = 0f; // the bloom belonged to the RETRO look; the painted diorama goes without (GDD 5.2)
 
             return camera;
         }
@@ -437,7 +439,7 @@ namespace NightCafe.EditorTools
         /// Instantiates the model under a root that turns its top face towards the camera, wires
         /// the parts DeviceShellView moves, and gives the screen face its collider and texture.
         /// </summary>
-        static (DeviceShellView shell, MeshCollider screenFace) BuildDevice(DeviceConfig config, Camera deviceCamera, RenderTexture lcd)
+        static (DeviceShellView shell, MeshCollider screenFace) BuildDevice(DeviceConfig config, Camera deviceCamera, RenderTexture lcd, TMP_FontAsset labelFont)
         {
             int deviceLayer = LayerMask.NameToLayer(DeviceLayerName);
 
@@ -494,6 +496,7 @@ namespace NightCafe.EditorTools
 
             var caps = new Transform[LanePositionExtensions.Count];
             var capRenderers = new Renderer[LanePositionExtensions.Count];
+            var capColliders = new Collider[LanePositionExtensions.Count];
             Renderer bodyRenderer = null;
             int bodyTopSlot = 0, bodyEdgeSlot = 1;
             Transform knob = null;
@@ -551,6 +554,11 @@ namespace NightCafe.EditorTools
                 {
                     caps[(int)lane] = part;
                     capRenderers[(int)lane] = renderer;
+                    // The hit volume is the cap out to its collar ring (1.44 / 1.2): a tap has to
+                    // land on the button, not anywhere on that half of the phone (review 2026-09-26).
+                    var sphere = part.gameObject.AddComponent<SphereCollider>();
+                    sphere.radius *= CapHitScale;
+                    capColliders[(int)lane] = sphere;
                 }
                 else if (name == "LeverKnob")
                 {
@@ -569,18 +577,28 @@ namespace NightCafe.EditorTools
                 }
             }
 
+            (Transform menuCap, Renderer menuRenderer, Collider menuCollider) =
+                BuildMenuButton(root.transform, deviceLayer, cap, dark, labelFont);
+
             var view = root.AddComponent<DeviceShellView>();
             SetSerialized(view, so =>
             {
                 SerializedProperty capArray = so.FindProperty("caps");
                 SerializedProperty rendererArray = so.FindProperty("capRenderers");
+                SerializedProperty colliderArray = so.FindProperty("capColliders");
                 capArray.arraySize = caps.Length;
                 rendererArray.arraySize = caps.Length;
+                colliderArray.arraySize = caps.Length;
                 for (int i = 0; i < caps.Length; i++)
                 {
                     capArray.GetArrayElementAtIndex(i).objectReferenceValue = caps[i];
                     rendererArray.GetArrayElementAtIndex(i).objectReferenceValue = capRenderers[i];
+                    colliderArray.GetArrayElementAtIndex(i).objectReferenceValue = capColliders[i];
                 }
+
+                so.FindProperty("menuCap").objectReferenceValue = menuCap;
+                so.FindProperty("menuCapRenderer").objectReferenceValue = menuRenderer;
+                so.FindProperty("menuCollider").objectReferenceValue = menuCollider;
 
                 so.FindProperty("capTravel").floatValue = config.capTravel;
                 so.FindProperty("pressSeconds").floatValue = config.capPressSeconds;
@@ -613,6 +631,67 @@ namespace NightCafe.EditorTools
             });
 
             return (view, screenFace);
+        }
+
+        /// <summary>Sphere hit volume of a lane cap relative to the cap: out to the collar ring.</summary>
+        const float CapHitScale = 1.2f;
+
+        // The MENU pill sits in the right column under the lower-right cap, above the speaker
+        // grille (tools/shell_model.py: caps at x ±9, y ±1.6; grille centred at 9.6, -4.85; the
+        // top face at z = -1.8, the camera on the -Z side). Built here rather than in the FBX
+        // because Blender is not on this PC; world units, device at rest.
+        // Sized for a thumb after the first device test ("a bit small, easy to miss").
+        static readonly Vector3 MenuPillCentre = new(9.0f, -3.35f, -1.8f);
+        const float MenuPillLength = 1.5f;
+        const float MenuPillWidth = 0.62f;
+
+        /// <summary>
+        /// A horizontal pill in the cap plastic, half sunk into a dark well, with MENU engraved
+        /// under it. Its collider is a little fatter than the pill, like the caps'.
+        /// </summary>
+        static (Transform cap, Renderer renderer, Collider collider) BuildMenuButton(Transform root, int layer,
+            Material capMaterial, Material wellMaterial, TMP_FontAsset font)
+        {
+            // Capsule primitives run along their local Y; turned 90 degrees about Z they lie along X.
+            Quaternion lying = Quaternion.Euler(0f, 0f, 90f);
+
+            var well = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            well.name = "MenuWell";
+            well.layer = layer;
+            Object.DestroyImmediate(well.GetComponent<Collider>());
+            well.transform.SetParent(root, false);
+            well.transform.SetPositionAndRotation(MenuPillCentre + new Vector3(0f, 0f, 0.005f), lying);
+            well.transform.localScale = new Vector3(MenuPillWidth + 0.1f, (MenuPillLength + 0.1f) * 0.5f, 0.02f);
+            well.GetComponent<Renderer>().sharedMaterial = wellMaterial;
+
+            var pill = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            pill.name = "MenuCap";
+            pill.layer = layer;
+            pill.transform.SetParent(root, false);
+            // Centre a little under the face so a third of the pill stands proud of it.
+            pill.transform.SetPositionAndRotation(MenuPillCentre + new Vector3(0f, 0f, 0.07f), lying);
+            pill.transform.localScale = new Vector3(MenuPillWidth, MenuPillLength * 0.5f, MenuPillWidth);
+            var renderer = pill.GetComponent<Renderer>();
+            renderer.sharedMaterial = capMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.TwoSided;
+            var collider = pill.GetComponent<CapsuleCollider>();
+            collider.radius = 1.0f;   // local: 0.62 world radius, against the pill's 0.31 - down to the lower-right collar
+            collider.height = 2.6f;   // local: 1.95 world along, against the pill's 1.5
+
+            var label = new GameObject("MenuLabel") { layer = layer };
+            label.transform.SetParent(root, false);
+            label.transform.SetPositionAndRotation(MenuPillCentre + new Vector3(0f, -0.66f, -0.002f), Quaternion.identity);
+            var text = label.AddComponent<TextMeshPro>();
+            text.text = "MENU";
+            text.fontSize = 2.8f;
+            text.characterSpacing = 8f;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = new Color(0.62f, 0.50f, 0.36f); // the cream inlay of the engraved brand
+            text.rectTransform.sizeDelta = new Vector2(2f, 0.5f);
+            if (font != null)
+                text.font = font;
+
+            return (pill.transform, renderer, collider);
         }
 
         static LcdPointer BuildPointer(GameObject host, Camera deviceCamera, Camera lcdCamera, MeshCollider screenFace)

@@ -418,22 +418,23 @@ namespace NightCafe.Tests
         }
     }
 
-    public sealed class SettingsGhostsTests
+    public sealed class SettingsTogglesTests
     {
         [Test]
-        public void GhostsDefaultOffAndToggle()
+        public void MusicAndSoundSwitchIndependently()
         {
-            var settings = new SettingsService(new InMemorySettingsStore());
+            var store = new InMemorySettingsStore();
+            var settings = new SettingsService(store);
             int changes = 0;
             settings.Changed += () => changes++;
 
-            Assert.IsFalse(settings.GhostsEnabled);
-            settings.ToggleGhosts();
+            Assert.IsTrue(settings.SfxEnabled && settings.MusicEnabled && settings.HapticsEnabled, "everything starts on");
+            settings.ToggleMusic();
 
-            Assert.IsTrue(settings.GhostsEnabled);
+            Assert.IsFalse(settings.MusicEnabled);
+            Assert.IsTrue(settings.SfxEnabled, "music off leaves the effects on (review 2026-09-26)");
             Assert.AreEqual(1, changes);
-            Assert.IsTrue(settings.SfxEnabled && settings.MusicEnabled && settings.HapticsEnabled,
-                "the ghost toggle leaves the other flags alone");
+            Assert.IsFalse(new SettingsService(store).MusicEnabled, "the choice survives a restart");
         }
     }
 }

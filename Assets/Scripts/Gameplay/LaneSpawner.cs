@@ -33,6 +33,9 @@ namespace NightCafe.Gameplay
 
         public event Action<CupController> CupReachedCatchPoint;
 
+        /// <summary>A cup dropped off its rail end hit the floor (CupController.Drop).</summary>
+        public event Action<CupController> CupLanded;
+
         /// <summary>Raised right after a cup starts down its rail, before its first frame - paint it here.</summary>
         public event Action<CupController> CupSpawned;
 
@@ -99,6 +102,7 @@ namespace NightCafe.Gameplay
         {
             CupController cup = _pool.Rent();
             cup.ReachedCatchPoint += OnCupReachedCatchPoint;
+            cup.Landed += OnCupLanded;
             cup.transform.localScale = Vector3.one * _laneConfig.cupScale;
             cup.Launch(lane, _laneConfig.GetSteps(lane), () => _tempo.StepTime, _laneConfig.cupTiltDegrees);
             _active.Add(cup);
@@ -110,20 +114,41 @@ namespace NightCafe.Gameplay
             CupReachedCatchPoint?.Invoke(cup);
         }
 
+        void OnCupLanded(CupController cup)
+        {
+            CupLanded?.Invoke(cup);
+        }
+
         void ReturnToPool(CupController cup)
         {
             cup.ReachedCatchPoint -= OnCupReachedCatchPoint;
+            cup.Landed -= OnCupLanded;
             _pool.Return(cup);
         }
 
-        public int TotalActiveCups => _active.Count;
+        // A cup falling to the floor is out of play: it neither holds a lane slot nor counts
+        // towards the on-screen limit, so a miss does not also delay the next spawn.
+        public int TotalActiveCups
+        {
+            get
+            {
+                int count = 0;
+                for (int i = 0; i < _active.Count; i++)
+                {
+                    if (!_active[i].IsFalling)
+                        count++;
+                }
+
+                return count;
+            }
+        }
 
         public int CupsOnLane(int laneIndex)
         {
             int count = 0;
             for (int i = 0; i < _active.Count; i++)
             {
-                if (_active[i].Lane == laneIndex)
+                if (_active[i].Lane == laneIndex && !_active[i].IsFalling)
                     count++;
             }
 
@@ -136,7 +161,7 @@ namespace NightCafe.Gameplay
             for (int i = 0; i < _active.Count; i++)
             {
                 CupController cup = _active[i];
-                if (cup.Lane == laneIndex && cup.StepIndex < newest)
+                if (cup.Lane == laneIndex && !cup.IsFalling && cup.StepIndex < newest)
                     newest = cup.StepIndex;
             }
 

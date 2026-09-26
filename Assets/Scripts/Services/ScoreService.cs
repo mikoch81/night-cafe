@@ -22,8 +22,12 @@ namespace NightCafe.Services
         /// <summary>Uncapped running score; keeps counting past a rollover.</summary>
         public int TotalScore => _total;
 
-        /// <summary>What the three-digit counter shows (GDD 2.7).</summary>
-        public int DisplayScore => _total % _settings.RolloverModulo;
+        /// <summary>
+        /// What the counter shows: the whole score. It used to wrap to 000 after 999 like the
+        /// LCD original (GDD 2.7), which testers read as the game breaking and which hid a
+        /// record past 1000; now it grows a fourth digit and the rollover is only the reward.
+        /// </summary>
+        public int DisplayScore => _total;
 
         public int Combo => _combo;
 

@@ -22,7 +22,7 @@ MonoBehaviour:
   leverKnobX: 0.9
   leverSlideSeconds: 0.12
   attractDelay: 8
-  gameOverIdleSeconds: 6
+  gameOverIdleSeconds: 4
   gameOverRestartLockout: 0.8
   attractMaxDuration: 45
   pilotReactionSeconds: 0.22
