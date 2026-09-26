@@ -255,6 +255,15 @@ Commit `fdfc9f9` (2026-09-26, wypchnięty na `release/1.1.0`); APK etapu 2 zains
   `docs/store/leaderboard_a/b.png`), zasoby w `docs/store/games-ids.xml` zastosowane. Na Pixelu (APK debug)
   ciche logowanie przy starcie udane. Uwaga: APK spadł ze 110 do 82 MB po dodaniu szablonów Gradle — do
   sprawdzenia, czy to tylko kompresja.
+- **Wydanie (2026-09-26, noc):** Michał przetestował ranking na Pixelu („wszystko się przełącza”).
+  `tools/build_release.ps1` → `build/NightCafe.aab` 50 MB, 1.1.0 / versionCode 2, uprawnienia INTERNET +
+  ACCESS_NETWORK_STATE + VIBRATE, APP_ID w manifeście, bez `Unity.Pipeline`. Merge `release/1.1.0` →
+  `master` (`4ff3b00`), tag `v1.1.0`; GitHub Pages z `master:/docs` włączone —
+  `https://mikoch81.github.io/night-cafe/` (nowe `docs/index.md`, PR #1 scalony przez Michała → `a53ee8a`)
+  i `/privacy`. **Zostało w konsolach (Michał):** ekran zgody → strona główna + polityka + domena
+  `mikoch81.github.io` → Opublikuj; Play Console: nowa wersja na „Alpha” z AAB i notatkami z `LISTING.md`,
+  URL polityki → Pages, Bezpieczeństwo danych, kwestionariusz treści, publikacja usług gier, wysłanie do
+  sprawdzenia.
 - (Instrukcja dla Michała, jak było:) konfiguracja w Play Console wg `docs/store/PLAY_GAMES_SETUP.md` (odciski SHA-1
   upload i debug są tam wpisane; app signing trzeba odczytać w konsoli) i plik zasobów XML →
   `docs/store/games-ids.xml` → menu **NightCafe/Apply Play Games Resources** (`Editor/PlayGamesSetup.cs`:
