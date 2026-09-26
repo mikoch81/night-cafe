@@ -269,9 +269,9 @@ Commit `fdfc9f9` (2026-09-26, wypchnięty na `release/1.1.0`); APK etapu 2 zains
   użytkownika, Inne działania, Diagnostyka — zbierane, nieudostępniane, wymagane), ocena treści bez zmian,
   wersja 2 (1.1.0) na Alpha (ostrzeżenia: brak mappingu R8 i symboli natywnych — do zrobienia opcjonalnie
   `symbols.zip`), w paczce też wideo ze sklepu i usunięcie listy testerów „Internal” z Alpha (do
-  potwierdzenia przez Michała). Publikowanie zarządzane wyłączone. **Po zatwierdzeniu:** Usługi gier Play ->
-  Sprawdź i opublikuj (punkt „Dodaj SDK” odhaczy się po przetworzeniu wersji); na Pixelu odinstalować build
-  deweloperski przed instalacją ze Sklepu.
+  potwierdzenia przez Michała). Publikowanie zarządzane wyłączone. Projekt usług gier uzupełniony (opis EN/PL, kategoria, ikona
+  `icon_legacy.png`, grafika `feature_graphic.png`) i opublikowany („Brak zmian do opublikowania”).
+  **Po zatwierdzeniu wersji:** na Pixelu odinstalować build deweloperski przed instalacją ze Sklepu.
 - (Instrukcja dla Michała, jak było:) konfiguracja w Play Console wg `docs/store/PLAY_GAMES_SETUP.md` (odciski SHA-1
   upload i debug są tam wpisane; app signing trzeba odczytać w konsoli) i plik zasobów XML →
   `docs/store/games-ids.xml` → menu **NightCafe/Apply Play Games Resources** (`Editor/PlayGamesSetup.cs`:
