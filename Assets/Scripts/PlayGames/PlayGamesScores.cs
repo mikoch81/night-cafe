@@ -62,6 +62,41 @@ namespace NightCafe.PlayGames
 
         public void ShowBoard(GameMode mode) => PlayGamesPlatform.Instance.ShowLeaderboardUI(BoardOf(mode));
 
+        // 1.2.0 achievements: ids come from the plugin's generated GPGSIds, matched by resource name
+        // (Awards.TryMatch), so adding them in Play Console + Apply Play Games Resources is enough.
+        static string[] _awardIds;
+
+        static string AwardId(Award award)
+        {
+            if (_awardIds == null)
+            {
+                _awardIds = new string[(int)Award.Count];
+                foreach (var field in typeof(GPGSIds).GetFields())
+                {
+                    if (field.IsLiteral && Awards.TryMatch(field.Name, out Award found))
+                        _awardIds[(int)found] = (string)field.GetRawConstantValue();
+                }
+            }
+
+            return _awardIds[(int)award];
+        }
+
+        public void Unlock(Award award)
+        {
+            string id = AwardId(award);
+            if (_signedIn && !string.IsNullOrEmpty(id))
+                PlayGamesPlatform.Instance.UnlockAchievement(id, _ => { });
+        }
+
+        public void Increment(Award award, int steps)
+        {
+            string id = AwardId(award);
+            if (_signedIn && !string.IsNullOrEmpty(id))
+                PlayGamesPlatform.Instance.IncrementAchievement(id, steps, _ => { });
+        }
+
+        public void ShowAwards() => PlayGamesPlatform.Instance.ShowAchievementsUI();
+
         const string SaveName = "profile";
         bool _cloudRead;
         bool _saving;

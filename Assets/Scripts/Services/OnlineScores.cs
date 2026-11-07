@@ -40,6 +40,15 @@ namespace NightCafe.Services
         /// session, so a fresh install cannot overwrite the saved history with an empty profile.
         /// </summary>
         void SaveProfile(string json);
+
+        /// <summary>1.2.0: unlocks an achievement; dropped when signed out or not set up in Play Console.</summary>
+        void Unlock(Award award);
+
+        /// <summary>1.2.0: a step towards an incremental achievement (Paprika shooed).</summary>
+        void Increment(Award award, int steps);
+
+        /// <summary>Google's achievements screen over the game.</summary>
+        void ShowAwards();
     }
 
     public static class OnlineScores
@@ -58,5 +67,8 @@ namespace NightCafe.Services
         public void ShowBoard(GameMode mode) { }
         public void LoadProfile(Action<string> done) => done?.Invoke(null);
         public void SaveProfile(string json) { }
+        public void Unlock(Award award) { }
+        public void Increment(Award award, int steps) { }
+        public void ShowAwards() { }
     }
 }

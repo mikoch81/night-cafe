@@ -53,6 +53,8 @@ namespace NightCafe.Core
         TutorialButtons,
         TutorialCatch,
         TutorialStains,
+        RankingCard,
+        AwardsCard,
         Count
     }
 
@@ -108,6 +110,8 @@ namespace NightCafe.Core
             Add(Txt.Brew, "BREW", "PARZENIE");
             Add(Txt.TutorialButtons, "Press the glowing button:\nI'll run to that machine.", "Wciśnij świecący przycisk:\npobiegnę pod ten ekspres.");
             Add(Txt.TutorialCatch, "Catch every cup\nat the end of its shelf!", "Łap każdy kubek\nna końcu półki!");
+            Add(Txt.RankingCard, "RANKING", "RANKING");
+            Add(Txt.AwardsCard, "TROPHIES", "TROFEA");
             Add(Txt.TutorialStains, "Three broken cups\nand the shift is over.", "Trzy stłuczone kubki\ni koniec zmiany.");
         }
 

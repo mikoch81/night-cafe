@@ -158,7 +158,7 @@ namespace NightCafe.Core
 
             barista.Initialise(laneConfig);
             audioService.Initialise(_settings);
-            titleToggles.Initialise(_settings, _profile);
+            titleToggles.Initialise(_settings, _profile, OnlineScores.Backend.Available);
             cat.CrossingStarted += OnCatCrossingStarted;
             if (blackCat != null)
             {
@@ -241,9 +241,19 @@ namespace NightCafe.Core
                 if (!_profile.Merge(json) && json != _profile.Json)
                     OnlineScores.Backend.SaveProfile(_profile.Json);
 
-                // 1.2.0: records set while signed out reach the leaderboards now (Play keeps the higher one).
+                // 1.2.0: records set while signed out reach the leaderboards now (Play keeps the higher one),
+                // and so do the score achievements they earned.
                 for (int mode = 0; mode < GameModeExtensions.Count; mode++)
-                    OnlineScores.Backend.Submit((GameMode)mode, _profile.Best((GameMode)mode));
+                {
+                    int best = _profile.Best((GameMode)mode);
+                    OnlineScores.Backend.Submit((GameMode)mode, best);
+                    if (best <= 0)
+                        continue;
+                    OnlineScores.Backend.Unlock(Award.FirstShift);
+                    Awards.ForScore(best, (GameMode)mode == GameMode.B, _awardScratch);
+                    foreach (Award award in _awardScratch)
+                        OnlineScores.Backend.Unlock(award);
+                }
             });
         }
 
@@ -375,6 +385,37 @@ namespace NightCafe.Core
         // ------------------------------------------------------------------ frame
 
         // 1.2.0 feedback
+        readonly List<Award> _awardScratch = new();
+
+        /// <summary>A Play Games achievement for a live shift (never for the demo's autopilot).</summary>
+        void Grant(Award award)
+        {
+            if (!IsDemo)
+                OnlineScores.Backend.Unlock(award);
+        }
+
+        /// <summary>Google's achievements screen; asks to sign in first, like the leaderboard.</summary>
+        void ShowAwards()
+        {
+            IOnlineScores online = OnlineScores.Backend;
+            if (!online.Available)
+                return;
+
+            if (online.SignedIn)
+            {
+                online.ShowAwards();
+                return;
+            }
+
+            online.SignIn(ok =>
+            {
+                if (!ok)
+                    return;
+
+                online.ShowAwards();
+                SyncCloudProfile();
+            });
+        }
         const float ShakeSeconds = 0.15f;
         const float ShakeAmplitude = 0.06f;
         float _shakeLeft;
@@ -547,6 +588,8 @@ namespace NightCafe.Core
                     audioService.Play(GameSfx.CatHiss);
                     RenderLadder(side);
                     Say(Quip.CatShooed);
+                    if (!IsDemo)
+                        OnlineScores.Backend.Increment(Award.PaprikaShooed, 1);
                     break;
                 case LadderPress.RepairStep:
                 case LadderPress.Repaired:
@@ -693,6 +736,8 @@ namespace NightCafe.Core
                 return;
 
             Say(Quip.FrenzyEnd); // quiet after the shift: Say only talks in live play
+            if (State is GameState.Playing or GameState.Breather)
+                Grant(Award.TerribleTen); // lived through it
             _frenzy = false;
             spawner.StopFrenzy();
             _orders.Held = false;
@@ -880,6 +925,8 @@ namespace NightCafe.Core
             hud.FlashBanner(Loc.F(Txt.LevelBanner, level), levelBannerSeconds);
             audioService.Play(GameSfx.LevelUp);
             neonFlash.Flash(); // 1.2.0: the bar neon marks a new level too
+            if (level >= 5)
+                Grant(Award.Level5);
         }
 
         void RenderLadder(int side)
@@ -1105,8 +1152,17 @@ namespace NightCafe.Core
             // On the glass: the tap becomes a point in the LCD scene for the toggles and the clock.
             if (pointer.TryLcdPoint(press.ScreenPosition, out Vector3 lcdPoint))
             {
-                if (titleToggles.TryHandleTap(lcdPoint))
-                    return true;
+                switch (titleToggles.TryHandleTap(lcdPoint))
+                {
+                    case TitleTap.Online:
+                        ShowOnlineScores();
+                        return true;
+                    case TitleTap.Awards:
+                        ShowAwards();
+                        return true;
+                    case TitleTap.Toggle:
+                        return true;
+                }
 
                 if (clock != null && clock.TryHandleTap(lcdPoint))
                     return true;
@@ -1299,6 +1355,10 @@ namespace NightCafe.Core
             bool newRecord = _profile.SubmitScore(_mode, total, System.DateTime.Now, out int rank);
             OnlineScores.Backend.Submit(_mode, total); // Play Games; dropped quietly when offline or signed out
             string unlockedName = UnlockSkins(total);
+            Grant(Award.FirstShift);
+            Awards.ForScore(total, _mode == GameMode.B, _awardScratch);
+            foreach (Award award in _awardScratch)
+                Grant(award);
 
             hud.SetBest(_profile.Best(_mode));
             hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode), newRecord, unlockedName, rank);
@@ -1361,6 +1421,8 @@ namespace NightCafe.Core
                 _score.RegisterCatch();
                 PopCatch(_score.TotalScore - before);
                 TutorialCaught();
+                if (_score.Combo == 25) Grant(Award.Streak25);
+                if (_score.Combo == 50) Grant(Award.Streak50);
                 _tempo.RegisterCatch();
                 _orders.RegisterCorrectCatch();
                 barista.ShowCatchPose(_config.catchPoseDuration);

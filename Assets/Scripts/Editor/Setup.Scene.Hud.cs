@@ -76,10 +76,11 @@ namespace NightCafe.EditorTools
                 "NIGHT CAFÉ\nTAP TO START", 7f, monoFont, ActiveAmber, 0, new Vector2(11f, 2.6f));
 
             GameObject togglesGo = Child("Toggles", titlePanel.transform, new Vector2(0f, -2.30f));
-            // Four toggles across the 12.7-wide LCD: music, sound effects, haptics, shell skin.
+            // Four toggles across the 12.7-wide LCD: music, sound effects, haptics, shell skin; 1.2.0
+            // adds two cards (Play Games ranking, trophies) that the painted style pins beside the skin.
             const float toggleStep = 2.45f;
             const float toggleSize = 5.2f;
-            var toggleCards = new SpriteRenderer[4];
+            var toggleCards = new SpriteRenderer[6];
             for (int i = 0; i < toggleCards.Length; i++)
                 toggleCards[i] = Prop($"Card_{i}", togglesGo.transform, new Vector2((i - 1.5f) * toggleStep, 0f));
             TMP_Text musicLabel = WorldText("MusicToggle", togglesGo.transform, new Vector2(-1.5f * toggleStep, 0f),
@@ -90,6 +91,10 @@ namespace NightCafe.EditorTools
                 "~ ON", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
             TMP_Text skinLabel = WorldText("SkinToggle", togglesGo.transform, new Vector2(1.5f * toggleStep, 0f),
                 "WALNUT", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text onlineLabel = WorldText("OnlineCard", togglesGo.transform, new Vector2(2.5f * toggleStep, 0f),
+                "RANKING", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+            TMP_Text awardsLabel = WorldText("AwardsCard", togglesGo.transform, new Vector2(3.5f * toggleStep, 0f),
+                "TROPHIES", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
 
             var toggles = togglesGo.AddComponent<TitleToggleView>();
             SetSerialized(toggles, so =>
@@ -98,6 +103,9 @@ namespace NightCafe.EditorTools
                 so.FindProperty("soundLabel").objectReferenceValue = soundLabel;
                 so.FindProperty("hapticsLabel").objectReferenceValue = hapticsLabel;
                 so.FindProperty("skinLabel").objectReferenceValue = skinLabel;
+                so.FindProperty("onlineLabel").objectReferenceValue = onlineLabel;
+                so.FindProperty("awardsLabel").objectReferenceValue = awardsLabel;
+                Fill(so.FindProperty("onlineCards"), new[] { toggleCards[4], toggleCards[5] });
                 so.FindProperty("hitSize").vector2Value = new Vector2(2.3f, 0.9f);
                 so.FindProperty("onColor").colorValue = ActiveAmber;
                 so.FindProperty("offColor").colorValue = InactiveAmber;
@@ -174,7 +182,7 @@ namespace NightCafe.EditorTools
                 resultGroup = resultGroup.transform,
                 brewTag = brewTag.transform,
                 titleSign = titleSign,
-                toggleLabels = new[] { musicLabel, soundLabel, hapticsLabel, skinLabel },
+                toggleLabels = new[] { musicLabel, soundLabel, hapticsLabel, skinLabel, onlineLabel, awardsLabel },
                 toggleCards = toggleCards,
                 demoBacking = demoBacking,
                 resultCard = resultCard,

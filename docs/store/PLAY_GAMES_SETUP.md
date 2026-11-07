@@ -56,3 +56,29 @@ Pakiet: `com.mikoch81.nightcafe`.
 - Bez zalogowania gra działa jak dotąd; lokalne top 10 zostaje. Logowanie jest ciche przy starcie (PGS v2
   loguje automatycznie, jeśli gracz ma Gry Play); wiersz „RANKING ONLINE” w menu pokazuje ranking Google,
   a gdy gracz nie jest zalogowany — najpierw prosi o logowanie.
+
+## Osiągnięcia (1.2.0)
+
+Gra rozpoznaje osiągnięcia po **nazwie zasobu** w XML-u, a ta powstaje z nazwy w domyślnym języku (polskim):
+„Wynik 100” → `achievement_wynik_100`. Dlatego **nazwy muszą być dokładnie takie jak w tabeli** (opis i
+angielskie tłumaczenie dowolne). Ikona: kwadrat 512×512 PNG (może być ta sama dla wszystkich na start).
+
+Play Console → *Usługi gier Play* → *Konfiguracja i zarządzanie* → **Osiągnięcia** → *Dodaj osiągnięcie*:
+
+| Nazwa (PL, dokładnie) | EN (tłumaczenie) | Opis PL | Rodzaj | Punkty |
+|---|---|---|---|---|
+| Pierwsza zmiana | First shift | Dokończ pierwszą zmianę. | standardowe | 5 |
+| Wynik 100 | Score 100 | Zdobądź 100 punktów w jednej zmianie. | standardowe | 10 |
+| Wynik 250 | Score 250 | Zdobądź 250 punktów w jednej zmianie. | standardowe | 15 |
+| Wynik 500 | Score 500 | Zdobądź 500 punktów w jednej zmianie. | standardowe | 20 |
+| Wynik 1000 | Score 1000 | Przekrocz 1000 punktów w jednej zmianie. | standardowe | 30 |
+| Seria 25 | Streak 25 | Złap 25 kubków z rzędu. | standardowe | 10 |
+| Seria 50 | Streak 50 | Złap 50 kubków z rzędu. | standardowe | 20 |
+| Straszna dziesiątka | Terrible ten | Przetrwaj szalejący ekspres. | standardowe | 15 |
+| Poziom 5 | Level 5 | Dojdź do poziomu 5. | standardowe | 10 |
+| Zamówienia 50 | Orders 50 | Zdobądź 50 punktów w trybie B. | standardowe | 10 |
+| Pogromca Papriki | Paprika tamer | Przegoń Paprikę ze stołka 10 razy. | **przyrostowe, 10 kroków** | 15 |
+
+Razem 160 punktów (limit Google: 1000). Potem: *Tabele wyników* albo *Osiągnięcia* → **Pobierz zasoby → Android
+(XML)** → wklej Claude'owi (zastąpi `docs/store/games-ids.xml`, dalej `NightCafe → Apply Play Games Resources`)
+i **opublikuj** zmiany w usługach gier. Osiągnięcia bez publikacji działają tylko dla testerów.
