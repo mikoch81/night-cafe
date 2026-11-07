@@ -27,8 +27,10 @@
   <string name="achievement_orders_50" translatable="false">CgkIqdXDkJ0GEAIQDw</string>
   <!--achievement Paprika tamer-->
   <string name="achievement_paprika_tamer" translatable="false">CgkIqdXDkJ0GEAIQEA</string>
-  <!--leaderboard Night Café · Tryb A-->
-  <string name="leaderboard_night_caf__tryb_a" translatable="false">CgkIqdXDkJ0GEAIQAw</string>
-  <!--leaderboard Night Café · Tryb B-->
-  <string name="leaderboard_night_caf__tryb_b" translatable="false">CgkIqdXDkJ0GEAIQBA</string>
+  <!--leaderboard Night Café · Mode A-->
+  <string name="leaderboard_night_caf__mode_a" translatable="false">CgkIqdXDkJ0GEAIQAw</string>
+  <!--leaderboard Night Café · Mode B-->
+  <string name="leaderboard_night_caf__mode_b" translatable="false">CgkIqdXDkJ0GEAIQBA</string>
+  <!--leaderboard Night Café · Daily challenge-->
+  <string name="leaderboard_night_caf__daily_challenge" translatable="false">CgkIqdXDkJ0GEAIQEQ</string>
 </resources>

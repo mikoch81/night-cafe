@@ -107,6 +107,21 @@ Nocna kawiarnia w deszczowym mieście. Barista **Miro** łapie na tacę kubki zj
   Miro w `Services/BaristaQuips.cs`. Napisy na tablicy wyniku (Cabin Sketch, bez polskich znaków) są ASCII:
   `REKORD`, `POZ`; reszta (Patrick Hand) ma pełne polskie znaki.
 
+### 2.10 Odczucie gry i meta (od 1.2.0)
+- **Reakcje:** nad tacą „+1” (od 10 serii „+1  x12”), większy „+6” przy bonusie serii; licznik podskakuje;
+  nowa plama wpada z chlapnięciem, stłuczka lekko trzęsie ekranem (mocniej przy trzeciej; wyłącza się
+  razem z wibracjami); paski rozwijają się od środka; awans poziomu = błysk neonu; wynik na karcie końca
+  nabija się od zera, „NOWY REKORD” pulsuje; Miro w bezruchu oddycha.
+- **Samouczek** pierwszej zmiany (nowy profil): świeci przycisk toru najbliższego kubka, trzy dymki Miro
+  (przycisk = ekspres, łap na końcu półki, 3 stłuczki = koniec). Kończy się po 6 złapaniach.
+- **Wyzwanie dnia** (karteczka DZIŚ na tytule): zasady trybu A, losowość ziarnista z daty UTC — ten sam
+  układ kubków i wydarzeń dla wszystkich. Pierwsza próba dnia idzie do tabeli „Wyzwanie dnia”, kolejne to
+  trening (karta końca pokazuje wynik dnia).
+- **Online:** karteczki RANKING (lista tabel Gier Play) i TROFEA (11 osiągnięć, `Services/Awards.cs`);
+  rekordy zdobyte bez logowania wysyłane po zalogowaniu.
+- **Statystyki** pod top 10 (zmiany, kubki, najdłuższa seria, najwyższy poziom); karteczka skina mówi,
+  co odblokowuje następny.
+
 ## 3. Tryby
 
 - **Tryb A (Zmiana dzienna):** wszystkie kubki łapiemy. Zasady jak wyżej.
