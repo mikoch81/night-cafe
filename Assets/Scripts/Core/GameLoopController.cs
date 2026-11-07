@@ -104,7 +104,8 @@ namespace NightCafe.Core
         float _lastMopX = float.NegativeInfinity;
 
         // Levels and café events (rebuilt with the mode, like the balance services)
-        readonly IRandom _eventRng = new UnityRandom();
+        readonly ShiftRandom _eventRng = new();
+        readonly ShiftRandom _spawnRng = new(); // both seeded by the date for the daily challenge (1.2.0)
         readonly LadderChange[] _ladderChanges = new LadderChange[LadderService.Sides];
         ShiftEventDirector _events;
         LadderService _ladders;
@@ -343,7 +344,7 @@ namespace NightCafe.Core
             _penalty.GameOverTriggered += OnGameOverTriggered;
             _orders.OrderChanged += OnOrderChanged;
 
-            spawner.Initialise(_config, laneConfig, _tempo, new UnityRandom());
+            spawner.Initialise(_config, laneConfig, _tempo, _spawnRng);
 
             hud.SetMode(mode);
             hud.SetBest(_profile.Best(mode));
@@ -1045,7 +1046,7 @@ namespace NightCafe.Core
                     _settings.ToggleLanguage();
                     break;
                 case MenuAction.ShowScores:
-                    menu.ShowScores(_mode, _profile.TopScores(_mode));
+                    menu.ShowScores(_mode, _profile.TopScores(_mode), StatsText());
                     return;
                 case MenuAction.Back:
                     menu.ShowMain();
@@ -1088,27 +1089,82 @@ namespace NightCafe.Core
         /// Google's leaderboard for the current mode; a player who is not signed in is asked first
         /// (the sign-in sheet and the board both open over the paused game).
         /// </summary>
-        void ShowOnlineScores()
+        void ShowOnlineScores(bool all = false)
         {
             IOnlineScores online = OnlineScores.Backend;
             if (!online.Available)
                 return;
 
+            GameMode mode = _mode;
+            void Show()
+            {
+                if (all)
+                    online.ShowAllBoards(); // the title card: A, B and the daily challenge
+                else
+                    online.ShowBoard(mode);
+            }
+
             if (online.SignedIn)
             {
-                online.ShowBoard(_mode);
+                Show();
                 return;
             }
 
-            GameMode mode = _mode;
             online.SignIn(ok =>
             {
                 if (!ok)
                     return;
 
-                online.ShowBoard(mode);
+                Show();
                 SyncCloudProfile();
             });
+        }
+
+        // ------------------------------------------------------------------ daily challenge, stats (1.2.0)
+
+        bool _daily;
+        int _shiftCatches;
+        int _shiftBestStreak;
+
+        /// <summary>The first daily attempt of the day is scored and sent; later ones are practice.</summary>
+        string DailyResult(int total)
+        {
+            if (!_daily)
+                return null;
+
+            string today = DailyChallenge.Today;
+            if (_profile.TryRecordDaily(today, total))
+            {
+                OnlineScores.Backend.SubmitDaily(total);
+                return Loc.T(Txt.DailyScored);
+            }
+
+            return Loc.F(Txt.DailyPractice, _profile.DailyScore(today));
+        }
+
+        string StatsText() => Loc.F(Txt.StatsLine,
+            _profile.ShiftsPlayed, _profile.CupsCaught, _profile.LongestStreak, _profile.HighestLevel);
+
+        /// <summary>The first skin still locked and what earns it ("ASH 250 A"); null when all are in.</summary>
+        string NextSkinHint()
+        {
+            for (int i = 0; i < SkinCatalog.All.Count; i++)
+            {
+                Skin skin = SkinCatalog.All[i];
+                if (SkinCatalog.IsDefault(skin.Id) || _profile.IsUnlocked(skin.Id))
+                    continue;
+
+                string name = Loc.Skin(i, skin.Name);
+                if (skin.Id == SkinCatalog.NeonId)
+                    return $"{name} 1000";
+                for (int m = 0; m < modeConfigs.Length; m++)
+                {
+                    if (modeConfigs[m].unlockSkinId == skin.Id)
+                        return $"{name} {modeConfigs[m].unlockSkinScore} {((GameMode)m).Letter()}";
+                }
+            }
+
+            return null;
         }
 
         static void Quit()
@@ -1155,8 +1211,13 @@ namespace NightCafe.Core
                 switch (titleToggles.TryHandleTap(lcdPoint))
                 {
                     case TitleTap.Online:
-                        ShowOnlineScores();
+                        ShowOnlineScores(all: true);
                         return true;
+                    case TitleTap.Daily:
+                        if (_mode != GameMode.A)
+                            FlipMode(); // the challenge plays by mode A's rules
+                        _daily = true;
+                        return false; // the tap starts the shift like any other
                     case TitleTap.Awards:
                         ShowAwards();
                         return true;
@@ -1182,6 +1243,9 @@ namespace NightCafe.Core
 
         void EnterTitle()
         {
+            _daily = false;
+            titleToggles.SetDaily(_profile.DailyDone(DailyChallenge.Today), _profile.DailyScore(DailyChallenge.Today));
+            titleToggles.SetSkinHint(NextSkinHint());
             LeaveDemo();
             _flow.EnteredTitle(Time.time);
             spawner.SpawningEnabled = false;
@@ -1239,12 +1303,22 @@ namespace NightCafe.Core
 
         void BeginRound()
         {
+            // The daily challenge: the same cups and café events for everyone today.
+            int? seed = _daily ? DailyChallenge.Seed(DailyChallenge.Today) : null;
+            _spawnRng.Reseed(seed);
+            _eventRng.Reseed(seed * 31 + 7);
+            _shiftCatches = 0;
+            _shiftBestStreak = 0;
+
             ResetRoundState();
             _level = 1;
             hud.SetLevel(1);
             barista.SetVisible(true);
             RenderOrderPanel(); // the flow is already Playing here; ResetRoundState could not show it before
             spawner.BeginRound();
+
+            if (_daily)
+                hud.FlashBanner(Loc.T(Txt.DailyBanner), 3f);
 
             _tutorial = !IsDemo && !_profile.TutorialDone;
             _tutorialCatches = 0;
@@ -1355,13 +1429,19 @@ namespace NightCafe.Core
             bool newRecord = _profile.SubmitScore(_mode, total, System.DateTime.Now, out int rank);
             OnlineScores.Backend.Submit(_mode, total); // Play Games; dropped quietly when offline or signed out
             string unlockedName = UnlockSkins(total);
+            string note = null;
+            if (!IsDemo)
+            {
+                _profile.RecordShift(_shiftCatches, _shiftBestStreak, _level);
+                note = DailyResult(total);
+            }
             Grant(Award.FirstShift);
             Awards.ForScore(total, _mode == GameMode.B, _awardScratch);
             foreach (Award award in _awardScratch)
                 Grant(award);
 
             hud.SetBest(_profile.Best(_mode));
-            hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode), newRecord, unlockedName, rank);
+            hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode), newRecord, unlockedName, rank, note);
 
             // Lights down for the night; in the painted diorama Sablé curls up on the counter.
             ScreenStyle style = EffectiveStyle;
@@ -1421,6 +1501,8 @@ namespace NightCafe.Core
                 _score.RegisterCatch();
                 PopCatch(_score.TotalScore - before);
                 TutorialCaught();
+                _shiftCatches++;
+                _shiftBestStreak = Mathf.Max(_shiftBestStreak, _score.Combo);
                 if (_score.Combo == 25) Grant(Award.Streak25);
                 if (_score.Combo == 50) Grant(Award.Streak50);
                 _tempo.RegisterCatch();

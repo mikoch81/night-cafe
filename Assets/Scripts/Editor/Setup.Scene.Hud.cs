@@ -80,7 +80,7 @@ namespace NightCafe.EditorTools
             // adds two cards (Play Games ranking, trophies) that the painted style pins beside the skin.
             const float toggleStep = 2.45f;
             const float toggleSize = 5.2f;
-            var toggleCards = new SpriteRenderer[6];
+            var toggleCards = new SpriteRenderer[7];
             for (int i = 0; i < toggleCards.Length; i++)
                 toggleCards[i] = Prop($"Card_{i}", togglesGo.transform, new Vector2((i - 1.5f) * toggleStep, 0f));
             TMP_Text musicLabel = WorldText("MusicToggle", togglesGo.transform, new Vector2(-1.5f * toggleStep, 0f),
@@ -96,6 +96,9 @@ namespace NightCafe.EditorTools
             TMP_Text awardsLabel = WorldText("AwardsCard", togglesGo.transform, new Vector2(3.5f * toggleStep, 0f),
                 "TROPHIES", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
 
+            TMP_Text dailyLabel = WorldText("DailyCard", togglesGo.transform, new Vector2(4.5f * toggleStep, 0f),
+                "DAILY", toggleSize, monoFont, ActiveAmber, 0, new Vector2(2.4f, 1f));
+
             var toggles = togglesGo.AddComponent<TitleToggleView>();
             SetSerialized(toggles, so =>
             {
@@ -106,6 +109,7 @@ namespace NightCafe.EditorTools
                 so.FindProperty("onlineLabel").objectReferenceValue = onlineLabel;
                 so.FindProperty("awardsLabel").objectReferenceValue = awardsLabel;
                 Fill(so.FindProperty("onlineCards"), new[] { toggleCards[4], toggleCards[5] });
+                so.FindProperty("dailyLabel").objectReferenceValue = dailyLabel;
                 so.FindProperty("hitSize").vector2Value = new Vector2(2.3f, 0.9f);
                 so.FindProperty("onColor").colorValue = ActiveAmber;
                 so.FindProperty("offColor").colorValue = InactiveAmber;
@@ -182,7 +186,7 @@ namespace NightCafe.EditorTools
                 resultGroup = resultGroup.transform,
                 brewTag = brewTag.transform,
                 titleSign = titleSign,
-                toggleLabels = new[] { musicLabel, soundLabel, hapticsLabel, skinLabel, onlineLabel, awardsLabel },
+                toggleLabels = new[] { musicLabel, soundLabel, hapticsLabel, skinLabel, onlineLabel, awardsLabel, dailyLabel },
                 toggleCards = toggleCards,
                 demoBacking = demoBacking,
                 resultCard = resultCard,

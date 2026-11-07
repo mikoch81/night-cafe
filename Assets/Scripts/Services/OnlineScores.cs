@@ -49,6 +49,12 @@ namespace NightCafe.Services
 
         /// <summary>Google's achievements screen over the game.</summary>
         void ShowAwards();
+
+        /// <summary>1.2.0: the day's scored daily-challenge attempt; dropped when signed out or not set up.</summary>
+        void SubmitDaily(int score);
+
+        /// <summary>Google's list of every leaderboard (mode A, mode B, the daily challenge).</summary>
+        void ShowAllBoards();
     }
 
     public static class OnlineScores
@@ -70,5 +76,7 @@ namespace NightCafe.Services
         public void Unlock(Award award) { }
         public void Increment(Award award, int steps) { }
         public void ShowAwards() { }
+        public void SubmitDaily(int score) { }
+        public void ShowAllBoards() { }
     }
 }

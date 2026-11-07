@@ -111,6 +111,16 @@ namespace NightCafe.Services
 
         /// <summary>1.2.0: the first-shift tutorial was played (an older profile with a score counts as done).</summary>
         public bool tutorialDone;
+
+        /// <summary>1.2.0 statistics.</summary>
+        public int shiftsPlayed;
+        public int cupsCaught;
+        public int longestStreak;
+        public int highestLevel;
+
+        /// <summary>1.2.0 daily challenge: the UTC day (yyyy-MM-dd) of the last scored attempt, and its score.</summary>
+        public string dailyDate = "";
+        public int dailyScore;
     }
 
     /// <summary>
@@ -132,6 +142,36 @@ namespace NightCafe.Services
         public event Action Changed;
 
         public int Best(GameMode mode) => _data.bestScores[(int)mode];
+
+        public int ShiftsPlayed => _data.shiftsPlayed;
+        public int CupsCaught => _data.cupsCaught;
+        public int LongestStreak => _data.longestStreak;
+        public int HighestLevel => _data.highestLevel;
+
+        public void RecordShift(int cups, int streak, int level)
+        {
+            _data.shiftsPlayed++;
+            _data.cupsCaught += Math.Max(0, cups);
+            _data.longestStreak = Math.Max(_data.longestStreak, streak);
+            _data.highestLevel = Math.Max(_data.highestLevel, level);
+            Persist();
+        }
+
+        public bool DailyDone(string day) => _data.dailyDate == day;
+
+        public int DailyScore(string day) => DailyDone(day) ? _data.dailyScore : 0;
+
+        /// <summary>True for the day's first (scored) attempt; later ones the same day are practice.</summary>
+        public bool TryRecordDaily(string day, int score)
+        {
+            if (DailyDone(day))
+                return false;
+
+            _data.dailyDate = day;
+            _data.dailyScore = score;
+            Persist();
+            return true;
+        }
 
         public bool TutorialDone => _data.tutorialDone || Array.Exists(_data.bestScores, s => s > 0);
 
@@ -319,6 +359,22 @@ namespace NightCafe.Services
                     changed = true;
             }
 
+            // shortcut: totals merge as max, not sum (both copies already hold the shared past); a
+            // player alternating two phones undercounts. Upgrade to per-device counters if that matters.
+            changed |= TakeMax(ref _data.shiftsPlayed, other.shiftsPlayed);
+            changed |= TakeMax(ref _data.cupsCaught, other.cupsCaught);
+            changed |= TakeMax(ref _data.longestStreak, other.longestStreak);
+            changed |= TakeMax(ref _data.highestLevel, other.highestLevel);
+
+            // yyyy-MM-dd compares as text; the same day keeps the better of two "first" attempts.
+            int day = string.CompareOrdinal(other.dailyDate ?? "", _data.dailyDate ?? "");
+            if (day > 0 || (day == 0 && other.dailyScore > _data.dailyScore))
+            {
+                _data.dailyDate = other.dailyDate;
+                _data.dailyScore = other.dailyScore;
+                changed = true;
+            }
+
             if (other.tutorialDone && !_data.tutorialDone)
             {
                 _data.tutorialDone = true;
@@ -337,6 +393,15 @@ namespace NightCafe.Services
             if (changed)
                 Persist();
             return changed;
+        }
+
+        static bool TakeMax(ref int mine, int theirs)
+        {
+            if (theirs <= mine)
+                return false;
+
+            mine = theirs;
+            return true;
         }
 
         void Persist()

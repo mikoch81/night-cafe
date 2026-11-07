@@ -25,15 +25,17 @@ namespace NightCafe.Core
         }
 
         /// <param name="rank">Place on the local top-10 list, 0 when the shift did not make it.</param>
-        public static GameOverCopy Build(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank = 0)
+        /// <param name="note">1.2.0: a line above the restart prompt (the daily challenge); a new skin wins over it.</param>
+        public static GameOverCopy Build(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank = 0, string note = null)
         {
             string record = newRecord ? Loc.T(Txt.NewBest)
                 : rank > 0 ? Loc.F(Txt.OnList, rank, bestDisplay)
                 : Loc.F(Txt.BestScore, bestDisplay);
             string restart = Loc.T(Txt.TapToRestart);
-            string footer = string.IsNullOrEmpty(unlockedSkin)
-                ? restart
-                : Loc.F(Txt.SkinUnlocked, unlockedSkin.ToUpperInvariant()) + "\n" + restart;
+            string footer = !string.IsNullOrEmpty(unlockedSkin)
+                ? Loc.F(Txt.SkinUnlocked, unlockedSkin.ToUpperInvariant()) + "\n" + restart
+                : !string.IsNullOrEmpty(note) ? note + "\n" + restart
+                : restart;
             return new GameOverCopy(Loc.T(Txt.EndOfShift), displayScore.ToString("000"), record, footer, newRecord);
         }
     }

@@ -285,14 +285,14 @@ namespace NightCafe.UI
             SetPanel(gameOverPanel, false);
         }
 
-        public void ShowGameOver(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank)
+        public void ShowGameOver(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank, string note = null)
         {
             SetPanel(titlePanel, false);
             SetPanel(demoPanel, false);
             SetPanel(gameOverPanel, true);
             HidePops();
 
-            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin, rank);
+            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin, rank, note);
             SetText(gameOverHeader, copy.Header);
             SetText(gameOverScore, copy.Score);
             SetText(gameOverRecord, copy.Record);

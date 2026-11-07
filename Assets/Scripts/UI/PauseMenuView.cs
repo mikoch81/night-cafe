@@ -116,7 +116,7 @@ namespace NightCafe.UI
         }
 
         /// <summary>The local list for one mode, best first, with a BACK row under it.</summary>
-        public void ShowScores(GameMode mode, IReadOnlyList<ScoreEntry> scores)
+        public void ShowScores(GameMode mode, IReadOnlyList<ScoreEntry> scores, string stats = null)
         {
             SetActive(mainPage, false);
             SetActive(scoresPage, true);
@@ -124,7 +124,8 @@ namespace NightCafe.UI
             Set(backRow, Loc.T(Txt.Back), ink);
             if (scoresText != null)
             {
-                scoresText.text = FormatScores(scores);
+                scoresText.text = FormatScores(scores)
+                    + (string.IsNullOrEmpty(stats) ? "" : $"\n\n<size=85%>{stats}</size>");
                 scoresText.color = ink;
             }
         }

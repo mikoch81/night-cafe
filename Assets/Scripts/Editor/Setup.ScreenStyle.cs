@@ -224,6 +224,7 @@ namespace NightCafe.EditorTools
             {
                 new Vector2(-4.9f, -1.05f), new Vector2(-2.9f, -1.05f), new Vector2(-0.9f, -1.05f),
                 new Vector2(-3.9f, -3.05f), new Vector2(-1.9f, -3.05f), new Vector2(0.1f, -3.05f), // skin, ranking, trophies (1.2.0)
+                new Vector2(1.1f, -1.05f), // daily challenge (1.2.0), the end of the top row
             };
             art.toggleLabelOffset = new Vector2(0f, -0.25f);
             art.resultPosition = new Vector2(0f, -0.3f);

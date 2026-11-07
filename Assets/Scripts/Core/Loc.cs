@@ -55,6 +55,11 @@ namespace NightCafe.Core
         TutorialStains,
         RankingCard,
         AwardsCard,
+        DailyCard,
+        DailyBanner,
+        DailyScored,
+        DailyPractice,
+        StatsLine,
         Count
     }
 
@@ -112,6 +117,11 @@ namespace NightCafe.Core
             Add(Txt.TutorialCatch, "Catch every cup\nat the end of its shelf!", "Łap każdy kubek\nna końcu półki!");
             Add(Txt.RankingCard, "RANKING", "RANKING");
             Add(Txt.AwardsCard, "TROPHIES", "TROFEA");
+            Add(Txt.DailyCard, "DAILY", "DZIŚ");
+            Add(Txt.DailyBanner, "DAILY CHALLENGE", "WYZWANIE DNIA");
+            Add(Txt.DailyScored, "DAILY SCORE SENT", "WYNIK DNIA ZAPISANY");
+            Add(Txt.DailyPractice, "PRACTICE · TODAY {0}", "TRENING · DZIŚ {0}");
+            Add(Txt.StatsLine, "SHIFTS {0} · CUPS {1}\nBEST STREAK {2} · LEVEL {3}", "ZMIANY {0} · KUBKI {1}\nSERIA {2} · POZIOM {3}");
             Add(Txt.TutorialStains, "Three broken cups\nand the shift is over.", "Trzy stłuczone kubki\ni koniec zmiany.");
         }
 

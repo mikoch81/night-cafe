@@ -52,7 +52,7 @@ namespace NightCafe.Tests
 
             Assert.IsTrue(art.titleBaristaWipes, "Miro wipes the counter on the painted title");
             Assert.Greater(art.gameOverDim, 0.55f, "the lights go further down than on the LCD");
-            Assert.AreEqual(6, art.toggleOffsets.Length, "one pinned note per card: music, sound, haptics, skin, ranking, trophies");
+            Assert.AreEqual(7, art.toggleOffsets.Length, "one pinned note per card: music, sound, haptics, skin, ranking, trophies, daily");
 
             foreach ((string slot, string file) in NightCafeSetup.ArtTitleSprites)
             {
