@@ -30,8 +30,15 @@ Testy EditMode 203/203. Po każdej przebudowie sceny (`NightCafe/Build Scene Set
 osiągnięcia 1/11 z polskimi tekstami; lista trzech tabel; wyzwanie dnia zapisane (DZIŚ 002).
 Na Pixelu jest build deweloperski — przed instalacją ze Sklepu odinstalować (inny podpis).
 
+## Wydanie
+
+- AAB `build/NightCafe.aab` (1.2.0 / versionCode 4, klucz przesyłania 09:A5:…), notatki EN/PL w
+  `docs/store/LISTING.md`. **Test wewnętrzny opublikowany 2026-11-07 23:16** („Dostępna dla testerów
+  wewnętrznych”). Jedyne ostrzeżenie: brak pliku mapowania R8 (R8 wyłączone, jak w 1.1.1). Obsługiwane
+  urządzenia bez zmian. Przesłanie z przeglądarki: plik podany stronie z lokalnego serwera 127.0.0.1
+  (narzędzie do plików ma limit 10 MB).
+
 ## Do zrobienia
 
-- AAB release 1.2.0 (`tools/build_release.ps1`), notatki do wydania w `docs/store/LISTING.md`
-  (EN/PL: samouczek, wyzwanie dnia, osiągnięcia), wysyłka na test wewnętrzny, potem produkcja.
+- Test ze Sklepu na Pixelu (najpierw odinstalować build deweloperski), potem awans na produkcję.
 - Opcjonalnie: dłuższy test ręczny (wstrząs, samouczek na nowym koncie, Paprika ×10).
