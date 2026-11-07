@@ -370,6 +370,14 @@ namespace NightCafe.Core
 
         // ------------------------------------------------------------------ frame
 
+        // 1.2.0 feedback
+        const float ShakeSeconds = 0.15f;
+        const float ShakeAmplitude = 0.06f;
+        float _shakeLeft;
+        float _shakeStrength;
+        Vector3 _cameraHome;
+        bool _bonusJustNow;
+
         void Update()
         {
             float dt = Time.deltaTime;
@@ -821,6 +829,7 @@ namespace NightCafe.Core
             _haptics.OneShot(audioConfig.missHapticMs);
             cat.Play();
             _penalty.AddStain();
+            Shake(_penalty.Stains >= _penalty.MaxStains ? 2f : 1f);
         }
 
         void StartRush()
@@ -864,6 +873,7 @@ namespace NightCafe.Core
             hud.SetLevel(level);
             hud.FlashBanner(Loc.F(Txt.LevelBanner, level), levelBannerSeconds);
             audioService.Play(GameSfx.LevelUp);
+            neonFlash.Flash(); // 1.2.0: the bar neon marks a new level too
         }
 
         void RenderLadder(int side)
@@ -1275,7 +1285,10 @@ namespace NightCafe.Core
             if (outcome == CatchOutcome.Caught)
             {
                 spawner.ReturnCup(cup);
+                int before = _score.TotalScore;
+                _bonusJustNow = false;
                 _score.RegisterCatch();
+                PopCatch(_score.TotalScore - before);
                 _tempo.RegisterCatch();
                 _orders.RegisterCorrectCatch();
                 barista.ShowCatchPose(_config.catchPoseDuration);
@@ -1297,6 +1310,45 @@ namespace NightCafe.Core
             cup.Drop(laneConfig.barLineY, cupFallGravity, cupFallCarry, cupFallSpin);
         }
 
+        /// <summary>1.2.0: "+1" over the tray, with the streak once it reaches 10 ("+1  x12").</summary>
+        void PopCatch(int gained)
+        {
+            Bounds b = barista.Bounds;
+            int combo = _score.Combo;
+            string text = combo >= 10 ? $"+{gained}  x{combo}" : $"+{gained}";
+            hud.Pop(new Vector3(b.center.x, b.max.y + 0.25f, b.center.z), text, _bonusJustNow);
+        }
+
+        /// <summary>A small knock of the LCD camera (crash = 1, last stain = stronger); off with haptics.</summary>
+        void Shake(float strength)
+        {
+            if (IsDemo || !_settings.HapticsEnabled || pointer == null || pointer.LcdCamera == null)
+                return;
+
+            Transform cam = pointer.LcdCamera.transform;
+            if (_shakeLeft <= 0f)
+                _cameraHome = cam.localPosition;
+            _shakeStrength = Mathf.Max(_shakeLeft > 0f ? _shakeStrength : 0f, strength);
+            _shakeLeft = ShakeSeconds;
+        }
+
+        void LateUpdate()
+        {
+            if (_shakeLeft <= 0f || pointer == null || pointer.LcdCamera == null)
+                return;
+
+            _shakeLeft -= Time.unscaledDeltaTime;
+            Transform cam = pointer.LcdCamera.transform;
+            if (_shakeLeft <= 0f)
+            {
+                cam.localPosition = _cameraHome;
+                return;
+            }
+
+            Vector2 jitter = Random.insideUnitCircle * (ShakeAmplitude * _shakeStrength * (_shakeLeft / ShakeSeconds));
+            cam.localPosition = _cameraHome + new Vector3(jitter.x, jitter.y, 0f);
+        }
+
         /// <summary>A dropped cup reached the floor: it breaks where it landed (review 2026-09-26).</summary>
         void BreakCup(CupController cup)
         {
@@ -1308,6 +1360,7 @@ namespace NightCafe.Core
             _haptics.OneShot(audioConfig.missHapticMs);
             cat.Play();
             _penalty.AddStain();
+            Shake(_penalty.Stains >= _penalty.MaxStains ? 2f : 1f);
         }
 
         /// <summary>
@@ -1385,6 +1438,7 @@ namespace NightCafe.Core
 
         void OnComboBonusAwarded()
         {
+            _bonusJustNow = true;
             audioService.Play(GameSfx.ComboBonus);
             neonFlash.Flash();
         }
