@@ -39,4 +39,6 @@ powiadomienie. Vitals i oceny: brak danych (za mało użytkowników).
 
 ## Do zrobienia
 
-- Wydanie: versionCode 3 / 1.1.1, najpierw ścieżka testu zamkniętego (raport przed publikacją), potem produkcja.
+- **1.1.1 na teście wewnętrznym od 2026-11-07 19:43** (lista PEKAO; jedyne ostrzeżenie: brak mappingu R8 — R8 wyłączone).
+  Build deweloperski odinstalowany z Pixela. Dalej: zainstalować wersję ze Sklepu na Pixelu, sprawdzić logowanie
+  i powrót rekordu z chmury, potem Test wewnętrzny → Promuj wersję → Produkcja.
