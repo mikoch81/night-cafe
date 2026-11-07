@@ -50,6 +50,9 @@ namespace NightCafe.Core
         FullSpeed,
         TerribleTen,
         Brew,
+        TutorialButtons,
+        TutorialCatch,
+        TutorialStains,
         Count
     }
 
@@ -103,6 +106,9 @@ namespace NightCafe.Core
             Add(Txt.FullSpeed, "FULL SPEED", "PEŁNA PARA");
             Add(Txt.TerribleTen, "TERRIBLE TEN", "STRASZNA DZIESIĄTKA");
             Add(Txt.Brew, "BREW", "PARZENIE");
+            Add(Txt.TutorialButtons, "Press the glowing button:\nI'll run to that machine.", "Wciśnij świecący przycisk:\npobiegnę pod ten ekspres.");
+            Add(Txt.TutorialCatch, "Catch every cup\nat the end of its shelf!", "Łap każdy kubek\nna końcu półki!");
+            Add(Txt.TutorialStains, "Three broken cups\nand the shift is over.", "Trzy stłuczone kubki\ni koniec zmiany.");
         }
 
         static void Add(Txt key, string english, string polish)

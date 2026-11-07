@@ -108,6 +108,9 @@ namespace NightCafe.Services
         public List<string> unlockedSkins = new();
         public string selectedSkin = "";
         public int selectedMode;
+
+        /// <summary>1.2.0: the first-shift tutorial was played (an older profile with a score counts as done).</summary>
+        public bool tutorialDone;
     }
 
     /// <summary>
@@ -129,6 +132,17 @@ namespace NightCafe.Services
         public event Action Changed;
 
         public int Best(GameMode mode) => _data.bestScores[(int)mode];
+
+        public bool TutorialDone => _data.tutorialDone || Array.Exists(_data.bestScores, s => s > 0);
+
+        public void MarkTutorialDone()
+        {
+            if (_data.tutorialDone)
+                return;
+
+            _data.tutorialDone = true;
+            Persist();
+        }
 
         public GameMode SelectedMode =>
             _data.selectedMode >= 0 && _data.selectedMode < GameModeExtensions.Count
@@ -303,6 +317,12 @@ namespace NightCafe.Services
                 bool known = _data.topScores.Exists(e => e.mode == entry.mode && e.score == entry.score && e.date == entry.date);
                 if (!known && entry.score > 0 && InsertTopScore(entry) > 0)
                     changed = true;
+            }
+
+            if (other.tutorialDone && !_data.tutorialDone)
+            {
+                _data.tutorialDone = true;
+                changed = true;
             }
 
             foreach (string skin in other.unlockedSkins)

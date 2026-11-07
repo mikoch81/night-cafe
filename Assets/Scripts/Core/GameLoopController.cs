@@ -74,7 +74,7 @@ namespace NightCafe.Core
         [SerializeField] float levelBannerSeconds = 1.8f;
         [Tooltip("Seconds a speech bubble line stays up; a two-line hint gets longer.")]
         [SerializeField] float bubbleSeconds = 2.4f;
-        [SerializeField] float hintBubbleSeconds = 3.4f;
+        [SerializeField] float hintBubbleSeconds = 4.2f;
         [Tooltip("Paprika (ginger) and Noir (black) relative to Sablé's after-shift size.")]
         [SerializeField] float strayScale = 0.8f;
         [SerializeField] float bumperScale = 0.65f;
@@ -240,6 +240,10 @@ namespace NightCafe.Core
                 // a change saves itself through OnProfileChanged; otherwise only a cloud copy behind this one is written
                 if (!_profile.Merge(json) && json != _profile.Json)
                     OnlineScores.Backend.SaveProfile(_profile.Json);
+
+                // 1.2.0: records set while signed out reach the leaderboards now (Play keeps the higher one).
+                for (int mode = 0; mode < GameModeExtensions.Count; mode++)
+                    OnlineScores.Backend.Submit((GameMode)mode, _profile.Best((GameMode)mode));
             });
         }
 
@@ -586,6 +590,8 @@ namespace NightCafe.Core
         /// <summary>Climbs, ladders, the rush clock and the event director, in live play only.</summary>
         void UpdateShift(float dt)
         {
+            if (_tutorial)
+                UpdateTutorial();
             if (_climbTarget.HasValue)
             {
                 _climbLeft -= dt;
@@ -1183,11 +1189,74 @@ namespace NightCafe.Core
             barista.SetVisible(true);
             RenderOrderPanel(); // the flow is already Playing here; ResetRoundState could not show it before
             spawner.BeginRound();
+
+            _tutorial = !IsDemo && !_profile.TutorialDone;
+            _tutorialCatches = 0;
+            _tutorialMissSaid = false;
+            if (_tutorial)
+                TutorialSay(Txt.TutorialButtons);
+        }
+
+        // ------------------------------------------------------------------ first-shift tutorial (1.2.0)
+
+        const int TutorialCatches = 6;
+        bool _tutorial;
+        int _tutorialCatches;
+        bool _tutorialMissSaid;
+
+        void TutorialSay(Txt line)
+        {
+            if (bubble != null)
+                bubble.Say(Loc.T(line), hintBubbleSeconds);
+        }
+
+        /// <summary>The cap for the cup nearest its catch point glows until Miro stands there.</summary>
+        void UpdateTutorial()
+        {
+            CupController next = null;
+            foreach (CupController cup in spawner.ActiveCups)
+            {
+                if (next == null || cup.StepIndex > next.StepIndex)
+                    next = cup;
+            }
+
+            LanePosition? lane = next != null ? (LanePosition)next.Lane : null;
+            deviceShell.Hint(lane.HasValue && barista.Current != lane.Value ? lane : null);
+        }
+
+        void TutorialCaught()
+        {
+            if (!_tutorial)
+                return;
+
+            _tutorialCatches++;
+            if (_tutorialCatches == 1)
+                TutorialSay(Txt.TutorialCatch);
+            else if (_tutorialCatches >= TutorialCatches)
+                EndTutorial();
+        }
+
+        void TutorialMissed()
+        {
+            if (!_tutorial || _tutorialMissSaid)
+                return;
+
+            _tutorialMissSaid = true;
+            TutorialSay(Txt.TutorialStains);
+        }
+
+        void EndTutorial()
+        {
+            _tutorial = false;
+            deviceShell.Hint(null);
+            _profile.MarkTutorialDone();
         }
 
         void ResetRoundState()
         {
             _rolledOver = false;
+            _tutorial = false;
+            deviceShell.Hint(null);
             ResetShiftEvents();
             _level = 0;
             hud.SetLevel(0);
@@ -1218,6 +1287,8 @@ namespace NightCafe.Core
         void EnterGameOver()
         {
             _flow.EnteredGameOver(Time.time);
+            if (_tutorial)
+                EndTutorial();
             ResetShiftEvents();
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
@@ -1289,6 +1360,7 @@ namespace NightCafe.Core
                 _bonusJustNow = false;
                 _score.RegisterCatch();
                 PopCatch(_score.TotalScore - before);
+                TutorialCaught();
                 _tempo.RegisterCatch();
                 _orders.RegisterCorrectCatch();
                 barista.ShowCatchPose(_config.catchPoseDuration);
@@ -1356,6 +1428,7 @@ namespace NightCafe.Core
             spawner.ReturnCup(cup);
 
             ShowBrokenCup(landing);
+            TutorialMissed();
             audioService.Play(GameSfx.Miss);
             _haptics.OneShot(audioConfig.missHapticMs);
             cat.Play();

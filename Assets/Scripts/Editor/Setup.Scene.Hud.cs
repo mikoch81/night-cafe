@@ -223,7 +223,7 @@ namespace NightCafe.EditorTools
             tail.enabled = false;
             SetSorting(tail, Core.SortingLayers.Hud, BubbleOrder + 1); // covers the body's outline at the join
 
-            TMP_Text text = WorldText("BubbleText", go.transform, Vector2.zero, "", 3.4f, font,
+            TMP_Text text = WorldText("BubbleText", go.transform, Vector2.zero, "", 3.8f, font, // 1.2.0: was 3.4
                 new Color(0.23f, 0.16f, 0.11f), BubbleOrder + 2, new Vector2(3.4f, 1f));
             text.textWrappingMode = TextWrappingModes.Normal;
             text.lineSpacing = -12f;
@@ -266,17 +266,17 @@ namespace NightCafe.EditorTools
             card.enabled = false; // the applier fits the paper
             SetSorting(card, Core.SortingLayers.Hud, MenuCardOrder);
 
-            var rowSize = new Vector2(6f, 0.8f);
-            const float rowFont = 5.2f;
+            var rowSize = new Vector2(6.4f, 0.85f);
+            const float rowFont = 5.6f; // 1.2.0: was 5.2 at 0.72 apart, small under a thumb
             TMP_Text Row(string name, Transform parent, float y, string text, float size = rowFont) =>
                 WorldText(name, parent, new Vector2(0f, y), text, size, font, ActiveAmber, MenuTextOrder, rowSize);
 
-            TMP_Text header = Row("MenuHeader", panel.transform, 3.3f, "PAUSED", 6f);
+            TMP_Text header = Row("MenuHeader", panel.transform, 3.5f, "PAUSED", 6.4f);
 
             GameObject main = Child("MainPage", panel.transform);
-            // Nine rows 0.72 apart (1.1.0 added ONLINE TOP 10 and LANGUAGE); the view sets the words.
-            const float step = 0.72f;
-            float y = 2.5f;
+            // Nine rows 0.76 apart, 0.72 before 1.2.0 (1.1.0 added ONLINE TOP 10 and LANGUAGE); the view sets the words.
+            const float step = 0.76f;
+            float y = 2.75f;
             TMP_Text resume = Row("ResumeRow", main.transform, y, "RESUME");
             TMP_Text music = Row("MusicRow", main.transform, y -= step, "MUSIC  ON");
             TMP_Text sound = Row("SoundRow", main.transform, y -= step, "SOUND  ON");
@@ -291,7 +291,7 @@ namespace NightCafe.EditorTools
             TMP_Text list = WorldText("ScoresText", scoresPage.transform, new Vector2(0f, -0.1f), "NO SHIFTS YET", 3.9f,
                 font, ActiveAmber, MenuTextOrder, new Vector2(6f, 5.8f));
             list.alignment = TextAlignmentOptions.Top;
-            TMP_Text back = Row("BackRow", scoresPage.transform, -3.4f, "BACK");
+            TMP_Text back = Row("BackRow", scoresPage.transform, -3.35f, "BACK");
             scoresPage.SetActive(false);
             panel.SetActive(false);
 
