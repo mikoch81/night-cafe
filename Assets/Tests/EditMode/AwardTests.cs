@@ -29,6 +29,16 @@ namespace NightCafe.Tests
             }
 
             Assert.AreEqual((int)Award.Count, seen.Count);
+
+            seen.Clear();
+            foreach (string name in new[] { "first_shift", "score_100", "score_250", "score_500", "score_1000",
+                         "streak_25", "streak_50", "terrible_ten", "level_5", "orders_50", "paprika_tamer" })
+            {
+                Assert.IsTrue(Awards.TryMatch("achievement_" + name, out Award award), name);
+                seen.Add(award);
+            }
+
+            Assert.AreEqual((int)Award.Count, seen.Count, "the English names (the console's default language)");
         }
 
         [Test]

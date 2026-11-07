@@ -59,26 +59,27 @@ Pakiet: `com.mikoch81.nightcafe`.
 
 ## Osiągnięcia (1.2.0)
 
-Gra rozpoznaje osiągnięcia po **nazwie zasobu** w XML-u, a ta powstaje z nazwy w domyślnym języku (polskim):
-„Wynik 100” → `achievement_wynik_100`. Dlatego **nazwy muszą być dokładnie takie jak w tabeli** (opis i
-angielskie tłumaczenie dowolne). Ikona: kwadrat 512×512 PNG (może być ta sama dla wszystkich na start).
+Domyślny język projektu usług gier to **angielski (en-US)**, więc nazwa zasobu w XML-u powstaje z angielskiej
+nazwy: „Score 100” → `achievement_score_100`. Gra rozpoznaje osiągnięcia po tej nazwie, dlatego **pole
+„Nazwa” wpisz dokładnie jak w tabeli** (opis może być inny). Do publikacji wszystkie pola muszą być po
+angielsku; polską wersję dodaje się potem jako tłumaczenie. Ikony 512×512 (32-bit PNG) są gotowe w
+`docs/store/achievements/` (kubek ze znaczkiem, jak ikony tabel wyników). Stan początkowy: **Widoczne**.
 
-Play Console → *Usługi gier Play* → *Konfiguracja i zarządzanie* → **Osiągnięcia** → *Dodaj osiągnięcie*:
+| Nazwa (EN, dokładnie) | Opis (EN) | Ikona | Rodzaj | Punkty | PL: nazwa / opis |
+|---|---|---|---|---|---|
+| First shift | Finish your first shift. | first_shift.png | zwykłe | 5 | Pierwsza zmiana / Dokończ pierwszą zmianę. |
+| Score 100 | Score 100 points in one shift. | score_100.png | zwykłe | 10 | Wynik 100 / Zdobądź 100 punktów w jednej zmianie. |
+| Score 250 | Score 250 points in one shift. | score_250.png | zwykłe | 15 | Wynik 250 / Zdobądź 250 punktów w jednej zmianie. |
+| Score 500 | Score 500 points in one shift. | score_500.png | zwykłe | 20 | Wynik 500 / Zdobądź 500 punktów w jednej zmianie. |
+| Score 1000 | Pass 1000 points in one shift. | score_1000.png | zwykłe | 30 | Wynik 1000 / Przekrocz 1000 punktów w jednej zmianie. |
+| Streak 25 | Catch 25 cups in a row. | streak_25.png | zwykłe | 10 | Seria 25 / Złap 25 kubków z rzędu. |
+| Streak 50 | Catch 50 cups in a row. | streak_50.png | zwykłe | 20 | Seria 50 / Złap 50 kubków z rzędu. |
+| Terrible ten | Survive the machine gone wild. | terrible_ten.png | zwykłe | 15 | Straszna dziesiątka / Przetrwaj szalejący ekspres. |
+| Level 5 | Reach level 5. | level_5.png | zwykłe | 10 | Poziom 5 / Dojdź do poziomu 5. |
+| Orders 50 | Score 50 points in mode B. | orders_50.png | zwykłe | 10 | Zamówienia 50 / Zdobądź 50 punktów w trybie B. |
+| Paprika tamer | Shoo Paprika off the stool 10 times. | paprika_tamer.png | **wielostopniowe, 10 kroków** | 15 | Pogromca Papriki / Przegoń Paprikę ze stołka 10 razy. |
 
-| Nazwa (PL, dokładnie) | EN (tłumaczenie) | Opis PL | Rodzaj | Punkty |
-|---|---|---|---|---|
-| Pierwsza zmiana | First shift | Dokończ pierwszą zmianę. | standardowe | 5 |
-| Wynik 100 | Score 100 | Zdobądź 100 punktów w jednej zmianie. | standardowe | 10 |
-| Wynik 250 | Score 250 | Zdobądź 250 punktów w jednej zmianie. | standardowe | 15 |
-| Wynik 500 | Score 500 | Zdobądź 500 punktów w jednej zmianie. | standardowe | 20 |
-| Wynik 1000 | Score 1000 | Przekrocz 1000 punktów w jednej zmianie. | standardowe | 30 |
-| Seria 25 | Streak 25 | Złap 25 kubków z rzędu. | standardowe | 10 |
-| Seria 50 | Streak 50 | Złap 50 kubków z rzędu. | standardowe | 20 |
-| Straszna dziesiątka | Terrible ten | Przetrwaj szalejący ekspres. | standardowe | 15 |
-| Poziom 5 | Level 5 | Dojdź do poziomu 5. | standardowe | 10 |
-| Zamówienia 50 | Orders 50 | Zdobądź 50 punktów w trybie B. | standardowe | 10 |
-| Pogromca Papriki | Paprika tamer | Przegoń Paprikę ze stołka 10 razy. | **przyrostowe, 10 kroków** | 15 |
-
-Razem 160 punktów (limit Google: 1000). Potem: *Tabele wyników* albo *Osiągnięcia* → **Pobierz zasoby → Android
-(XML)** → wklej Claude'owi (zastąpi `docs/store/games-ids.xml`, dalej `NightCafe → Apply Play Games Resources`)
-i **opublikuj** zmiany w usługach gier. Osiągnięcia bez publikacji działają tylko dla testerów.
+Razem 160 punktów (limit 2000, każda wartość wielokrotnością 5). Kolejność na liście jak w tabeli.
+Potem: *Osiągnięcia* → **Pobierz zasoby → Android (XML)** → wklej Claude'owi (zastąpi
+`docs/store/games-ids.xml`, dalej `NightCafe → Apply Play Games Resources`) i **opublikuj** zmiany w usługach
+gier. Przed publikacją osiągnięcia działają tylko dla testerów.

@@ -23,8 +23,8 @@ namespace NightCafe.Services
         public const int PaprikaSteps = 10;
 
         /// <summary>
-        /// Which achievement a resource constant from the Play Console XML is ("achievement_wynik_100"
-        /// for an achievement named "Wynik 100"). The console turns letters like ą into "_", so both
+        /// Which achievement a resource constant from the Play Console XML is ("achievement_score_100"
+        /// for an achievement named "Score 100" in the default language, English; Polish names also match). The console turns letters like ą into "_", so both
         /// spellings are accepted. False for anything else.
         /// </summary>
         public static bool TryMatch(string resourceName, out Award award)
@@ -36,18 +36,29 @@ namespace NightCafe.Services
 
             switch (resourceName.Substring(prefix.Length))
             {
+                case "first_shift":
                 case "pierwsza_zmiana": award = Award.FirstShift; break;
+                case "score_100":
                 case "wynik_100": award = Award.Score100; break;
+                case "score_250":
                 case "wynik_250": award = Award.Score250; break;
+                case "score_500":
                 case "wynik_500": award = Award.Score500; break;
+                case "score_1000":
                 case "wynik_1000": award = Award.Score1000; break;
+                case "streak_25":
                 case "seria_25": award = Award.Streak25; break;
+                case "streak_50":
                 case "seria_50": award = Award.Streak50; break;
+                case "terrible_ten":
                 case "straszna_dziesiatka":
                 case "straszna_dziesi_tka": award = Award.TerribleTen; break;
+                case "level_5":
                 case "poziom_5": award = Award.Level5; break;
+                case "orders_50":
                 case "zamowienia_50":
                 case "zam_wienia_50": award = Award.ModeB50; break;
+                case "paprika_tamer":
                 case "pogromca_papriki": award = Award.PaprikaShooed; break;
                 default: return false;
             }
