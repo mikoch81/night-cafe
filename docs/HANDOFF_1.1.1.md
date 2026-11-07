@@ -24,19 +24,19 @@ powiadomienie. Vitals i oceny: brak danych (za mało użytkowników).
   konflikty: `UseMostRecentlySaved`; starsza strona dołącza swoje dane przy następnym starcie).
   Zapisy są ignorowane, dopóki w tej sesji nie odczytano kopii z chmury — świeża instalacja nie nadpisze historii.
 - `GameLoopController`: po cichym/ręcznym logowaniu `SyncCloudProfile()`; każda zmiana profilu → `SaveProfile`.
-- Play Console → Usługi gier Play → Konfiguracja → Właściwości: **Zapisane gry = Wł. zapisane jako wersja
-  robocza, NIEopublikowane.** Opcji nie da się wyłączyć po publikacji. Opublikować razem z wydaniem 1.1.1
-  (Usługi gier Play → Publikowanie), inaczej otwieranie zapisu zwróci błąd i chmura po cichu nie działa.
+- Play Console → Usługi gier Play → Właściwości: **Zapisane gry = Wł., opublikowane 2026-11-07** (nieodwracalne).
 - Polityka prywatności (`docs/privacy.md`) i notatki do wydania 1.1.1 w `LISTING.md` zaktualizowane.
-  Data safety: profil trafia do Google przez Play Games — sprawdzić, czy deklaracja „Inne działania w
-  aplikacji” wystarcza (może dodać „Postępy w grze”).
+  Data safety sprawdzone: „Inne działania w aplikacji” (obejmuje rozgrywkę) już zadeklarowane — bez zmian.
 
 ## Stan
 
 - Testy EditMode 195/195. `build/NightCafe.aab` 1.1.1 / versionCode 3 zbudowany (73 MB — ~58 MB to symbole
-  w `BUNDLE-METADATA`, gracze ich nie pobierają). Zmiany niezacommitowane na `release/1.1.1`.
+  w `BUNDLE-METADATA`, gracze ich nie pobierają). Commit `a601874` na `release/1.1.1`.
+- **Test na Pixelu (2026-11-07, APK deweloperski 1.1.1):** start → ciche logowanie → profil wysłany do chmury;
+  `pm clear` → start → `profile.json` odtworzony z chmury (rekord 11 z 2026-09-27). W logach tylko ostrzeżenia
+  pluginu o `Byte[]` w JNI (niegroźne). Kopia profilu sprzed testu: tylko w scratchpadzie sesji.
+- Na Pixelu jest teraz build deweloperski — przed instalacją ze Sklepu odinstalować (inny podpis).
 
 ## Do zrobienia
 
-- Test na Pixelu: zalogowany gracz → rozegrać zmianę → odinstalować → zainstalować → rekordy wracają.
 - Wydanie: versionCode 3 / 1.1.1, najpierw ścieżka testu zamkniętego (raport przed publikacją), potem produkcja.
