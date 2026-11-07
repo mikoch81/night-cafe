@@ -1708,6 +1708,9 @@ namespace NightCafe.Core
         {
             OnlineScores.Backend.SaveProfile(_profile.Json); // dropped until the cloud copy was read
             ApplySkin();
+            hud.SetBest(_profile.Best(_mode)); // a cloud copy can bring a better record (it showed 000 until the next shift)
+            titleToggles.SetDaily(_profile.DailyDone(DailyChallenge.Today), _profile.DailyScore(DailyChallenge.Today));
+            titleToggles.SetSkinHint(NextSkinHint());
         }
 
         void ApplySkin()
