@@ -5,6 +5,28 @@
   <string name="app_id" translatable="false">213977721513</string>
   <!--package_name-->
   <string name="package_name" translatable="false">com.mikoch81.nightcafe</string>
+  <!--achievement First shift-->
+  <string name="achievement_first_shift" translatable="false">CgkIqdXDkJ0GEAIQBg</string>
+  <!--achievement Score 100-->
+  <string name="achievement_score_100" translatable="false">CgkIqdXDkJ0GEAIQBw</string>
+  <!--achievement Score 250-->
+  <string name="achievement_score_250" translatable="false">CgkIqdXDkJ0GEAIQCA</string>
+  <!--achievement Score 500-->
+  <string name="achievement_score_500" translatable="false">CgkIqdXDkJ0GEAIQCQ</string>
+  <!--achievement Score 1000-->
+  <string name="achievement_score_1000" translatable="false">CgkIqdXDkJ0GEAIQCg</string>
+  <!--achievement Streak 25-->
+  <string name="achievement_streak_25" translatable="false">CgkIqdXDkJ0GEAIQCw</string>
+  <!--achievement Streak 50-->
+  <string name="achievement_streak_50" translatable="false">CgkIqdXDkJ0GEAIQDA</string>
+  <!--achievement Terrible ten-->
+  <string name="achievement_terrible_ten" translatable="false">CgkIqdXDkJ0GEAIQDQ</string>
+  <!--achievement Level 5-->
+  <string name="achievement_level_5" translatable="false">CgkIqdXDkJ0GEAIQDg</string>
+  <!--achievement Orders 50-->
+  <string name="achievement_orders_50" translatable="false">CgkIqdXDkJ0GEAIQDw</string>
+  <!--achievement Paprika tamer-->
+  <string name="achievement_paprika_tamer" translatable="false">CgkIqdXDkJ0GEAIQEA</string>
   <!--leaderboard Night Café · Tryb A-->
   <string name="leaderboard_night_caf__tryb_a" translatable="false">CgkIqdXDkJ0GEAIQAw</string>
   <!--leaderboard Night Café · Tryb B-->
