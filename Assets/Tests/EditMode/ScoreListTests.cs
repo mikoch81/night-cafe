@@ -95,6 +95,32 @@ namespace NightCafe.Tests
             Assert.AreEqual(" 1.  1050   2026-09-26\n 2.  042", PauseMenuView.FormatScores(list));
         }
 
+        [Test]
+        public void TheCloudCopyJoinsTheLocalProfile()
+        {
+            var phone = new ProfileService(new InMemoryProfileStore());
+            phone.SubmitScore(GameMode.A, 300, Day, out _);
+            phone.SubmitScore(GameMode.B, 90, Day, out _);
+            string skin = SkinCatalog.All[1].Id;
+            phone.Unlock(skin);
+
+            var store = new InMemoryProfileStore();
+            var fresh = new ProfileService(store);
+            fresh.SubmitScore(GameMode.A, 120, Day.AddDays(1), out _);
+
+            Assert.IsTrue(fresh.Merge(phone.Json));
+            Assert.AreEqual(300, fresh.Best(GameMode.A));
+            Assert.AreEqual(90, fresh.Best(GameMode.B));
+            CollectionAssert.AreEqual(new[] { 300, 120 }, Scores(fresh.TopScores(GameMode.A)));
+            Assert.IsTrue(fresh.IsUnlocked(skin));
+            Assert.AreEqual(store.Json, fresh.Json, "the merge is saved");
+
+            Assert.IsFalse(fresh.Merge(phone.Json), "the same copy again changes nothing, no duplicates");
+            Assert.IsFalse(fresh.Merge(null));
+            Assert.IsFalse(fresh.Merge("not json"));
+            Assert.AreEqual(2, fresh.TopScores(GameMode.A).Count);
+        }
+
         static int[] Scores(IReadOnlyList<ScoreEntry> entries)
         {
             var result = new int[entries.Count];

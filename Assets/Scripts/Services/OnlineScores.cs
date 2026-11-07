@@ -18,7 +18,7 @@ namespace NightCafe.Services
         bool SignedIn { get; }
 
         /// <summary>At launch: signs in without asking if the player already uses Play Games.</summary>
-        void SignInSilently();
+        void SignInSilently(Action<bool> done = null);
 
         /// <summary>From the menu: asks the player to sign in; `done` gets whether it worked.</summary>
         void SignIn(Action<bool> done);
@@ -28,6 +28,18 @@ namespace NightCafe.Services
 
         /// <summary>Google's own leaderboard screen for the mode, over the game.</summary>
         void ShowBoard(GameMode mode);
+
+        /// <summary>
+        /// After sign-in: the profile kept in Play Games saved games (1.1.1), so records and skins
+        /// survive a reinstall or a new phone. `done` gets null when there is none or it failed.
+        /// </summary>
+        void LoadProfile(Action<string> done);
+
+        /// <summary>
+        /// Keeps the profile in the cloud. Ignored until LoadProfile has read the cloud copy this
+        /// session, so a fresh install cannot overwrite the saved history with an empty profile.
+        /// </summary>
+        void SaveProfile(string json);
     }
 
     public static class OnlineScores
@@ -40,9 +52,11 @@ namespace NightCafe.Services
     {
         public bool Available => false;
         public bool SignedIn => false;
-        public void SignInSilently() { }
+        public void SignInSilently(Action<bool> done = null) => done?.Invoke(false);
         public void SignIn(Action<bool> done) => done?.Invoke(false);
         public void Submit(GameMode mode, int score) { }
         public void ShowBoard(GameMode mode) { }
+        public void LoadProfile(Action<string> done) => done?.Invoke(null);
+        public void SaveProfile(string json) { }
     }
 }

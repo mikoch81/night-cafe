@@ -70,6 +70,11 @@ krawędzi. Trzy stłuczki i zmiana skończona. Kot Sablé sprząta — i czasem 
 - EN: `Levels, and a café that fights back: Paprika naps on the stools, Noir knocks them over, rush hours, and from level 5 the terrible ten seconds. Miro talks you through it. A MENU/PAUSE button, your top 10, cups that fall to the floor, a counter past 999 - and the game now speaks Polish too.`
 - PL: `Poziomy i kawiarnia, która się broni: Paprika wyleguje się na stołkach, Noir je przewraca, godziny szczytu, a od poziomu 5 straszna dziesiątka. Miro podpowiada, co robić. Przycisk MENU/PAUZA, Twoje top 10, kubki spadające na podłogę, licznik po 999 - i gra mówi teraz po polsku.`
 
+## Release notes 1.1.1 (draft)
+
+- EN: `Your records, top 10 and skins are now kept in Google Play Games: sign in and they come back after a reinstall or on a new phone. Plus library updates.`
+- PL: `Rekordy, top 10 i skiny są teraz zapisywane w Grach Google Play: zaloguj się, a wrócą po ponownej instalacji albo na nowym telefonie. Do tego aktualizacje bibliotek.`
+
 ## Publishing the privacy policy
 
 GitHub Pages from the repo's `docs/` folder is enough (Settings → Pages → Deploy from branch →
