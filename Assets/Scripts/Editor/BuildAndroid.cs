@@ -117,7 +117,12 @@ namespace NightCafe.EditorTools
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
             EditorUserBuildSettings.buildAppBundle = appBundle;
             if (release)
+            {
                 PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.Android, Il2CppCompilerConfiguration.Release);
+                // native symbols inside the AAB: Play symbolicates crash and ANR stacks in Vitals
+                UnityEditor.Android.UserBuildSettings.DebugSymbols.level = Unity.Android.Types.DebugSymbolLevel.SymbolTable;
+                UnityEditor.Android.UserBuildSettings.DebugSymbols.format = Unity.Android.Types.DebugSymbolFormat.IncludeInBundle;
+            }
 
             var playerOptions = new BuildPlayerOptions
             {

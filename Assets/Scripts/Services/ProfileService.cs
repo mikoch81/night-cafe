@@ -272,6 +272,53 @@ namespace NightCafe.Services
             return SelectedSkin;
         }
 
+        /// <summary>The profile as saved, for the Play Games cloud copy.</summary>
+        public string Json => JsonUtility.ToJson(_data);
+
+        /// <summary>
+        /// Folds another copy of the profile (the Play Games cloud save) into this one: records
+        /// keep the higher score, the score lists and the skins are joined. The selected mode and
+        /// skin stay this device's. True when anything changed here (it is then saved).
+        /// </summary>
+        public bool Merge(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+                return false;
+
+            ProfileData other = Parse(json);
+            bool changed = false;
+
+            for (int mode = 0; mode < GameModeExtensions.Count; mode++)
+            {
+                if (other.bestScores[mode] > _data.bestScores[mode])
+                {
+                    _data.bestScores[mode] = other.bestScores[mode];
+                    changed = true;
+                }
+            }
+
+            // shortcut: two real shifts with the same score on the same day count as one; entries carry no id
+            foreach (ScoreEntry entry in other.topScores)
+            {
+                bool known = _data.topScores.Exists(e => e.mode == entry.mode && e.score == entry.score && e.date == entry.date);
+                if (!known && entry.score > 0 && InsertTopScore(entry) > 0)
+                    changed = true;
+            }
+
+            foreach (string skin in other.unlockedSkins)
+            {
+                if (SkinCatalog.TryGet(skin, out _) && !IsUnlocked(skin))
+                {
+                    _data.unlockedSkins.Add(skin);
+                    changed = true;
+                }
+            }
+
+            if (changed)
+                Persist();
+            return changed;
+        }
+
         void Persist()
         {
             _store.Save(JsonUtility.ToJson(_data));

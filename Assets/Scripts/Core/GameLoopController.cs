@@ -221,8 +221,26 @@ namespace NightCafe.Core
         {
             // Stage 3: signs in to Play Games in the background if the player already uses it.
             if (OnlineScores.Backend.Available)
-                OnlineScores.Backend.SignInSilently();
+                OnlineScores.Backend.SignInSilently(ok =>
+                {
+                    if (ok)
+                        SyncCloudProfile();
+                });
             EnterTitle();
+        }
+
+        /// <summary>1.1.1: joins the Play Games copy of the profile into this one, then saves the result back.</summary>
+        void SyncCloudProfile()
+        {
+            OnlineScores.Backend.LoadProfile(json =>
+            {
+                if (_profile == null)
+                    return;
+
+                // a change saves itself through OnProfileChanged; otherwise only a cloud copy behind this one is written
+                if (!_profile.Merge(json) && json != _profile.Json)
+                    OnlineScores.Backend.SaveProfile(_profile.Json);
+            });
         }
 
         /// <summary>
@@ -1022,8 +1040,11 @@ namespace NightCafe.Core
             GameMode mode = _mode;
             online.SignIn(ok =>
             {
-                if (ok)
-                    online.ShowBoard(mode);
+                if (!ok)
+                    return;
+
+                online.ShowBoard(mode);
+                SyncCloudProfile();
             });
         }
 
@@ -1414,6 +1435,7 @@ namespace NightCafe.Core
 
         void OnProfileChanged()
         {
+            OnlineScores.Backend.SaveProfile(_profile.Json); // dropped until the cloud copy was read
             ApplySkin();
         }
 

@@ -7,9 +7,13 @@ zrobi. Na końcu potrzebny jest **plik zasobów (XML)** z punktu 6.
 
 ## Odciski kluczy (SHA-1)
 
+> Po każdym uaktualnieniu klucza podpisywania w Play Console dodaj nowy SHA-1 jako dane logowania Gier Play
+> (klient OAuth Android w Google Cloud + *Dodaj dane logowania* + publikacja), inaczej logowanie ze Sklepu pada.
+
 | Klucz | Do czego | SHA-1 |
 |---|---|---|
-| **App signing key** (Google) | wersja ze Sklepu Play (internal / closed / produkcja) | `B1:EA:87:4E:F2:18:64:3B:21:0A:DC:50:F3:19:1E:25:50:1B:EF:5B` (Play Console → *Chronione przez Google Play* → *Ochrona w Sklepie Play* ⌄ → *Podpisywanie aplikacji w Google Play*) |
+| **App signing key — AKTUALNY** (Google, po uaktualnieniu klucza) | wersja ze Sklepu Play (internal / closed / produkcja) | `F4:DA:3E:3E:D6:CF:88:33:78:10:EE:BE:D0:A8:F8:01:09:57:63:FE` (dodany do danych logowania 2026-11-07; bez niego logowanie ze Sklepu kończyło się DEVELOPER_ERROR) |
+| App signing key — poprzedni (Google) | starsze instalacje | `B1:EA:87:4E:F2:18:64:3B:21:0A:DC:50:F3:19:1E:25:50:1B:EF:5B` (Play Console → *Chronione przez Google Play* → *Ochrona w Sklepie Play* ⌄ → *Podpisywanie aplikacji w Google Play*) |
 | Upload key (`C:\NIGHT\keys\nightcafe-upload.jks`) | AAB zainstalowany ręcznie przez bundletool | `09:A5:07:15:5F:14:0D:5C:EE:E4:43:89:8A:E9:7D:F5:57:61:98:2A` |
 | Debug keystore tego PC | deweloperski APK z edytora (testy na Pixelu) | `2C:62:5D:79:41:28:55:58:72:95:BC:39:EF:DE:80:EE:99:6F:EE:82` |
 

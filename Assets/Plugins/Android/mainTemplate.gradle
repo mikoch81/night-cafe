@@ -9,6 +9,12 @@ dependencies {
     implementation 'com.google.android.gms:play-services-games-v2:22.0.0' // Assets/GooglePlayGames/com.google.play.games/Editor/GooglePlayGamesPluginDependencies.xml:9
     implementation 'com.google.android.gms:play-services-nearby:18.5.0' // Assets/GooglePlayGames/com.google.play.games/Editor/GooglePlayGamesPluginDependencies.xml:14
 // Android Resolver Dependencies End
+    // Play flagged the androidx versions play-services pulls in (fragment 1.1.0, activity 1.0.0) as outdated
+    implementation 'androidx.fragment:fragment:1.6.2'
+    implementation 'androidx.activity:activity:1.7.2'
+    // activity 1.7.2 brings kotlin-stdlib 1.8.20; the old -jdk7/-jdk8 split jars would duplicate its classes
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20'
 **DEPS**}
 
 // Android Resolver Exclusions Start

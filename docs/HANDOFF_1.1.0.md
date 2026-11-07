@@ -255,6 +255,23 @@ Commit `fdfc9f9` (2026-09-26, wypchnięty na `release/1.1.0`); APK etapu 2 zains
   `docs/store/leaderboard_a/b.png`), zasoby w `docs/store/games-ids.xml` zastosowane. Na Pixelu (APK debug)
   ciche logowanie przy starcie udane. Uwaga: APK spadł ze 110 do 82 MB po dodaniu szablonów Gradle — do
   sprawdzenia, czy to tylko kompresja.
+- **Wydanie (2026-09-26, noc):** Michał przetestował ranking na Pixelu („wszystko się przełącza”).
+  `tools/build_release.ps1` → `build/NightCafe.aab` 50 MB, 1.1.0 / versionCode 2, uprawnienia INTERNET +
+  ACCESS_NETWORK_STATE + VIBRATE, APP_ID w manifeście, bez `Unity.Pipeline`. Merge `release/1.1.0` →
+  `master` (`4ff3b00`), tag `v1.1.0`; GitHub Pages z `master:/docs` włączone —
+  `https://mikoch81.github.io/night-cafe/` (nowe `docs/index.md`, PR #1 scalony przez Michała → `a53ee8a`)
+  i `/privacy`. **Zostało w konsolach (Michał):** ekran zgody → strona główna + polityka + domena
+  `mikoch81.github.io` → Opublikuj; Play Console: nowa wersja na „Alpha” z AAB i notatkami z `LISTING.md`,
+  URL polityki → Pages, Bezpieczeństwo danych, kwestionariusz treści, publikacja usług gier, wysłanie do
+  sprawdzenia.
+- **Wysłane do sprawdzenia (2026-09-26/27):** ekran zgody OAuth opublikowany (strona główna + polityka na
+  Pages); Play Console: polityka prywatności -> Pages, Bezpieczeństwo danych (Nazwa, Identyfikatory
+  użytkownika, Inne działania, Diagnostyka — zbierane, nieudostępniane, wymagane), ocena treści bez zmian,
+  wersja 2 (1.1.0) na Alpha (ostrzeżenia: brak mappingu R8 i symboli natywnych — do zrobienia opcjonalnie
+  `symbols.zip`), w paczce też wideo ze sklepu i usunięcie listy testerów „Internal” z Alpha (do
+  potwierdzenia przez Michała). Publikowanie zarządzane wyłączone. Projekt usług gier uzupełniony (opis EN/PL, kategoria, ikona
+  `icon_legacy.png`, grafika `feature_graphic.png`) i opublikowany („Brak zmian do opublikowania”).
+  **Po zatwierdzeniu wersji:** na Pixelu odinstalować build deweloperski przed instalacją ze Sklepu.
 - (Instrukcja dla Michała, jak było:) konfiguracja w Play Console wg `docs/store/PLAY_GAMES_SETUP.md` (odciski SHA-1
   upload i debug są tam wpisane; app signing trzeba odczytać w konsoli) i plik zasobów XML →
   `docs/store/games-ids.xml` → menu **NightCafe/Apply Play Games Resources** (`Editor/PlayGamesSetup.cs`:
