@@ -37,8 +37,14 @@ powiadomienie. Vitals i oceny: brak danych (za mało użytkowników).
   pluginu o `Byte[]` w JNI (niegroźne). Kopia profilu sprzed testu: tylko w scratchpadzie sesji.
 - Na Pixelu jest teraz build deweloperski — przed instalacją ze Sklepu odinstalować (inny podpis).
 
+## Logowanie ze Sklepu (naprawione 2026-11-07)
+
+Wersje ze Sklepu (1.1.0 na produkcji też) nie logowały się do Gier Play: DEVELOPER_ERROR, bo klucz podpisywania
+aplikacji został uaktualniony (nowy SHA-1 `F4:DA:3E:…`), a w danych logowania był tylko stary `B1:EA:87:…`. Dodany
+klient OAuth Android w Google Cloud (projekt `night-cafe-509820`) + dane logowania w Play Games, opublikowane. Na
+Pixelu (1.1.1 z testu wewnętrznego) logowanie działa, profil wrócił z chmury. 1.1.1 wysłane na produkcję 2026-11-07.
+
 ## Do zrobienia
 
 - **1.1.1 na teście wewnętrznym od 2026-11-07 19:43** (lista PEKAO; jedyne ostrzeżenie: brak mappingu R8 — R8 wyłączone).
-  Build deweloperski odinstalowany z Pixela. Dalej: zainstalować wersję ze Sklepu na Pixelu, sprawdzić logowanie
-  i powrót rekordu z chmury, potem Test wewnętrzny → Promuj wersję → Produkcja.
+  Build deweloperski odinstalowany z Pixela. Zrobione: test ze Sklepu na Pixelu OK, awans na produkcję wysłany.
