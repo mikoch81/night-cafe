@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace NightCafe.UI
 {
+    /// <summary>What a tap on the title cards was.</summary>
+    public enum TitleTap { None, Toggle, Online, Awards, Daily }
+
     /// <summary>
     /// The title-screen settings row: music, sound effects, haptics and the shell skin. The
     /// same switches live in the MENU (PauseMenuView); these are the quick ones on the title.
@@ -16,6 +19,31 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text soundLabel;
         [SerializeField] TMP_Text hapticsLabel;
         [SerializeField] TMP_Text skinLabel;
+        [Tooltip("1.2.0: Google Play Games leaderboard and achievements; hidden when Play Games is not set up.")]
+        [SerializeField] TMP_Text onlineLabel;
+        [SerializeField] TMP_Text awardsLabel;
+        [SerializeField] SpriteRenderer[] onlineCards = new SpriteRenderer[0];
+        [Tooltip("1.2.0: the daily challenge; a tick once today's scored attempt is in.")]
+        [SerializeField] TMP_Text dailyLabel;
+
+        bool _dailyDone;
+        int _dailyScore;
+        string _skinHint;
+
+        /// <summary>The game loop tells the card whether today's challenge is done, and its score.</summary>
+        public void SetDaily(bool done, int score)
+        {
+            _dailyDone = done;
+            _dailyScore = score;
+            Render();
+        }
+
+        /// <summary>What the next locked skin asks for ("ASH 250 A"), or null when all are earned.</summary>
+        public void SetSkinHint(string hint)
+        {
+            _skinHint = hint;
+            Render();
+        }
         [SerializeField] Vector2 hitSize = new(2.4f, 0.9f);
         [SerializeField] Color onColor = new(1f, 0.788f, 0.4f);
         [SerializeField] Color offColor = new(0.227f, 0.173f, 0.094f);
@@ -23,10 +51,36 @@ namespace NightCafe.UI
         SettingsService _settings;
         ProfileService _profile;
 
-        public void Initialise(SettingsService settings, ProfileService profile)
+        bool _online;
+
+        public void Initialise(SettingsService settings, ProfileService profile, bool online = false)
         {
             _settings = settings;
             _profile = profile;
+            _online = online;
+
+            // 1.2.0: long words (ORZECH, RANKING, a skin hint) shrink to fit the note instead of being clipped.
+            foreach (TMP_Text label in new[] { musicLabel, soundLabel, hapticsLabel, skinLabel, onlineLabel, awardsLabel, dailyLabel })
+            {
+                if (label == null || label.enableAutoSizing)
+                    continue;
+
+                label.fontSizeMax = label.fontSize;
+                label.fontSizeMin = label.fontSize * 0.5f;
+                label.enableAutoSizing = true;
+                // dark ink vanishes on the wood, so the text box is the paper's width, not the 2.4 slot
+                label.rectTransform.sizeDelta = new Vector2(1.35f, label.rectTransform.sizeDelta.y);
+            }
+            foreach (TMP_Text label in new[] { onlineLabel, awardsLabel })
+            {
+                if (label != null)
+                    label.gameObject.SetActive(online);
+            }
+            foreach (SpriteRenderer card in onlineCards)
+            {
+                if (card != null)
+                    card.gameObject.SetActive(online);
+            }
             Render();
         }
 
@@ -39,13 +93,20 @@ namespace NightCafe.UI
         }
 
         /// <summary>
-        /// Returns true when the tap hit a toggle, so the caller does not also start a round.
+        /// Anything but None means the tap was taken, so the caller does not also start a round.
         /// `world` is the tap already mapped into the LCD scene (LcdPointer).
         /// </summary>
-        public bool TryHandleTap(Vector3 world)
+        public TitleTap TryHandleTap(Vector3 world)
         {
             if (_settings == null || !gameObject.activeInHierarchy)
-                return false;
+                return TitleTap.None;
+
+            if (Hits(dailyLabel, world))
+                return TitleTap.Daily;
+            if (_online && Hits(onlineLabel, world))
+                return TitleTap.Online;
+            if (_online && Hits(awardsLabel, world))
+                return TitleTap.Awards;
 
             if (Hits(musicLabel, world))
                 _settings.ToggleMusic();
@@ -56,10 +117,10 @@ namespace NightCafe.UI
             else if (Hits(skinLabel, world) && _profile != null)
                 _profile.SelectNextSkin();
             else
-                return false;
+                return TitleTap.None;
 
             Render();
-            return true;
+            return TitleTap.Toggle;
         }
 
         public void Render()
@@ -74,8 +135,27 @@ namespace NightCafe.UI
             if (skinLabel != null && _profile != null)
             {
                 SkinCatalog.TryGet(_profile.SelectedSkin, out Skin skin);
-                skinLabel.text = Loc.Skin(SkinCatalog.IndexOf(_profile.SelectedSkin), skin.Name);
+                skinLabel.text = Loc.Skin(SkinCatalog.IndexOf(_profile.SelectedSkin), skin.Name)
+                    + (string.IsNullOrEmpty(_skinHint) ? "" : $"\n<size=42%>{_skinHint}</size>");
                 skinLabel.color = onColor;
+            }
+
+            if (dailyLabel != null)
+            {
+                dailyLabel.text = Loc.T(Txt.DailyCard) + (_dailyDone ? $"\n<size=55%>{_dailyScore:000}</size>" : "");
+                dailyLabel.color = onColor;
+            }
+
+            if (onlineLabel != null)
+            {
+                onlineLabel.text = Loc.T(Txt.RankingCard);
+                onlineLabel.color = onColor;
+            }
+
+            if (awardsLabel != null)
+            {
+                awardsLabel.text = Loc.T(Txt.AwardsCard);
+                awardsLabel.color = onColor;
             }
         }
 

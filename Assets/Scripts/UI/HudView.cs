@@ -45,6 +45,27 @@ namespace NightCafe.UI
         Color _accentColor = Color.white;
         bool _colorsSet;
 
+        // 1.2.0 juice: catch popups, a bump on the counter, the banner unrolling, the result counting up.
+        const int PopCount = 4;
+        const float PopSeconds = 0.6f;
+        const float PopRise = 0.7f;
+        const float PunchSeconds = 0.12f;
+        const float BannerSeconds = 0.15f;
+        const float CountUpSeconds = 0.8f;
+        readonly TMP_Text[] _pops = new TMP_Text[PopCount];
+        readonly float[] _popLeft = new float[PopCount];
+        readonly Vector3[] _popFrom = new Vector3[PopCount];
+        int _nextPop;
+        int _lastScore;
+        float _punchLeft;
+        Vector3 _scoreScale = Vector3.one;
+        float _bannerOpen;     // 0 rolled up .. 1 open
+        bool _bannerWanted;
+        int _countTarget;
+        float _countTime = -1f;
+        bool _recordPulse;
+        Vector3 _recordScale = Vector3.one;
+
         float _fpsAccumulator;
         int _fpsFrames;
         float _blinkTimer;
@@ -57,12 +78,86 @@ namespace NightCafe.UI
             // Until a style says otherwise the record line keeps the colour it was authored in.
             if (!_colorsSet && gameOverRecord != null)
                 _recordColor = _accentColor = gameOverRecord.color;
+            if (scoreText != null)
+                _scoreScale = scoreText.transform.localScale;
+            if (gameOverRecord != null)
+                _recordScale = gameOverRecord.transform.localScale;
         }
 
         public void SetScore(int displayScore)
         {
             if (scoreText != null)
                 scoreText.text = displayScore.ToString("000");
+            if (displayScore > _lastScore)
+                _punchLeft = PunchSeconds;
+            _lastScore = displayScore;
+        }
+
+        /// <summary>
+        /// "+1" (or "+6  x25") rising from `world` (a point in the LCD scene) and fading. The
+        /// popups are clones of the banner line, made on first use so they carry the screen style.
+        /// </summary>
+        public void Pop(Vector3 world, string text, bool big)
+        {
+            if (bannerText == null)
+                return;
+
+            int i = _nextPop;
+            _nextPop = (i + 1) % PopCount;
+            if (_pops[i] == null)
+            {
+                _pops[i] = Instantiate(bannerText, transform);
+                _pops[i].name = "Pop";
+                _pops[i].textWrappingMode = TextWrappingModes.NoWrap;
+            }
+
+            TMP_Text pop = _pops[i];
+            pop.text = text;
+            pop.color = scoreText != null ? scoreText.color : bannerText.color;
+            pop.transform.localScale = Vector3.one * (big ? 1.35f : 1f);
+            world.z = bannerText.transform.position.z;
+            _popFrom[i] = transform.InverseTransformPoint(world);
+            pop.transform.localPosition = _popFrom[i];
+            _popLeft[i] = PopSeconds;
+            pop.gameObject.SetActive(true);
+        }
+
+        void UpdatePops(float dt)
+        {
+            for (int i = 0; i < PopCount; i++)
+            {
+                if (_pops[i] == null || _popLeft[i] <= 0f)
+                    continue;
+
+                _popLeft[i] -= dt;
+                float t = 1f - Mathf.Clamp01(_popLeft[i] / PopSeconds);
+                _pops[i].transform.localPosition = _popFrom[i] + Vector3.up * (PopRise * (1f - (1f - t) * (1f - t)));
+                Color c = _pops[i].color;
+                c.a = t < 0.5f ? 1f : 1f - (t - 0.5f) * 2f;
+                _pops[i].color = c;
+                if (_popLeft[i] <= 0f)
+                    _pops[i].gameObject.SetActive(false);
+            }
+        }
+
+        void HidePops()
+        {
+            for (int i = 0; i < PopCount; i++)
+            {
+                _popLeft[i] = 0f;
+                if (_pops[i] != null)
+                    _pops[i].gameObject.SetActive(false);
+            }
+        }
+
+        void UpdatePunch(float dt)
+        {
+            if (scoreText == null || _punchLeft <= 0f)
+                return;
+
+            _punchLeft -= dt;
+            float t = 1f - Mathf.Clamp01(_punchLeft / PunchSeconds);
+            scoreText.transform.localScale = _scoreScale * (1f + 0.12f * Mathf.Sin(t * Mathf.PI));
         }
 
         /// <summary>The whole record, three digits at least, like the counter.</summary>
@@ -131,9 +226,34 @@ namespace NightCafe.UI
             string line = _flash != null && Time.time < _flashUntil ? _flash
                 : _countdown >= 0 ? $"{Loc.T(_countdownLabel)}  {_countdown}"
                 : null;
-            bannerRoot.SetActive(line != null);
-            if (line != null)
-                bannerText.text = line;
+            _bannerWanted = line != null;
+            if (line == null)
+                return; // rolls up in UpdateBanner, still showing its last line
+
+            bannerText.text = line;
+            if (!bannerRoot.activeSelf)
+            {
+                _bannerOpen = 0f;
+                bannerRoot.transform.localScale = new Vector3(0f, 1f, 1f);
+                bannerRoot.SetActive(true);
+            }
+        }
+
+        /// <summary>The strip unrolls from the middle and rolls back up (its children sit at x = 0).</summary>
+        void UpdateBanner(float dt)
+        {
+            if (bannerRoot == null || !bannerRoot.activeSelf)
+                return;
+
+            float target = _bannerWanted ? 1f : 0f;
+            if (Mathf.Approximately(_bannerOpen, target))
+                return;
+
+            _bannerOpen = Mathf.MoveTowards(_bannerOpen, target, dt / BannerSeconds);
+            float eased = 1f - (1f - _bannerOpen) * (1f - _bannerOpen);
+            bannerRoot.transform.localScale = new Vector3(eased, 1f, 1f);
+            if (_bannerOpen <= 0f)
+                bannerRoot.SetActive(false);
         }
 
         public void SetMode(GameMode mode)
@@ -144,6 +264,7 @@ namespace NightCafe.UI
 
         public void ShowTitle()
         {
+            HidePops();
             SetPanel(titlePanel, true);
             SetPanel(demoPanel, false);
             SetPanel(gameOverPanel, false);
@@ -164,19 +285,48 @@ namespace NightCafe.UI
             SetPanel(gameOverPanel, false);
         }
 
-        public void ShowGameOver(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank)
+        public void ShowGameOver(int displayScore, int bestDisplay, bool newRecord, string unlockedSkin, int rank, string note = null)
         {
             SetPanel(titlePanel, false);
             SetPanel(demoPanel, false);
             SetPanel(gameOverPanel, true);
+            HidePops();
 
-            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin, rank);
+            GameOverCopy copy = GameOverCopy.Build(displayScore, bestDisplay, newRecord, unlockedSkin, rank, note);
             SetText(gameOverHeader, copy.Header);
             SetText(gameOverScore, copy.Score);
             SetText(gameOverRecord, copy.Record);
             SetText(gameOverFooter, copy.Footer);
             if (gameOverRecord != null)
                 gameOverRecord.color = copy.NewRecord ? _accentColor : _recordColor;
+
+            // The result counts up from zero; a new best keeps beating.
+            _countTarget = displayScore;
+            _countTime = 0f;
+            _recordPulse = copy.NewRecord;
+            if (gameOverRecord != null)
+                gameOverRecord.transform.localScale = _recordScale;
+            if (gameOverScore != null)
+                gameOverScore.text = 0.ToString("000");
+        }
+
+        void UpdateGameOverCard(float dt)
+        {
+            if (gameOverPanel == null || !gameOverPanel.activeSelf)
+                return;
+
+            if (_countTime >= 0f && gameOverScore != null)
+            {
+                _countTime += dt;
+                float t = Mathf.Clamp01(_countTime / CountUpSeconds);
+                float eased = 1f - (1f - t) * (1f - t) * (1f - t);
+                gameOverScore.text = Mathf.RoundToInt(_countTarget * eased).ToString("000");
+                if (t >= 1f)
+                    _countTime = -1f;
+            }
+
+            if (_recordPulse && gameOverRecord != null)
+                gameOverRecord.transform.localScale = _recordScale * (1f + 0.06f * Mathf.Abs(Mathf.Sin(Time.unscaledTime * Mathf.PI * 1.5f)));
         }
 
         /// <summary>
@@ -204,6 +354,11 @@ namespace NightCafe.UI
                 RenderBanner();
             }
 
+            float dt = Time.deltaTime;
+            UpdatePops(dt);
+            UpdatePunch(dt);
+            UpdateBanner(Time.unscaledDeltaTime);
+            UpdateGameOverCard(Time.unscaledDeltaTime);
             UpdateDemoBlink();
             UpdateFps();
         }

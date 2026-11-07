@@ -16,6 +16,9 @@ namespace NightCafe.Core
         [SerializeField] MeshCollider screenFace;
         [SerializeField] float maxDistance = 200f;
 
+        /// <summary>The camera filming the LCD scene (the screen shake nudges it).</summary>
+        public Camera LcdCamera => lcdCamera;
+
         public Ray ScreenRay(Vector2 screenPosition) =>
             deviceCamera != null ? deviceCamera.ScreenPointToRay(screenPosition) : new Ray(Vector3.zero, Vector3.forward);
 

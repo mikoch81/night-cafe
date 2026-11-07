@@ -25,8 +25,20 @@ namespace NightCafe.PlayGames
 {
 public static class GPGSIds
 {
-        public const string leaderboard_night_caf__tryb_b = "CgkIqdXDkJ0GEAIQBA"; // <GPGSID>
-        public const string leaderboard_night_caf__tryb_a = "CgkIqdXDkJ0GEAIQAw"; // <GPGSID>
+        public const string achievement_score_100 = "CgkIqdXDkJ0GEAIQBw"; // <GPGSID>
+        public const string achievement_score_250 = "CgkIqdXDkJ0GEAIQCA"; // <GPGSID>
+        public const string achievement_level_5 = "CgkIqdXDkJ0GEAIQDg"; // <GPGSID>
+        public const string achievement_score_1000 = "CgkIqdXDkJ0GEAIQCg"; // <GPGSID>
+        public const string achievement_terrible_ten = "CgkIqdXDkJ0GEAIQDQ"; // <GPGSID>
+        public const string achievement_first_shift = "CgkIqdXDkJ0GEAIQBg"; // <GPGSID>
+        public const string leaderboard_night_caf__daily_challenge = "CgkIqdXDkJ0GEAIQEQ"; // <GPGSID>
+        public const string achievement_score_500 = "CgkIqdXDkJ0GEAIQCQ"; // <GPGSID>
+        public const string leaderboard_night_caf__mode_a = "CgkIqdXDkJ0GEAIQAw"; // <GPGSID>
+        public const string leaderboard_night_caf__mode_b = "CgkIqdXDkJ0GEAIQBA"; // <GPGSID>
+        public const string achievement_paprika_tamer = "CgkIqdXDkJ0GEAIQEA"; // <GPGSID>
+        public const string achievement_streak_25 = "CgkIqdXDkJ0GEAIQCw"; // <GPGSID>
+        public const string achievement_orders_50 = "CgkIqdXDkJ0GEAIQDw"; // <GPGSID>
+        public const string achievement_streak_50 = "CgkIqdXDkJ0GEAIQDA"; // <GPGSID>
 
 }
 }

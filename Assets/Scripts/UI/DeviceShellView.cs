@@ -126,6 +126,20 @@ namespace NightCafe.UI
 
         public void PressMenu() => PressCap(MenuIndex);
 
+        int _hint = -1;
+
+        /// <summary>1.2.0 tutorial: this cap glows softly until the hint moves or is cleared (null).</summary>
+        public void Hint(LanePosition? position)
+        {
+            int index = position.HasValue ? (int)position.Value : -1;
+            if (index == _hint)
+                return;
+
+            if (_hint >= 0 && _caps != null && _hint < _caps.Length && !_pressing[_hint])
+                ApplyCap(_hint, 0f, 0f);
+            _hint = index;
+        }
+
         void PressCap(int index)
         {
             if (_caps == null || index < 0 || index >= _caps.Length || _caps[index] == null)
@@ -250,6 +264,9 @@ namespace NightCafe.UI
                 if (depth <= 0f && lit <= 0f)
                     _pressing[i] = false;
             }
+
+            if (_hint >= 0 && _caps != null && _hint < _caps.Length && !_pressing[_hint])
+                ApplyCap(_hint, 0f, 0.35f + 0.35f * Mathf.Sin(Time.unscaledTime * Mathf.PI * 3f));
 
             if (_knobInitialised && _knobAge < leverSlideSeconds)
             {

@@ -65,6 +65,9 @@ namespace NightCafe.Gameplay
 
         public LanePosition Current { get; private set; } = LanePosition.LeftUp;
 
+        /// <summary>Where he is drawn, in the LCD scene (the catch popup rises from his tray).</summary>
+        public Bounds Bounds => spriteRenderer.bounds;
+
         public void Initialise(LaneConfig laneConfig)
         {
             _laneConfig = laneConfig;
@@ -260,7 +263,9 @@ namespace NightCafe.Gameplay
                 return;
             }
 
-            Draw(position, 0f, Vector2.one);
+            // 1.2.0: a slow breath while he stands still, so he is not a cut-out between cups.
+            float breath = _moveTimer > 0f ? 0f : 0.015f * Mathf.Sin(Time.time * Mathf.PI);
+            Draw(position, 0f, new Vector2(1f, 1f + breath));
 
             if (_wipeTimer > 0f)
             {

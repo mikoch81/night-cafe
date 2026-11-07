@@ -23,6 +23,31 @@ namespace NightCafe.Core
             UnityEngine.Random.Range(minInclusive, maxExclusive);
     }
 
+    /// <summary>Repeatable randomness (1.2.0 daily challenge: the same seed, the same shift).</summary>
+    public sealed class SeededRandom : IRandom
+    {
+        readonly System.Random _random;
+
+        public SeededRandom(int seed) => _random = new System.Random(seed);
+
+        public float NextFloat() => (float)_random.NextDouble();
+
+        public int NextInt(int minInclusive, int maxExclusive) => _random.Next(minInclusive, maxExclusive);
+    }
+
+    /// <summary>The services keep one of these; a shift switches it between Unity's dice and a seed.</summary>
+    public sealed class ShiftRandom : IRandom
+    {
+        IRandom _inner = new UnityRandom();
+
+        /// <summary>null = ordinary random shift.</summary>
+        public void Reseed(int? seed) => _inner = seed.HasValue ? new SeededRandom(seed.Value) : new UnityRandom();
+
+        public float NextFloat() => _inner.NextFloat();
+
+        public int NextInt(int minInclusive, int maxExclusive) => _inner.NextInt(minInclusive, maxExclusive);
+    }
+
     public static class RandomExtensions
     {
         public static T UniformPick<T>(this IRandom rng, IReadOnlyList<T> items)

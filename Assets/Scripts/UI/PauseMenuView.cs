@@ -48,12 +48,16 @@ namespace NightCafe.UI
         [SerializeField] TMP_Text scoresText;
         [SerializeField] TMP_Text backRow;
         [Tooltip("Tap box around a row, in LCD units.")]
-        [SerializeField] Vector2 rowHitSize = new(5.6f, 0.7f);
+        [SerializeField] Vector2 rowHitSize = new(6.2f, 0.8f);
         [SerializeField] Color ink = new(0.23f, 0.16f, 0.11f);
         [SerializeField] Color fadedInk = new(0.63f, 0.55f, 0.45f);
 
         bool _inRound;
         bool _online;
+        TMP_Text _flashRow;
+        float _flashLeft;
+        Vector3 _flashScale;
+        const float FlashSeconds = 0.15f;
 
         public bool IsOpen => root != null && root.activeSelf;
 
@@ -100,8 +104,9 @@ namespace NightCafe.UI
         {
             Set(header, Loc.T(_inRound ? Txt.Paused : Txt.Menu), ink);
             Set(resumeRow, Loc.T(_inRound ? Txt.Resume : Txt.Close), ink);
-            Set(musicRow, $"{Loc.T(Txt.Music)}  {Loc.OnOff(settings.MusicEnabled)}", settings.MusicEnabled ? ink : fadedInk);
-            Set(soundRow, $"{Loc.T(Txt.Sound)}  {Loc.OnOff(settings.SfxEnabled)}", settings.SfxEnabled ? ink : fadedInk);
+            // OFF stays in full ink: faded means "not available here", not "switched off".
+            Set(musicRow, $"{Loc.T(Txt.Music)}  {Loc.OnOff(settings.MusicEnabled)}", ink);
+            Set(soundRow, $"{Loc.T(Txt.Sound)}  {Loc.OnOff(settings.SfxEnabled)}", ink);
             Set(modeRow, $"{Loc.T(Txt.Mode)}  {mode.Letter()}", ink);
             Set(scoresRow, Loc.T(Txt.TopTen), ink);
             Set(onlineRow, Loc.T(Txt.OnlineTopTen), _online ? ink : fadedInk);
@@ -111,7 +116,7 @@ namespace NightCafe.UI
         }
 
         /// <summary>The local list for one mode, best first, with a BACK row under it.</summary>
-        public void ShowScores(GameMode mode, IReadOnlyList<ScoreEntry> scores)
+        public void ShowScores(GameMode mode, IReadOnlyList<ScoreEntry> scores, string stats = null)
         {
             SetActive(mainPage, false);
             SetActive(scoresPage, true);
@@ -119,7 +124,8 @@ namespace NightCafe.UI
             Set(backRow, Loc.T(Txt.Back), ink);
             if (scoresText != null)
             {
-                scoresText.text = FormatScores(scores);
+                scoresText.text = FormatScores(scores)
+                    + (string.IsNullOrEmpty(stats) ? "" : $"\n\n<size=85%>{stats}</size>");
                 scoresText.color = ink;
             }
         }
@@ -148,18 +154,69 @@ namespace NightCafe.UI
                 return MenuAction.None;
 
             if (ShowingScores)
-                return LcdHit.Hits(backRow, lcdPoint, rowHitSize) ? MenuAction.Back : MenuAction.None;
+                return LcdHit.Hits(backRow, lcdPoint, rowHitSize) ? Flash(backRow, MenuAction.Back) : MenuAction.None;
 
-            if (LcdHit.Hits(resumeRow, lcdPoint, rowHitSize)) return MenuAction.Resume;
-            if (LcdHit.Hits(musicRow, lcdPoint, rowHitSize)) return MenuAction.ToggleMusic;
-            if (LcdHit.Hits(soundRow, lcdPoint, rowHitSize)) return MenuAction.ToggleSound;
-            if (LcdHit.Hits(modeRow, lcdPoint, rowHitSize)) return MenuAction.FlipMode;
-            if (LcdHit.Hits(scoresRow, lcdPoint, rowHitSize)) return MenuAction.ShowScores;
-            if (_online && LcdHit.Hits(onlineRow, lcdPoint, rowHitSize)) return MenuAction.OnlineScores;
-            if (LcdHit.Hits(languageRow, lcdPoint, rowHitSize)) return MenuAction.ToggleLanguage;
-            if (_inRound && LcdHit.Hits(endShiftRow, lcdPoint, rowHitSize)) return MenuAction.EndShift;
-            if (LcdHit.Hits(quitRow, lcdPoint, rowHitSize)) return MenuAction.Quit;
-            return MenuAction.None;
+            // The row whose middle is nearest wins (1.2.0): the boxes touch, and a tap between
+            // two rows used to go to the upper one.
+            TMP_Text best = null;
+            MenuAction action = MenuAction.None;
+            float bestDistance = float.MaxValue;
+            void Try(TMP_Text row, MenuAction rowAction, bool live = true)
+            {
+                if (!live || !LcdHit.Hits(row, lcdPoint, rowHitSize))
+                    return;
+
+                float distance = Mathf.Abs(row.transform.position.y - lcdPoint.y);
+                if (distance >= bestDistance)
+                    return;
+
+                bestDistance = distance;
+                best = row;
+                action = rowAction;
+            }
+
+            Try(resumeRow, MenuAction.Resume);
+            Try(musicRow, MenuAction.ToggleMusic);
+            Try(soundRow, MenuAction.ToggleSound);
+            Try(modeRow, MenuAction.FlipMode);
+            Try(scoresRow, MenuAction.ShowScores);
+            Try(onlineRow, MenuAction.OnlineScores, _online);
+            Try(languageRow, MenuAction.ToggleLanguage);
+            Try(endShiftRow, MenuAction.EndShift, _inRound);
+            Try(quitRow, MenuAction.Quit);
+            return best != null ? Flash(best, action) : MenuAction.None;
+        }
+
+        /// <summary>The tapped row swells for a moment, so a tap is seen before its result.</summary>
+        MenuAction Flash(TMP_Text row, MenuAction action)
+        {
+            EndFlash();
+            _flashRow = row;
+            _flashScale = row.transform.localScale;
+            _flashLeft = FlashSeconds;
+            return action;
+        }
+
+        void EndFlash()
+        {
+            if (_flashRow != null)
+                _flashRow.transform.localScale = _flashScale;
+            _flashRow = null;
+        }
+
+        void Update()
+        {
+            if (_flashRow == null)
+                return;
+
+            _flashLeft -= Time.unscaledDeltaTime;
+            if (_flashLeft <= 0f)
+            {
+                EndFlash();
+                return;
+            }
+
+            _flashRow.transform.localScale = _flashScale * (1f + 0.12f * Mathf.Sin(_flashLeft / FlashSeconds * Mathf.PI));
         }
 
         static void Set(TMP_Text text, string value, Color colour)

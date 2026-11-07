@@ -74,7 +74,7 @@ namespace NightCafe.Core
         [SerializeField] float levelBannerSeconds = 1.8f;
         [Tooltip("Seconds a speech bubble line stays up; a two-line hint gets longer.")]
         [SerializeField] float bubbleSeconds = 2.4f;
-        [SerializeField] float hintBubbleSeconds = 3.4f;
+        [SerializeField] float hintBubbleSeconds = 4.2f;
         [Tooltip("Paprika (ginger) and Noir (black) relative to Sablé's after-shift size.")]
         [SerializeField] float strayScale = 0.8f;
         [SerializeField] float bumperScale = 0.65f;
@@ -104,7 +104,8 @@ namespace NightCafe.Core
         float _lastMopX = float.NegativeInfinity;
 
         // Levels and café events (rebuilt with the mode, like the balance services)
-        readonly IRandom _eventRng = new UnityRandom();
+        readonly ShiftRandom _eventRng = new();
+        readonly ShiftRandom _spawnRng = new(); // both seeded by the date for the daily challenge (1.2.0)
         readonly LadderChange[] _ladderChanges = new LadderChange[LadderService.Sides];
         ShiftEventDirector _events;
         LadderService _ladders;
@@ -158,7 +159,7 @@ namespace NightCafe.Core
 
             barista.Initialise(laneConfig);
             audioService.Initialise(_settings);
-            titleToggles.Initialise(_settings, _profile);
+            titleToggles.Initialise(_settings, _profile, OnlineScores.Backend.Available);
             cat.CrossingStarted += OnCatCrossingStarted;
             if (blackCat != null)
             {
@@ -240,6 +241,20 @@ namespace NightCafe.Core
                 // a change saves itself through OnProfileChanged; otherwise only a cloud copy behind this one is written
                 if (!_profile.Merge(json) && json != _profile.Json)
                     OnlineScores.Backend.SaveProfile(_profile.Json);
+
+                // 1.2.0: records set while signed out reach the leaderboards now (Play keeps the higher one),
+                // and so do the score achievements they earned.
+                for (int mode = 0; mode < GameModeExtensions.Count; mode++)
+                {
+                    int best = _profile.Best((GameMode)mode);
+                    OnlineScores.Backend.Submit((GameMode)mode, best);
+                    if (best <= 0)
+                        continue;
+                    OnlineScores.Backend.Unlock(Award.FirstShift);
+                    Awards.ForScore(best, (GameMode)mode == GameMode.B, _awardScratch);
+                    foreach (Award award in _awardScratch)
+                        OnlineScores.Backend.Unlock(award);
+                }
             });
         }
 
@@ -329,7 +344,7 @@ namespace NightCafe.Core
             _penalty.GameOverTriggered += OnGameOverTriggered;
             _orders.OrderChanged += OnOrderChanged;
 
-            spawner.Initialise(_config, laneConfig, _tempo, new UnityRandom());
+            spawner.Initialise(_config, laneConfig, _tempo, _spawnRng);
 
             hud.SetMode(mode);
             hud.SetBest(_profile.Best(mode));
@@ -369,6 +384,45 @@ namespace NightCafe.Core
         }
 
         // ------------------------------------------------------------------ frame
+
+        // 1.2.0 feedback
+        readonly List<Award> _awardScratch = new();
+
+        /// <summary>A Play Games achievement for a live shift (never for the demo's autopilot).</summary>
+        void Grant(Award award)
+        {
+            if (!IsDemo)
+                OnlineScores.Backend.Unlock(award);
+        }
+
+        /// <summary>Google's achievements screen; asks to sign in first, like the leaderboard.</summary>
+        void ShowAwards()
+        {
+            IOnlineScores online = OnlineScores.Backend;
+            if (!online.Available)
+                return;
+
+            if (online.SignedIn)
+            {
+                online.ShowAwards();
+                return;
+            }
+
+            online.SignIn(ok =>
+            {
+                if (!ok)
+                    return;
+
+                online.ShowAwards();
+                SyncCloudProfile();
+            });
+        }
+        const float ShakeSeconds = 0.15f;
+        const float ShakeAmplitude = 0.06f;
+        float _shakeLeft;
+        float _shakeStrength;
+        Vector3 _cameraHome;
+        bool _bonusJustNow;
 
         void Update()
         {
@@ -535,6 +589,8 @@ namespace NightCafe.Core
                     audioService.Play(GameSfx.CatHiss);
                     RenderLadder(side);
                     Say(Quip.CatShooed);
+                    if (!IsDemo)
+                        OnlineScores.Backend.Increment(Award.PaprikaShooed, 1);
                     break;
                 case LadderPress.RepairStep:
                 case LadderPress.Repaired:
@@ -578,6 +634,8 @@ namespace NightCafe.Core
         /// <summary>Climbs, ladders, the rush clock and the event director, in live play only.</summary>
         void UpdateShift(float dt)
         {
+            if (_tutorial)
+                UpdateTutorial();
             if (_climbTarget.HasValue)
             {
                 _climbLeft -= dt;
@@ -679,6 +737,8 @@ namespace NightCafe.Core
                 return;
 
             Say(Quip.FrenzyEnd); // quiet after the shift: Say only talks in live play
+            if (State is GameState.Playing or GameState.Breather)
+                Grant(Award.TerribleTen); // lived through it
             _frenzy = false;
             spawner.StopFrenzy();
             _orders.Held = false;
@@ -821,6 +881,7 @@ namespace NightCafe.Core
             _haptics.OneShot(audioConfig.missHapticMs);
             cat.Play();
             _penalty.AddStain();
+            Shake(_penalty.Stains >= _penalty.MaxStains ? 2f : 1f);
         }
 
         void StartRush()
@@ -864,6 +925,9 @@ namespace NightCafe.Core
             hud.SetLevel(level);
             hud.FlashBanner(Loc.F(Txt.LevelBanner, level), levelBannerSeconds);
             audioService.Play(GameSfx.LevelUp);
+            neonFlash.Flash(); // 1.2.0: the bar neon marks a new level too
+            if (level >= 5)
+                Grant(Award.Level5);
         }
 
         void RenderLadder(int side)
@@ -982,7 +1046,7 @@ namespace NightCafe.Core
                     _settings.ToggleLanguage();
                     break;
                 case MenuAction.ShowScores:
-                    menu.ShowScores(_mode, _profile.TopScores(_mode));
+                    menu.ShowScores(_mode, _profile.TopScores(_mode), StatsText());
                     return;
                 case MenuAction.Back:
                     menu.ShowMain();
@@ -1025,27 +1089,82 @@ namespace NightCafe.Core
         /// Google's leaderboard for the current mode; a player who is not signed in is asked first
         /// (the sign-in sheet and the board both open over the paused game).
         /// </summary>
-        void ShowOnlineScores()
+        void ShowOnlineScores(bool all = false)
         {
             IOnlineScores online = OnlineScores.Backend;
             if (!online.Available)
                 return;
 
+            GameMode mode = _mode;
+            void Show()
+            {
+                if (all)
+                    online.ShowAllBoards(); // the title card: A, B and the daily challenge
+                else
+                    online.ShowBoard(mode);
+            }
+
             if (online.SignedIn)
             {
-                online.ShowBoard(_mode);
+                Show();
                 return;
             }
 
-            GameMode mode = _mode;
             online.SignIn(ok =>
             {
                 if (!ok)
                     return;
 
-                online.ShowBoard(mode);
+                Show();
                 SyncCloudProfile();
             });
+        }
+
+        // ------------------------------------------------------------------ daily challenge, stats (1.2.0)
+
+        bool _daily;
+        int _shiftCatches;
+        int _shiftBestStreak;
+
+        /// <summary>The first daily attempt of the day is scored and sent; later ones are practice.</summary>
+        string DailyResult(int total)
+        {
+            if (!_daily)
+                return null;
+
+            string today = DailyChallenge.Today;
+            if (_profile.TryRecordDaily(today, total))
+            {
+                OnlineScores.Backend.SubmitDaily(total);
+                return Loc.T(Txt.DailyScored);
+            }
+
+            return Loc.F(Txt.DailyPractice, _profile.DailyScore(today));
+        }
+
+        string StatsText() => Loc.F(Txt.StatsLine,
+            _profile.ShiftsPlayed, _profile.CupsCaught, _profile.LongestStreak, _profile.HighestLevel);
+
+        /// <summary>The first skin still locked and what earns it ("ASH 250 A"); null when all are in.</summary>
+        string NextSkinHint()
+        {
+            for (int i = 0; i < SkinCatalog.All.Count; i++)
+            {
+                Skin skin = SkinCatalog.All[i];
+                if (SkinCatalog.IsDefault(skin.Id) || _profile.IsUnlocked(skin.Id))
+                    continue;
+
+                string name = Loc.Skin(i, skin.Name);
+                if (skin.Id == SkinCatalog.NeonId)
+                    return $"{name} 1000";
+                for (int m = 0; m < modeConfigs.Length; m++)
+                {
+                    if (modeConfigs[m].unlockSkinId == skin.Id)
+                        return $"{name} {modeConfigs[m].unlockSkinScore} {((GameMode)m).Letter()}";
+                }
+            }
+
+            return null;
         }
 
         static void Quit()
@@ -1089,8 +1208,22 @@ namespace NightCafe.Core
             // On the glass: the tap becomes a point in the LCD scene for the toggles and the clock.
             if (pointer.TryLcdPoint(press.ScreenPosition, out Vector3 lcdPoint))
             {
-                if (titleToggles.TryHandleTap(lcdPoint))
-                    return true;
+                switch (titleToggles.TryHandleTap(lcdPoint))
+                {
+                    case TitleTap.Online:
+                        ShowOnlineScores(all: true);
+                        return true;
+                    case TitleTap.Daily:
+                        if (_mode != GameMode.A)
+                            FlipMode(); // the challenge plays by mode A's rules
+                        _daily = true;
+                        return false; // the tap starts the shift like any other
+                    case TitleTap.Awards:
+                        ShowAwards();
+                        return true;
+                    case TitleTap.Toggle:
+                        return true;
+                }
 
                 if (clock != null && clock.TryHandleTap(lcdPoint))
                     return true;
@@ -1110,6 +1243,9 @@ namespace NightCafe.Core
 
         void EnterTitle()
         {
+            _daily = false;
+            titleToggles.SetDaily(_profile.DailyDone(DailyChallenge.Today), _profile.DailyScore(DailyChallenge.Today));
+            titleToggles.SetSkinHint(NextSkinHint());
             LeaveDemo();
             _flow.EnteredTitle(Time.time);
             spawner.SpawningEnabled = false;
@@ -1167,17 +1303,90 @@ namespace NightCafe.Core
 
         void BeginRound()
         {
+            // The daily challenge: the same cups and café events for everyone today.
+            int? seed = _daily ? DailyChallenge.Seed(DailyChallenge.Today) : null;
+            _spawnRng.Reseed(seed);
+            _eventRng.Reseed(seed * 31 + 7);
+            _shiftCatches = 0;
+            _shiftBestStreak = 0;
+
             ResetRoundState();
             _level = 1;
             hud.SetLevel(1);
             barista.SetVisible(true);
             RenderOrderPanel(); // the flow is already Playing here; ResetRoundState could not show it before
             spawner.BeginRound();
+
+            if (_daily)
+                hud.FlashBanner(Loc.T(Txt.DailyBanner), 3f);
+
+            _tutorial = !IsDemo && !_profile.TutorialDone;
+            _tutorialCatches = 0;
+            _tutorialMissSaid = false;
+            if (_tutorial)
+                TutorialSay(Txt.TutorialButtons);
+        }
+
+        // ------------------------------------------------------------------ first-shift tutorial (1.2.0)
+
+        const int TutorialCatches = 6;
+        bool _tutorial;
+        int _tutorialCatches;
+        bool _tutorialMissSaid;
+
+        void TutorialSay(Txt line)
+        {
+            if (bubble != null)
+                bubble.Say(Loc.T(line), hintBubbleSeconds);
+        }
+
+        /// <summary>The cap for the cup nearest its catch point glows until Miro stands there.</summary>
+        void UpdateTutorial()
+        {
+            CupController next = null;
+            foreach (CupController cup in spawner.ActiveCups)
+            {
+                if (next == null || cup.StepIndex > next.StepIndex)
+                    next = cup;
+            }
+
+            LanePosition? lane = next != null ? (LanePosition)next.Lane : null;
+            deviceShell.Hint(lane.HasValue && barista.Current != lane.Value ? lane : null);
+        }
+
+        void TutorialCaught()
+        {
+            if (!_tutorial)
+                return;
+
+            _tutorialCatches++;
+            if (_tutorialCatches == 1)
+                TutorialSay(Txt.TutorialCatch);
+            else if (_tutorialCatches >= TutorialCatches)
+                EndTutorial();
+        }
+
+        void TutorialMissed()
+        {
+            if (!_tutorial || _tutorialMissSaid)
+                return;
+
+            _tutorialMissSaid = true;
+            TutorialSay(Txt.TutorialStains);
+        }
+
+        void EndTutorial()
+        {
+            _tutorial = false;
+            deviceShell.Hint(null);
+            _profile.MarkTutorialDone();
         }
 
         void ResetRoundState()
         {
             _rolledOver = false;
+            _tutorial = false;
+            deviceShell.Hint(null);
             ResetShiftEvents();
             _level = 0;
             hud.SetLevel(0);
@@ -1208,6 +1417,8 @@ namespace NightCafe.Core
         void EnterGameOver()
         {
             _flow.EnteredGameOver(Time.time);
+            if (_tutorial)
+                EndTutorial();
             ResetShiftEvents();
             spawner.SpawningEnabled = false;
             spawner.DespawnAll();
@@ -1218,9 +1429,19 @@ namespace NightCafe.Core
             bool newRecord = _profile.SubmitScore(_mode, total, System.DateTime.Now, out int rank);
             OnlineScores.Backend.Submit(_mode, total); // Play Games; dropped quietly when offline or signed out
             string unlockedName = UnlockSkins(total);
+            string note = null;
+            if (!IsDemo)
+            {
+                _profile.RecordShift(_shiftCatches, _shiftBestStreak, _level);
+                note = DailyResult(total);
+            }
+            Grant(Award.FirstShift);
+            Awards.ForScore(total, _mode == GameMode.B, _awardScratch);
+            foreach (Award award in _awardScratch)
+                Grant(award);
 
             hud.SetBest(_profile.Best(_mode));
-            hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode), newRecord, unlockedName, rank);
+            hud.ShowGameOver(_score.DisplayScore, _profile.Best(_mode), newRecord, unlockedName, rank, note);
 
             // Lights down for the night; in the painted diorama Sablé curls up on the counter.
             ScreenStyle style = EffectiveStyle;
@@ -1275,7 +1496,15 @@ namespace NightCafe.Core
             if (outcome == CatchOutcome.Caught)
             {
                 spawner.ReturnCup(cup);
+                int before = _score.TotalScore;
+                _bonusJustNow = false;
                 _score.RegisterCatch();
+                PopCatch(_score.TotalScore - before);
+                TutorialCaught();
+                _shiftCatches++;
+                _shiftBestStreak = Mathf.Max(_shiftBestStreak, _score.Combo);
+                if (_score.Combo == 25) Grant(Award.Streak25);
+                if (_score.Combo == 50) Grant(Award.Streak50);
                 _tempo.RegisterCatch();
                 _orders.RegisterCorrectCatch();
                 barista.ShowCatchPose(_config.catchPoseDuration);
@@ -1297,6 +1526,45 @@ namespace NightCafe.Core
             cup.Drop(laneConfig.barLineY, cupFallGravity, cupFallCarry, cupFallSpin);
         }
 
+        /// <summary>1.2.0: "+1" over the tray, with the streak once it reaches 10 ("+1  x12").</summary>
+        void PopCatch(int gained)
+        {
+            Bounds b = barista.Bounds;
+            int combo = _score.Combo;
+            string text = combo >= 10 ? $"+{gained}  x{combo}" : $"+{gained}";
+            hud.Pop(new Vector3(b.center.x, b.max.y + 0.25f, b.center.z), text, _bonusJustNow);
+        }
+
+        /// <summary>A small knock of the LCD camera (crash = 1, last stain = stronger); off with haptics.</summary>
+        void Shake(float strength)
+        {
+            if (IsDemo || !_settings.HapticsEnabled || pointer == null || pointer.LcdCamera == null)
+                return;
+
+            Transform cam = pointer.LcdCamera.transform;
+            if (_shakeLeft <= 0f)
+                _cameraHome = cam.localPosition;
+            _shakeStrength = Mathf.Max(_shakeLeft > 0f ? _shakeStrength : 0f, strength);
+            _shakeLeft = ShakeSeconds;
+        }
+
+        void LateUpdate()
+        {
+            if (_shakeLeft <= 0f || pointer == null || pointer.LcdCamera == null)
+                return;
+
+            _shakeLeft -= Time.unscaledDeltaTime;
+            Transform cam = pointer.LcdCamera.transform;
+            if (_shakeLeft <= 0f)
+            {
+                cam.localPosition = _cameraHome;
+                return;
+            }
+
+            Vector2 jitter = Random.insideUnitCircle * (ShakeAmplitude * _shakeStrength * (_shakeLeft / ShakeSeconds));
+            cam.localPosition = _cameraHome + new Vector3(jitter.x, jitter.y, 0f);
+        }
+
         /// <summary>A dropped cup reached the floor: it breaks where it landed (review 2026-09-26).</summary>
         void BreakCup(CupController cup)
         {
@@ -1304,10 +1572,12 @@ namespace NightCafe.Core
             spawner.ReturnCup(cup);
 
             ShowBrokenCup(landing);
+            TutorialMissed();
             audioService.Play(GameSfx.Miss);
             _haptics.OneShot(audioConfig.missHapticMs);
             cat.Play();
             _penalty.AddStain();
+            Shake(_penalty.Stains >= _penalty.MaxStains ? 2f : 1f);
         }
 
         /// <summary>
@@ -1385,6 +1655,7 @@ namespace NightCafe.Core
 
         void OnComboBonusAwarded()
         {
+            _bonusJustNow = true;
             audioService.Play(GameSfx.ComboBonus);
             neonFlash.Flash();
         }
@@ -1437,6 +1708,9 @@ namespace NightCafe.Core
         {
             OnlineScores.Backend.SaveProfile(_profile.Json); // dropped until the cloud copy was read
             ApplySkin();
+            hud.SetBest(_profile.Best(_mode)); // a cloud copy can bring a better record (it showed 000 until the next shift)
+            titleToggles.SetDaily(_profile.DailyDone(DailyChallenge.Today), _profile.DailyScore(DailyChallenge.Today));
+            titleToggles.SetSkinHint(NextSkinHint());
         }
 
         void ApplySkin()

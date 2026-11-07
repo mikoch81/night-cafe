@@ -634,7 +634,7 @@ namespace NightCafe.EditorTools
         }
 
         /// <summary>Sphere hit volume of a lane cap relative to the cap: out to the collar ring.</summary>
-        const float CapHitScale = 1.2f;
+        const float CapHitScale = 1.4f; // 1.2.0: was 1.2 (~7 mm); still clear of the neighbour cap and the MENU pill
 
         // The MENU pill sits in the right column under the lower-right cap, above the speaker
         // grille (tools/shell_model.py: caps at x ±9, y ±1.6; grille centred at 9.6, -4.85; the

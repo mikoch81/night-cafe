@@ -121,6 +121,23 @@ namespace NightCafe.Tests
             Assert.AreEqual(2, fresh.TopScores(GameMode.A).Count);
         }
 
+        [Test]
+        public void TheTutorialIsOnlyForNewPlayersAndTravelsWithTheCloudCopy()
+        {
+            var fresh = new ProfileService(new InMemoryProfileStore());
+            Assert.IsFalse(fresh.TutorialDone);
+
+            var veteran = new ProfileService(new InMemoryProfileStore());
+            veteran.SubmitScore(GameMode.B, 12, Day, out _);
+            Assert.IsTrue(veteran.TutorialDone, "a profile from before 1.2.0 with a score skips it");
+
+            var played = new ProfileService(new InMemoryProfileStore());
+            played.MarkTutorialDone();
+            Assert.IsTrue(fresh.Merge(played.Json));
+            Assert.IsTrue(fresh.TutorialDone);
+            Assert.IsFalse(fresh.Merge(played.Json));
+        }
+
         static int[] Scores(IReadOnlyList<ScoreEntry> entries)
         {
             var result = new int[entries.Count];

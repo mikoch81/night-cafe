@@ -23,7 +23,7 @@ namespace NightCafe.UI
         [SerializeField] Vector2 padding = new(0.35f, 0.28f);
         [SerializeField] Vector2 minSize = new(1.6f, 0.8f);
         [Tooltip("Text wraps at this width, in LCD units.")]
-        [SerializeField] float maxTextWidth = 3.0f;
+        [SerializeField] float maxTextWidth = 3.6f;
         [Tooltip("The bubble stays inside this rectangle (LCD units, centre-origin): the band between the " +
                  "shelf ends and the score board, where no cup ever passes and the stools stay in view.")]
         [SerializeField] Rect safeArea = new(-6.1f, 1.7f, 12.2f, 1.4f);

@@ -62,6 +62,67 @@ namespace NightCafe.PlayGames
 
         public void ShowBoard(GameMode mode) => PlayGamesPlatform.Instance.ShowLeaderboardUI(BoardOf(mode));
 
+        // 1.2.0 achievements: ids come from the plugin's generated GPGSIds, matched by resource name
+        // (Awards.TryMatch), so adding them in Play Console + Apply Play Games Resources is enough.
+        static string[] _awardIds;
+
+        static string AwardId(Award award)
+        {
+            if (_awardIds == null)
+            {
+                _awardIds = new string[(int)Award.Count];
+                foreach (var field in typeof(GPGSIds).GetFields())
+                {
+                    if (field.IsLiteral && Awards.TryMatch(field.Name, out Award found))
+                        _awardIds[(int)found] = (string)field.GetRawConstantValue();
+                }
+            }
+
+            return _awardIds[(int)award];
+        }
+
+        public void Unlock(Award award)
+        {
+            string id = AwardId(award);
+            if (_signedIn && !string.IsNullOrEmpty(id))
+                PlayGamesPlatform.Instance.UnlockAchievement(id, _ => { });
+        }
+
+        public void Increment(Award award, int steps)
+        {
+            string id = AwardId(award);
+            if (_signedIn && !string.IsNullOrEmpty(id))
+                PlayGamesPlatform.Instance.IncrementAchievement(id, steps, _ => { });
+        }
+
+        public void ShowAwards() => PlayGamesPlatform.Instance.ShowAchievementsUI();
+
+        // The daily board is found the same way: the generated constant whose name says "daily".
+        static string _dailyId;
+
+        static string DailyId()
+        {
+            if (_dailyId != null)
+                return _dailyId;
+
+            _dailyId = "";
+            foreach (var field in typeof(GPGSIds).GetFields())
+            {
+                if (field.IsLiteral && field.Name.StartsWith("leaderboard_") && field.Name.Contains("daily"))
+                    _dailyId = (string)field.GetRawConstantValue();
+            }
+
+            return _dailyId;
+        }
+
+        public void SubmitDaily(int score)
+        {
+            if (_signedIn && score > 0 && DailyId().Length > 0)
+                PlayGamesPlatform.Instance.ReportScore(score, DailyId(), _ => { });
+        }
+
+        public void ShowAllBoards() => PlayGamesPlatform.Instance.ShowLeaderboardUI();
+
         const string SaveName = "profile";
         bool _cloudRead;
         bool _saving;

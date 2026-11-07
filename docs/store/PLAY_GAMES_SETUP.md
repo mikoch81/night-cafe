@@ -56,3 +56,30 @@ Pakiet: `com.mikoch81.nightcafe`.
 - Bez zalogowania gra działa jak dotąd; lokalne top 10 zostaje. Logowanie jest ciche przy starcie (PGS v2
   loguje automatycznie, jeśli gracz ma Gry Play); wiersz „RANKING ONLINE” w menu pokazuje ranking Google,
   a gdy gracz nie jest zalogowany — najpierw prosi o logowanie.
+
+## Osiągnięcia (1.2.0)
+
+Domyślny język projektu usług gier to **angielski (en-US)**, więc nazwa zasobu w XML-u powstaje z angielskiej
+nazwy: „Score 100” → `achievement_score_100`. Gra rozpoznaje osiągnięcia po tej nazwie, dlatego **pole
+„Nazwa” wpisz dokładnie jak w tabeli** (opis może być inny). Do publikacji wszystkie pola muszą być po
+angielsku; polską wersję dodaje się potem jako tłumaczenie. Ikony 512×512 (32-bit PNG) są gotowe w
+`docs/store/achievements/` (kubek ze znaczkiem, jak ikony tabel wyników). Stan początkowy: **Widoczne**.
+
+| Nazwa (EN, dokładnie) | Opis (EN) | Ikona | Rodzaj | Punkty | PL: nazwa / opis |
+|---|---|---|---|---|---|
+| First shift | Finish your first shift. | first_shift.png | zwykłe | 5 | Pierwsza zmiana / Dokończ pierwszą zmianę. |
+| Score 100 | Score 100 points in one shift. | score_100.png | zwykłe | 10 | Wynik 100 / Zdobądź 100 punktów w jednej zmianie. |
+| Score 250 | Score 250 points in one shift. | score_250.png | zwykłe | 15 | Wynik 250 / Zdobądź 250 punktów w jednej zmianie. |
+| Score 500 | Score 500 points in one shift. | score_500.png | zwykłe | 20 | Wynik 500 / Zdobądź 500 punktów w jednej zmianie. |
+| Score 1000 | Pass 1000 points in one shift. | score_1000.png | zwykłe | 30 | Wynik 1000 / Przekrocz 1000 punktów w jednej zmianie. |
+| Streak 25 | Catch 25 cups in a row. | streak_25.png | zwykłe | 10 | Seria 25 / Złap 25 kubków z rzędu. |
+| Streak 50 | Catch 50 cups in a row. | streak_50.png | zwykłe | 20 | Seria 50 / Złap 50 kubków z rzędu. |
+| Terrible ten | Survive the machine gone wild. | terrible_ten.png | zwykłe | 15 | Straszna dziesiątka / Przetrwaj szalejący ekspres. |
+| Level 5 | Reach level 5. | level_5.png | zwykłe | 10 | Poziom 5 / Dojdź do poziomu 5. |
+| Orders 50 | Score 50 points in mode B. | orders_50.png | zwykłe | 10 | Zamówienia 50 / Zdobądź 50 punktów w trybie B. |
+| Paprika tamer | Shoo Paprika off the stool 10 times. | paprika_tamer.png | **wielostopniowe, 10 kroków** | 15 | Pogromca Papriki / Przegoń Paprikę ze stołka 10 razy. |
+
+Razem 160 punktów (limit 2000, każda wartość wielokrotnością 5). Kolejność na liście jak w tabeli.
+Potem: *Osiągnięcia* → **Pobierz zasoby → Android (XML)** → wklej Claude'owi (zastąpi
+`docs/store/games-ids.xml`, dalej `NightCafe → Apply Play Games Resources`) i **opublikuj** zmiany w usługach
+gier. Przed publikacją osiągnięcia działają tylko dla testerów.
