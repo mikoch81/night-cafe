@@ -75,6 +75,11 @@ krawędzi. Trzy stłuczki i zmiana skończona. Kot Sablé sprząta — i czasem 
 - EN: `Your records, top 10 and skins are now kept in Google Play Games: sign in and they come back after a reinstall or on a new phone. Plus library updates.`
 - PL: `Rekordy, top 10 i skiny są teraz zapisywane w Grach Google Play: zaloguj się, a wrócą po ponownej instalacji albo na nowym telefonie. Do tego aktualizacje bibliotek.`
 
+## Release notes 1.2.0 (draft)
+
+- EN: `Daily challenge: the same shift for everyone, one scored try a day, with its own leaderboard. 11 achievements, leaderboards and trophies right on the title screen, a short tutorial for your first shift, lifetime stats, and much more feedback - score pops, streaks, a shaking screen when cups break.`
+- PL: `Wyzwanie dnia: ta sama zmiana dla wszystkich, jedna punktowana próba dziennie i osobny ranking. 11 osiągnięć, ranking i trofea prosto z ekranu tytułowego, krótki samouczek na pierwszą zmianę, statystyki i dużo więcej reakcji gry - punkty nad tacą, serie, drżący ekran przy stłuczce.`
+
 ## Publishing the privacy policy
 
 GitHub Pages from the repo's `docs/` folder is enough (Settings → Pages → Deploy from branch →
