@@ -40,5 +40,8 @@ Na Pixelu jest build deweloperski — przed instalacją ze Sklepu odinstalować 
 
 ## Do zrobienia
 
-- Test ze Sklepu na Pixelu (najpierw odinstalować build deweloperski), potem awans na produkcję.
+- Test ze Sklepu na Pixelu zrobiony 2026-11-07 (logowanie OK, profil i DZIŚ 002 z chmury).
+- Wersja produkcyjna 4 (1.2.0) zapisana (100 %, wszystkie kraje). **Michał: Przegląd publikowanych zmian →
+  „Prześlij 1 zmianę do sprawdzenia”** (automat nie mógł wysłać na produkcję).
+- PR #3 `release/1.2.0` → master do scalenia; po wydaniu tag `v1.2.0`.
 - Opcjonalnie: dłuższy test ręczny (wstrząs, samouczek na nowym koncie, Paprika ×10).
